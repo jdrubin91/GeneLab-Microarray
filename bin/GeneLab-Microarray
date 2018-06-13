@@ -1,3 +1,3 @@
 #!/usr/bin/env python
-Import packagename
-packagename.run()
+GeneLab_Microarray = __import__("GeneLab-Microarray")
+GeneLab_Microarray.run()
