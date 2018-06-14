@@ -6,27 +6,42 @@ def run(batch_file):
     batch_list = list()
     with open(batch_file) as F:
         parent_dir = F.readline().strip('\n').split('=')[1]
+        header = F.readline()
         for line in F:
             linelist = line.strip('\n').split('\t')
             batch_list.append(linelist)
 
-    for linelist in batch_list:
+    new_batch = open(batch_file,'w')
+    for i in range(len(batch_list)):
         if 'False' in linelist:
-            GLDS, copy, chip, qc, norm, qc_norm = linelist
-            if not boolean(copy):
-                
+            GLDS, copy, chip, qc, norm, qc_norm = batch_list[i]
+
+            #Copy module, copies and unzips both metadata and raw data. If precise directories are not found,
+            #that GLDS is skipped.
+            if copy == 'False':
                 #Process metadata
                 metadata_dir = os.path.join(config.indir,'metadata')
                 if os.path.isdir(metadata_dir):
                     metadata_process.clean(metadata_dir)
                 else:
-                    raise IOError('metadata directory within input not found. See README for expected directory structure.')
+                    print "metadata directory within " + GLDS + " not found, skipping..."
+                    GLDS, copy, chip, qc, norm, qc_norm = ['Skipped' for i in range(6)]
+                    batch_list[i] = ['Skipped' for i in range(6)]
 
                 #Copy rawdata into output
                 rawdata_dir = os.path.join(config.indir,'microarray')
                 if os.path.isdir(rawdata_dir):
                     rawdata_process.copy(rawdata_dir)
                 else:
-                    raise IOError('microarray directory within input not found. See README for expected directory structure.')
+                    print "microarray directory within " + GLDS + " not found, skipping..."
+                    GLDS, copy, chip, qc, norm, qc_norm = ['Skipped' for i in range(6)]
+                    batch_list[i] = ['Skipped' for i in range(6)]
+
+                batch_list[i][1] = 'True'
+                update_batch(parent_dir,header,batch_file,batch_list)
 
 
+def update_batch(parent_dir,header,batch_file,batch_list):
+    outfile=open(batch_file,'w')
+    for linelist in batch_list:
+        outfile.write('\t'.join(linelist)+'\n')

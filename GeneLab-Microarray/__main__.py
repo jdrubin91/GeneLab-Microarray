@@ -7,8 +7,8 @@ import os
 def run():
     parser = argparse.ArgumentParser(prog='GeneLab-Microarray',usage='%(prog)s [options] Directory',description='Standardized processing pipeline for microarray data on GeneLab.')
     parser.add_argument('Directory',
-        help='The full path (/ at the end required) to a directory containing either a single dataset structured according to specifications or a batch.txt file. See README for more information.')
-    parser.add_argument('-o','--output',help='Required. Output directory, requires a / at the end.',metavar='',required=True)
+        help='The full path to a directory containing either a single dataset structured according to specifications or a batch.txt file. See README for more information.')
+    parser.add_argument('-o','--output',help='Required. Output directory.',metavar='',required=True)
     parser.add_argument('-c','--chip',help='Specify the type of microarray chip if only one type of chip is desired for processing. Default: Auto. Options: Affymetrix, Agilent, Nimblegen, Illumina, Custom',
         choices=['Affymetrix', 'Agilent', 'Nimblegen', 'Illumina', 'Custom'],default='Auto',metavar='')
     parser.add_argument('-b','--batch',help='If batch processing is desired, provide a full path to a batch.txt file as the /Directory/ (see README for format guidelines).'
@@ -48,7 +48,7 @@ def run():
 
 
     #Import necessary python scripts within this package
-    import metadata_process
+    import metadata_process, rawdata_process
 
     if batch:
         import batch_process
@@ -59,4 +59,11 @@ def run():
             metadata_process.clean(metadata_dir)
         else:
             raise IOError('metadata directory within input not found. See README for expected directory structure.')
+
+        #Copy rawdata into output
+        rawdata_dir = os.path.join(indir,'microarray')
+        if os.path.isdir(rawdata_dir):
+            rawdata_process.copy(rawdata_dir)
+        else:
+            raise IOError('microarray directory within input not found. See README for expected directory structure.')
 
