@@ -21,8 +21,8 @@ def run(batch_file):
             #that GLDS is skipped.
             if copy == 'False':
                 #Process metadata
-                metadata_dir = os.path.join(config.indir,'metadata')
-                print config.indir
+                metadata_dir = os.path.join(parent_dir,'metadata')
+                print parent_dir
                 if os.path.isdir(metadata_dir):
                     metadata_process.clean(metadata_dir)
                 else:
@@ -31,7 +31,7 @@ def run(batch_file):
                     batch_list[i] = [GLDS, copy, chip, qc, norm, qc_norm]
 
                 #Copy rawdata into output
-                rawdata_dir = os.path.join(config.indir,'microarray')
+                rawdata_dir = os.path.join(parent_dir,'microarray')
                 if os.path.isdir(rawdata_dir):
                     rawdata_process.copy(rawdata_dir)
                 else:
