@@ -52,7 +52,7 @@ def run():
 
     if batch:
         import batch_process
-        batch_process.run(batch)
+        batch_process.run(indir)
     else:
         metadata_dir = os.path.join(indir,'metadata')
         if os.path.isdir(metadata_dir):
