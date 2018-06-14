@@ -24,6 +24,6 @@ def copy(rawdata_directory):
                 gunzip_command = "gunzip " + os.path.join(rawdata_out,file1)
                 os.system(gunzip_command)
             if 'tar' in file1:
-                untar_command = "tar -xvf " + os.path.join(rawdata_out,file1)
+                untar_command = "tar -xvfz " + os.path.join(rawdata_out,file1)
                 os.system(untar_command)
     
