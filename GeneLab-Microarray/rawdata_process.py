@@ -18,9 +18,12 @@ def copy(rawdata_directory):
             rsync_command = "rsync " + os.path.join(rawdata_directory,file1) + " " + os.path.join(rawdata_out,file1)
             os.system(rsync_command)
             if 'zip' in file1:
-                unzip_command = "unzip " + os.path.join(rawdata_out,file1)
+                unzip_command = "unzip -o " + os.path.join(rawdata_out,file1) + " -d " + rawdata_out
+                os.system(unzip_command)
             if 'gz' in file1:
                 gunzip_command = "gunzip " + os.path.join(rawdata_out,file1)
+                os.system(gunzip_command)
             if 'tar' in file1:
                 untar_command = "tar -xvf " + os.path.join(rawdata_out,file1)
+                os.system(untar_command)
     
