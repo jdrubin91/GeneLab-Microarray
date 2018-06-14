@@ -8,7 +8,11 @@ def run(batch_file):
         parent_dir = F.readline().strip('\n').split('=')[1]
         header = F.readline()
         for line in F:
+            print line
             linelist = line.strip('\n').split('\t')
+            print linelist
+            linelist2 = line.strip().split()
+            print linelist2
             batch_list.append(linelist)
 
     print batch_list
