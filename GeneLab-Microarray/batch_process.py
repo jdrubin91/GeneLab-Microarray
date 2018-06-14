@@ -14,12 +14,12 @@ def run(batch_file):
 
     for i in range(len(batch_list)):
         if 'False' in batch_list[i]:
-
-            GLDS, copy, chip, qc, norm, qc_norm = batch_list[i]
+            GLDS, copy, chip, qc, norm, norm_qc = batch_list[i]
 
             #Copy module, copies and unzips both metadata and raw data. If precise directories are not found,
             #that GLDS is skipped.
             if copy == 'False':
+                print "Copying files for ", GLDS, "..."
                 #Process metadata
                 metadata_dir = os.path.join(parent_dir,GLDS,'metadata')
                 print parent_dir
@@ -27,8 +27,8 @@ def run(batch_file):
                     metadata_process.clean(metadata_dir)
                 else:
                     print "metadata directory within " + GLDS + " not found, skipping..."
-                    copy, chip, qc, norm, qc_norm = ['Skipped' for j in range(5)]
-                    batch_list[i] = [GLDS, copy, chip, qc, norm, qc_norm]
+                    copy, chip, qc, norm, norm_qc = ['Skipped' for j in range(5)]
+                    batch_list[i] = [GLDS, copy, chip, qc, norm, norm_qc]
 
                 #Copy rawdata into output
                 rawdata_dir = os.path.join(parent_dir,GLDS,'microarray')
@@ -36,11 +36,12 @@ def run(batch_file):
                     rawdata_process.copy(rawdata_dir)
                 else:
                     print "microarray directory within " + GLDS + " not found, skipping..."
-                    copy, chip, qc, norm, qc_norm = ['Skipped' for j in range(5)]
-                    batch_list[i] = [GLDS, copy, chip, qc, norm, qc_norm]
+                    copy, chip, qc, norm, norm_qc = ['Skipped' for j in range(5)]
+                    batch_list[i] = [GLDS, copy, chip, qc, norm, norm_qc]
 
                 batch_list[i][1] = 'True'
                 update_batch(parent_dir,header,batch_file,batch_list)
+                print "done"
 
 
 def update_batch(parent_dir,header,batch_file,batch_list):
