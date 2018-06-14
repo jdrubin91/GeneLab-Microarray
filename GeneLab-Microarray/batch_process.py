@@ -13,7 +13,7 @@ def run(batch_file):
 
     new_batch = open(batch_file,'w')
     for i in range(len(batch_list)):
-        if 'False' in linelist:
+        if 'False' in batch_list[i]:
             GLDS, copy, chip, qc, norm, qc_norm = batch_list[i]
 
             #Copy module, copies and unzips both metadata and raw data. If precise directories are not found,
@@ -45,3 +45,4 @@ def update_batch(parent_dir,header,batch_file,batch_list):
     outfile=open(batch_file,'w')
     for linelist in batch_list:
         outfile.write('\t'.join(linelist)+'\n')
+    outfile.close()

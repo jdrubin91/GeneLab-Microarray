@@ -28,6 +28,8 @@ def run():
     indir = args.Directory
     outdir = args.output
 
+    print batch
+
 
     #Get full paths to locations within this package
     srcdir = os.path.dirname(os.path.realpath(__file__))
