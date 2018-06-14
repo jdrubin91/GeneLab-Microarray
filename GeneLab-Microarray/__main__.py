@@ -28,8 +28,6 @@ def run():
     indir = args.Directory
     outdir = args.output
 
-    print batch
-
 
     #Get full paths to locations within this package
     srcdir = os.path.dirname(os.path.realpath(__file__))
@@ -49,13 +47,12 @@ def run():
     outfile.close()
 
 
-    #Import necessary python scripts within this package
-    import metadata_process, rawdata_process
-
+    #Either run batch module or just run the processing steps on a single dataset
     if batch:
         import batch_process
         batch_process.run(indir)
     else:
+        import metadata_process, rawdata_process
         metadata_dir = os.path.join(indir,'metadata')
         if os.path.isdir(metadata_dir):
             metadata_process.clean(metadata_dir)

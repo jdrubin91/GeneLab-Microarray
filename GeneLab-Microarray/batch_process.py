@@ -11,9 +11,11 @@ def run(batch_file):
             linelist = line.strip('\n').split('\t')
             batch_list.append(linelist)
 
-    new_batch = open(batch_file,'w')
+    print batch_list
+
     for i in range(len(batch_list)):
         if 'False' in batch_list[i]:
+            print batch_list[i]
             GLDS, copy, chip, qc, norm, qc_norm = batch_list[i]
 
             #Copy module, copies and unzips both metadata and raw data. If precise directories are not found,
