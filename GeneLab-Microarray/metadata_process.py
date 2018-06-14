@@ -28,7 +28,7 @@ def clean(metadata_directory):
         if 'zip' in path and i == 0:
             metadata_zip = os.path.join(metadata_directory,os.path.basename(path))
             command1 = "rsync -r " + metadata_zip + " " + metadata_out
-            command2 = "unzip " + os.path.join(metadata_out,os.path.basename(metadata_zip))
+            command2 = "unzip " + os.path.join(metadata_out,os.path.basename(metadata_zip)) + " -d " + metadata_out
             os.system(command1)
             os.system(command2)
             i += 1
