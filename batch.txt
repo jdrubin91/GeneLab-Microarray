@@ -1,0 +1,1 @@
+#Directory=/opt/genelab-genomespace-dev_mount_point/GLDS#	Copied	Chip	1.QC/QA	2.Normalization	3.Normalized_QC/QA
