@@ -27,7 +27,8 @@ def copy(rawdata_directory):
                 untar_command = "tar -xf " + out_file_path + " -C " + rawdata_out
                 os.system(untar_command)
 
-    for file2 in os.listdir(rawdata_out):
+    filelist = os.listdir(rawdata_out)
+    for file2 in filelist:
         out_file_path = os.path.join(rawdata_out,file2)
         if '.zip' in file2:
             unzip_command = "unzip -o " + out_file_path + " -d " + rawdata_out
