@@ -2,6 +2,8 @@
 
 ## Table of Contents
 1. <A href=#Installation>Installation</A>
+2. <A href=#Directory>Directory Structure</A>
+3. <A href=#BatchFile>Batch File Format</A>
 
 
 <H2 id="Installation">Installation</H2>
@@ -22,7 +24,7 @@ Once the above steps are completed without error, you should be able to call Gen
 GeneLab-Microarray --help
 ```
 
-## Directory structure
+<H2 id="Directory">Directory Structure</H2>
 GeneLab-Microarray expects directories to be in a specific structure. A parent directory with GLDS-# followed by two subdirectories (where one is named metadata and the other microarray) each of which contain zipped archives with either raw microarray data or ISA formatted metadata. For example:
 
 ```
@@ -34,7 +36,7 @@ GLDS-#/
 ```
 
 
-## Batch file format
+<H2 id="BatchFile">Batch File Format</H2>
 If `-b,--batch` option is desired. In addition to calling the flag, users must submit the full path to a batch.txt file (examples and a simple script to create this batch.txt file is located in the batch subdirectory). Briefly, the batch.txt file expects the first line to begin with '#' followed by 'Directory=' then a full path to a directory. For example:
 
 `#Directory=/opt/genelab-genomespace-dev_mount_point/`
