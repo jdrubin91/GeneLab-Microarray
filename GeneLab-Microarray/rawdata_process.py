@@ -17,7 +17,7 @@ def copy(rawdata_directory):
             rsync_command = "rsync " + os.path.join(rawdata_directory,file1) + " " + out_file_path
             os.system(rsync_command)
             if '.zip' in file1:
-                unzip_command = "unzip -o " + out_file_path + " -d " + rawdata_out
+                unzip_command = "unzip -o -qq " + out_file_path + " -d " + rawdata_out
                 os.system(unzip_command)
                 remove_command = "rm " + out_file_path
                 os.system(remove_command)
@@ -33,7 +33,7 @@ def copy(rawdata_directory):
     for file2 in os.listdir(rawdata_out):
         out_file_path = os.path.join(rawdata_out,file2)
         if '.zip' in file2:
-            unzip_command = "unzip -o " + out_file_path + " -d " + rawdata_out
+            unzip_command = "unzip -o -qq " + out_file_path + " -d " + rawdata_out
             os.system(unzip_command)
             remove_command = "rm " + out_file_path
             os.system(remove_command)
@@ -57,6 +57,5 @@ def rename(GLDS_path):
             if key in filename:
                 extension = filename.split('.')[-1]
                 move_command = "mv " + os.path.join(rawdata_out,filename) + " " + os.path.join(rawdata_out,GLDS+'_microarray_'+key+'.'+extension)
-                print move_command
                 os.system(move_command)
 
