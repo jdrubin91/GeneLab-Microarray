@@ -27,6 +27,7 @@ def copy(rawdata_directory):
                 untar_command = "tar -xf " + out_file_path + " -C " + rawdata_out
                 os.system(untar_command)
                 remove_command = "rm " + out_file_path
+                os.system(remove_command)
 
     for file2 in os.listdir(rawdata_out):
         out_file_path = os.path.join(rawdata_out,file2)
