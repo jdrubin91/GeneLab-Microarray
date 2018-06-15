@@ -34,7 +34,7 @@ def run(batch_file):
                 rawdata_dir = os.path.join(parent_dir,GLDS,'microarray')
                 if os.path.isdir(rawdata_dir):
                     rawdata_process.copy(rawdata_dir)
-                    rawdata_process.rename(os.path.join(congif.outdir,GLDS))
+                    rawdata_process.rename(os.path.join(config.outdir,GLDS))
                 else:
                     print "microarray directory within " + GLDS + " not found, skipping..."
                     copy, chip, qc, norm, norm_qc = ['Skipped' for j in range(5)]
