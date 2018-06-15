@@ -62,7 +62,7 @@ def rename(GLDS_path):
 def qc_and_normalize(rawdata_out):
     try:
         os.chdir(rawdata_out)
-        R_script = os.path.join(config.Rdir,'affyNormQC.R')
+        R_script = os.path.join(config.R_dir,'affyNormQC.R')
         R_command = "RScript " + R_script + " -n rma --outFile=exprsValues --outType=txt --outputData=TRUE --QCoutput=TRUE --NUSEplot=FALSE"
         os.system(R_command)
     except OSError:
