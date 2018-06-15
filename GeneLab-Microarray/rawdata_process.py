@@ -27,14 +27,13 @@ def copy(rawdata_directory):
                 untar_command = "tar -xf " + out_file_path + " -C " + rawdata_out
                 os.system(untar_command)
 
-    print os.listdir(rawdata_out)
-    print [(file2,True) for file2 in os.listdir(rawdata_out) if 'gz' in file2]
     for file2 in os.listdir(rawdata_out):
         out_file_path = os.path.join(rawdata_out,file2)
         if '.zip' in file2:
             unzip_command = "unzip -o " + out_file_path + " -d " + rawdata_out
             os.system(unzip_command)
         if '.gz' in file2:
+            print gunzip_command
             gunzip_command = "gunzip -f " + out_file_path
             os.system(gunzip_command)
         if '.tar' in file2:
