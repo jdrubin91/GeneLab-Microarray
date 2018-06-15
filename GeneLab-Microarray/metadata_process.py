@@ -54,7 +54,7 @@ def read_assay(metadata_out):
     #Loop through metadata files, find the assay file (starts with 'a_')
     for filename in os.listdir(metadata_out):
         if 'a_' in filename[:2]:
-            assay_file = filename
+            assay_file = os.path.join(metadata_out,filename)
 
     #Create an assay dictionary where the key is the name of the sample file
     assay_dict = dict()
