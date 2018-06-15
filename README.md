@@ -1,6 +1,10 @@
 # GeneLab-Microarray
 
-## Installation
+## Table of Contents
+1. <A href=#Installation>Installation</A>
+
+
+<H2 id="Installation">Installation</H2>
 To install GeneLab-Microarray, follow the steps below to clone this repository and add it to your path:
 
 ```
