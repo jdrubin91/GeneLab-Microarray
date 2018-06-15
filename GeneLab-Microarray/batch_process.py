@@ -40,10 +40,6 @@ def run(batch_file):
                     copy, chip, qc, norm, norm_qc = ['Skipped' for j in range(5)]
                     batch_list[i] = [GLDS, copy, chip, qc, norm, norm_qc]
 
-
-                #Rename rawdata files according to Analysis Wworking Group specifications
-                rawda
-
                 batch_list[i][1] = 'True'
                 update_batch(parent_dir,header,batch_file,batch_list)
                 print "done"
