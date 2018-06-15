@@ -1,0 +1,2 @@
+#Directory=/opt/genelab-genomespace-dev_mount_point/
+GLDS#	Copied	Normalize/QC

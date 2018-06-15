@@ -26,8 +26,8 @@ def run(batch_file):
                     metadata_process.clean(metadata_dir)
                 else:
                     print "metadata directory within " + GLDS + " not found, skipping..."
-                    copy, chip, qc, norm, norm_qc = ['Skipped' for j in range(5)]
-                    batch_list[i] = [GLDS, copy, chip, qc, norm, norm_qc]
+                    copy, norm_qc = ['Skipped' for j in range(2)]
+                    batch_list[i] = [GLDS, copy, norm_qc]
 
                 #Copy rawdata into output
                 rawdata_dir = os.path.join(parent_dir,GLDS,'microarray')
@@ -36,8 +36,8 @@ def run(batch_file):
                     rawdata_process.rename(os.path.join(config.outdir,GLDS))
                 else:
                     print "microarray directory within " + GLDS + " not found, skipping..."
-                    copy, chip, qc, norm, norm_qc = ['Skipped' for j in range(5)]
-                    batch_list[i] = [GLDS, copy, chip, qc, norm, norm_qc]
+                    copy, norm_qc = ['Skipped' for j in range(2)]
+                    batch_list[i] = [GLDS, copy, norm_qc]
 
                 batch_list[i][1] = 'True'
                 update_batch(parent_dir,header,batch_file,batch_list)
