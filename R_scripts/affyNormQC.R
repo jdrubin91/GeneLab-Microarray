@@ -6,16 +6,16 @@
 # biocLite("affyPLM")
 # biocLite("oligo")
 
-library("optparse")
+suppressPackageStartupMessages(library("optparse"))
 
 # Read options
 option_list=list(
-  make_option(c("-n","--normalization"),type="character",default="rma",help="Normalization method [rma (default, full rma), quantile (no background correction), background (no quant. normalization), log2 (no quant. norm. or background correction)"),
-  make_option("--outFile",type="character",default="expValues",help="Name of the output file (default expValues"),
-  make_option("--outType",type="character",default="R",help="Format of output data: R (Rdata eset object, default), txt (tab delimited file with identifiers and sample names)"),
+  make_option(c("-n","--normalization"),type="character",default="rma",help="Normalization method [\rma\ (default, full rma), \quantile\ (no background correction), \background\ (no quant. normalization), \log2\ (no quant. norm. or background correction)"),
+  make_option(c("-o","--outFile"),type="character",default="expValues",help="Name of the output file [without extension!] (default: expValues"),
+  make_option(c("-t","--outType"),type="character",default="both",help="Format of output data: \R\ (Rdata eset object), \txt\ (tab delimited file with identifiers and sample names), \both\ (default)"),
   make_option("--outputData",type="logical",default=TRUE,help="Output data at all (default TRUE)"),
   make_option("--QCoutput",type="logical",default=TRUE,help="Output QC_reporting directory of QC plots (default = TRUE)"),
-  make_option("--NUSEplot",type="logical",default=TRUE,help="Include a NUSE plot in the QC output, adds significantly to runtime (default = TRUE)")
+  make_option(c("-np","--NUSEplot"),type="logical",default=FALSE,help="Include a NUSE plot in the QC output, adds significantly to runtime (default = FALSE)")
 )
 
 opt_parser = OptionParser(option_list=option_list)
@@ -38,7 +38,7 @@ detach_package <- function(pkg, character.only = FALSE){
 }
 
 # Load initial libraries
-require(affy)
+suppressPackageStartupMessages(require(affy))
 
 # setwd("~/Documents/genelab/rot1/GLDS4/microarray/")
 celFiles <- list.celfiles(full.names=TRUE)
@@ -49,14 +49,17 @@ tryCatch({raw = ReadAffy()}, error=function(e){
   stop("No .CEL files detected in the current directory", call. = F)
   })
 
+write.table(c("Affymetrix",as.character(raw@cdfName)),file = "arrayInfo.txt",quote = F,
+            col.names = F, row.names = F)
+
 if (grepl("-st-",raw@cdfName,ignore.case = T)){
   detach_package(affy)
   rm(raw)
-  require(oligo)
+  suppressPackageStartupMessages(require(oligo))
   raw = read.celfiles(celFiles)
   st = T
 }else{
-  require(affyPLM)
+  suppressPackageStartupMessages(require(affyPLM))
   st = F
 }
 #require(oligo)
@@ -72,11 +75,19 @@ if(QCout == T){
   
   #Images
   cat("Generating raw images")
-  for(i in 1:length(celFiles)){
-    png(paste('./QC_reporting/image_',sampNames[i],'.png',sep=''),width=800, height = 800)
-    image(raw, which = i)
+  if(st == T){
+    for(i in 1:length(celFiles)){
+      png(paste('./QC_reporting/image_',sampNames[i],'.png',sep=''),width=800, height = 800)
+      image(raw, which = i)
+      dev.off()
+      cat(".")
+    }
+  }else{
+    nblines=length(celFiles)%/%4 + as.numeric((length(celFiles)%%4)!=0)
+    png(paste('./QC_reporting/image',sampNames[i],'.png',sep=''),width=800,height = 200*nblines)
+    par(mfrow=c(nblines,4))
+    image(raw)
     dev.off()
-    cat(".")
   }
   cat("\n")
 
@@ -171,7 +182,10 @@ if(norm=='rma'){
 
 outFH = opt$outFile
 if(opt$outputData == TRUE){
-  if(opt$outType == "R"){
+  if(opt$outType == "both"){
+    save(eset,file=paste(outFH,".rda",sep=""))
+    write.exprs(eset,file=paste(outFH,".txt",sep=""),sep="\t")
+  }else if(opt$outType == "R"){
     save(eset,file=paste(outFH,".rda",sep=""))
   }else if(opt$outType == "txt"){
     write.exprs(eset,file=paste(outFH,".txt",sep=""),sep="\t")

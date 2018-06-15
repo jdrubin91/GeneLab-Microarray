@@ -19,3 +19,16 @@ mapFun = function(id){ # Function to match the primary RefSeq ID for a given Aff
 RefSeq = lapply(ID,FUN = mapFun) # Applying mapFun to all AffyIDs
 
 # Replace AffyIDs with RefSeq IDs, drop probes w/o RefSeq IDs?
+normVals = exprs(eset)
+normVals = normVals[!is.na(RefSeq),]
+rownames(normVals) = paste(rownames(normVals),RefSeq[!is.na(RefSeq)])
+
+filtPCA = prcomp(normVals)
+png("~/Desktop/filtPCA.png",width=800,height = 800)
+plot(filtPCA$rotation[,1],filtPCA$rotation[,2],col=color[1:length(celFiles)],pch=16,
+     xlab = paste("PC1, ",round(summary(filtPCA)$importance["Proportion of Variance",1]*100,digits = 1),"% of variance",sep=""),
+     ylab = paste("PC2, ",round(summary(filtPCA)$importance["Proportion of Variance",2]*100,digits = 1),"% of variance",sep=""),
+     main="PCA of normalized, filtered probes"
+)
+text(filtPCA$rotation[,1],filtPCA$rotation[,2],labels = sampNames, cex = 1,pos = 3)
+dev.off()
