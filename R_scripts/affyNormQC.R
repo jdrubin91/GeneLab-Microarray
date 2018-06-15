@@ -10,9 +10,9 @@ suppressPackageStartupMessages(library("optparse"))
 
 # Read options
 option_list=list(
-  make_option(c("-n","--normalization"),type="character",default="rma",help="Normalization method [\rma\ (default, full rma), \quantile\ (no background correction), \background\ (no quant. normalization), \log2\ (no quant. norm. or background correction)"),
+  make_option(c("-n","--normalization"),type="character",default="rma",help="Normalization method [rma (default, full rma), quantile (no background correction), background (no quant. normalization), log2 (no quant. norm. or background correction)"),
   make_option(c("-o","--outFile"),type="character",default="expValues",help="Name of the output file [without extension!] (default: expValues"),
-  make_option(c("-t","--outType"),type="character",default="both",help="Format of output data: \R\ (Rdata eset object), \txt\ (tab delimited file with identifiers and sample names), \both\ (default)"),
+  make_option(c("-t","--outType"),type="character",default="both",help="Format of output data: R (Rdata eset object), txt (tab delimited file with identifiers and sample names), both (default)"),
   make_option("--outputData",type="logical",default=TRUE,help="Output data at all (default TRUE)"),
   make_option("--QCoutput",type="logical",default=TRUE,help="Output QC_reporting directory of QC plots (default = TRUE)"),
   make_option(c("-np","--NUSEplot"),type="logical",default=FALSE,help="Include a NUSE plot in the QC output, adds significantly to runtime (default = FALSE)")
