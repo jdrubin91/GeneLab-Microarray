@@ -19,7 +19,7 @@ def run(batch_file):
             #Copy module, copies and unzips both metadata and raw data. If precise directories are not found,
             #that GLDS is skipped.
             if copy == 'False':
-                print "Copying files for ", GLDS, "..."
+                print "Copying files for " + GLDS + "..."
                 #Process metadata
                 metadata_dir = os.path.join(parent_dir,GLDS,'metadata')
                 print parent_dir
@@ -45,25 +45,25 @@ def run(batch_file):
                 print "done"
 
             if chip == 'False':
-                print "Detecting array type for ",GLDS,"..."
+                print "Detecting array type for " + GLDS + "..."
                 batch_list[i][2] = 'True'
                 update_batch(parent_dir,header,batch_file,batch_list)
                 print "done"
 
             if qc == 'False':
-                print "Performing initial QC for ",GLDS,"..."
+                print "Performing initial QC for " + GLDS + "..."
                 batch_list[i][3] = 'True'
                 update_batch(parent_dir,header,batch_file,batch_list)
                 print "done"
 
             if norm == 'False':
-                print "Normalizing data for ",GLDS,"..."
+                print "Normalizing data for " + GLDS + "..."
                 batch_list[i][4] = 'True'
                 update_batch(parent_dir,header,batch_file,batch_list)
                 print "done"
 
             if norm_qc == 'False':
-                print "Performing QC on normalized data for ",GLDS,"..."
+                print "Performing QC on normalized data for " + GLDS + "..."
                 batch_list[i][5] = 'True'
                 update_batch(parent_dir,header,batch_file,batch_list)
                 print "done"
