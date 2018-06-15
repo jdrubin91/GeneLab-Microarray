@@ -22,7 +22,6 @@ def run(batch_file):
                 print "Copying files for " + GLDS + "..."
                 #Process metadata
                 metadata_dir = os.path.join(parent_dir,GLDS,'metadata')
-                print parent_dir
                 if os.path.isdir(metadata_dir):
                     metadata_process.clean(metadata_dir)
                 else:
