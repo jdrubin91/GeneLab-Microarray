@@ -1,15 +1,22 @@
 # GeneLab-Microarray
 
 ## Installation
-To install GeneLab-Microarray, follow the steps below to clone and add to your path:
+To install GeneLab-Microarray, follow the steps below to clone this repository and add it to your path:
 
 ```
-git clone 
+git clone https://github.com/jdrubin91/GeneLab-Microarray.git
 cd GeneLab-Microarray/
 pip install -e .
 ```
 
+* Note: You should be in the topmost GeneLab-Microarray directory (not the one that contains .py scripts)
 
+
+Once the above steps are completed without error, you should be able to call GeneLab-Microarray from any directory. Try:
+
+```
+GeneLab-Microarray --help
+```
 
 ## Directory structure
 GeneLab-Microarray expects directories to be in a specific structure. A parent directory with GLDS-# followed by two subdirectories (where one is named metadata and the other microarray) each of which contain zipped archives with either raw microarray data or ISA formatted metadata. For example:
