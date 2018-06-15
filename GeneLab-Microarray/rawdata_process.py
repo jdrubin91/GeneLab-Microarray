@@ -15,7 +15,7 @@ def copy(rawdata_directory):
     for file1 in os.listdir(rawdata_directory):
         if 'raw' in file1 or 'RAW' in file1 or 'Raw' in file1 or 'CEL' in file1 or not 'processed' in file1:
             out_file_path = os.path.join(rawdata_out,file1)
-            rsync_command = "rsync " + out_file_path + " " + os.path.join(rawdata_out,file1)
+            rsync_command = "rsync " + os.path.join(rawdata_directory,file1) + " " + out_file_path
             os.system(rsync_command)
             if '.zip' in file1:
                 unzip_command = "unzip -o " + out_file_path + " -d " + rawdata_out
@@ -28,6 +28,7 @@ def copy(rawdata_directory):
                 os.system(untar_command)
 
     print os.listdir(rawdata_out)
+    print [(file2,True) for file2 in os.listdir(rawdata_out) if 'gz' in file2]
     for file2 in os.listdir(rawdata_out):
         out_file_path = os.path.join(rawdata_out,file2)
         if '.zip' in file2:
