@@ -46,7 +46,7 @@ def clean(metadata_directory):
     #Loop through the metadata_out directory in case the unzipping produces a folder. If so, mv contents of folder up one directory and remove folder
     for filename in os.listdir(metadata_out):
         print filename, os.path.isdir(filename)
-        if os.path.isdir(filename):
+        if os.path.isdir(os.path.join(metadata_out,filename)):
             move_command = "mv " + os.path.join(metadata_out,filename,"*") + metadata_out
             print move_command
             remove_folder_command = "rm -r " + os.path.join(metadata_out,filename)
