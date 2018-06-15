@@ -4,6 +4,7 @@
 1. <A href=#Installation>Installation</A>
 2. <A href=#Directory>Directory Structure</A>
 3. <A href=#BatchFile>Batch File Format</A>
+4. <A href=#affyNormQC>Affy QC and Normalization</A>
 
 
 <H2 id="Installation">Installation</H2>
@@ -51,3 +52,26 @@ GLDS-4    False     False     False       False               False
 ```
 
 The first column is the name of a folder within the specified Directory. All subsequent columns are booleans (True or False) and are used to keep track of the progress of processing the desired data in batch. GeneLab-Microarray will overwrite the specified batch.txt file changing booleans to True or Skipped when the specific step is finished. An example of a batch.txt file can be found within the `batch/` folder
+
+<H2 id="affyNormQC">Affy QC and Normalization</H2>
+This script is to be called from the directory containing Affymetrix microarray files (with a .CEL extension). It can determine the version of the array and load the appropriate packages (ie "affy" for earlier microarrays and "oligo" for the newer arrays). No inputs are required to run it, but to view the available options, simply run the line below:
+
+```
+Rscript --vanilla affyNormQC.R --help
+```
+
+Before running this script, it may be necessary to run the commented out lines immediately below the shebang in an R session to be sure all of the necessary packages are installed
+
+```
+install.packages("optparse")
+source("http://bioconductor.org/biocLite.R")
+biocLite("affy")
+biocLite("affyPLM")
+biocLite("oligo")
+```
+An example run with specified options for all available parameters is given below:
+
+```
+Rscript --vanilla affyNormQC.R -n rma --outFile=GLDS-n_FLT-GC_microarray_exprsValues --outType=txt --outputData=TRUE --QCoutput=TRUE --NUSEplot=TRUE
+```
+
