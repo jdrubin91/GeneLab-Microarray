@@ -68,12 +68,12 @@ if(QCout == T){
   toMatch = c(8,183,31,45,51,100,101,118,128,139,147,183,254,421,467,477,
               483,493,498,503,508,535,552,575,635,655)
   color = grDevices::colors()[rep(toMatch,3)] # Create a library of colors for plotting
-  if(!file.exists('../QC_reporting/')) dir.create('../QC_reporting/')
+  if(!file.exists('./QC_reporting/')) dir.create('./QC_reporting/')
   
   #Images
   cat("Generating raw images")
   for(i in 1:length(celFiles)){
-    png(paste('../QC_reporting/image_',sampNames[i],'.png',sep=''),width=800, height = 800)
+    png(paste('./QC_reporting/image_',sampNames[i],'.png',sep=''),width=800, height = 800)
     image(raw, which = i)
     dev.off()
     cat(".")
@@ -83,7 +83,7 @@ if(QCout == T){
   #MA plot
   cat("Generating raw data MA plots...\n")
   nblines=length(celFiles)%/%3 + as.numeric((length(celFiles)%%3)!=0)
-  png("../QC_reporting/rawPlotMA.png",width=800, height = 300*nblines )
+  png("./QC_reporting/rawPlotMA.png",width=800, height = 300*nblines )
   par(mfrow=c(nblines,3))
   if(st == T){
     MAplot(raw)
@@ -95,7 +95,7 @@ if(QCout == T){
   # Intensity distributions of the pm probes from each microarray on the same graph
   cat("Generating initial distribution plots")
   mypms = pm(raw)
-  png("../QC_reporting/rawDensityDistributions.png",width=800,height=800 )
+  png("./QC_reporting/rawDensityDistributions.png",width=800,height=800 )
   ylims = c(0,.8)
   xlims = c(0,16)
   for(i in 1:ncol(mypms)){
@@ -114,7 +114,7 @@ if(QCout == T){
   dev.off()
   
   # Boxplots
-  png("../QC_reporting/rawBoxplot.png",width=800,height = 400)
+  png("./QC_reporting/rawBoxplot.png",width=800,height = 400)
   par(mar=c(7,5,1,1))
   if(st == T){
     boxplot(oligo::rma(raw, background=FALSE, normalize=FALSE, subset=NULL, target="core"), las=2,
@@ -128,7 +128,7 @@ if(QCout == T){
   # PCA
   cat("Performing PCA of raw data...\n")
   rawPCA = prcomp(mypms)
-  png("../QC_reporting/rawPCA.png",width=800,height = 800)
+  png("./QC_reporting/rawPCA.png",width=800,height = 800)
   plot(rawPCA$rotation[,1],rawPCA$rotation[,2],col=color[1:length(celFiles)],pch=16,
        xlab = paste("PC1, ",round(summary(rawPCA)$importance["Proportion of Variance",1]*100,digits = 1),"% of variance",sep=""),
        ylab = paste("PC2, ",round(summary(rawPCA)$importance["Proportion of Variance",2]*100,digits = 1),"% of variance",sep=""),
@@ -140,7 +140,7 @@ if(QCout == T){
   if(NUSEplot == T){
     #NUSE plot
     cat("Fitting probe-level model and generating NUSE plot...\n")
-    png("../QC_reporting/NUSE.png",width=800,height = 600)
+    png("./QC_reporting/NUSE.png",width=800,height = 600)
     if(st == T){
       Pset = fitProbeLevelModel(raw)
       NUSE(Pset, col = color[1:length(sampNames)], las=2)
@@ -183,7 +183,7 @@ if(opt$outputData == TRUE){
 if(QCout == T){
   cat("Post normalization QC steps...\n")
   # Post-normalization QC
-  png("../QC_reporting/normDensityDistributions.png",width=800,height=800 )
+  png("./QC_reporting/normDensityDistributions.png",width=800,height=800 )
   ylims = c(0,.8)
   xlims = c(0,16)
   normVals = exprs(eset)
@@ -201,7 +201,7 @@ if(QCout == T){
   dev.off()
   
   # Boxplots
-  png("../QC_reporting/normBoxplot.png",width=800,height = 400)
+  png("./QC_reporting/normBoxplot.png",width=800,height = 400)
   par(mar=c(7,5,1,1))
   if(st == T){
     boxplot(normVals,las=2,outline=FALSE,col=color[1:length(celFiles)],main="Normalized intensities",transfo='identity',names=sampNames)
@@ -215,7 +215,7 @@ if(QCout == T){
   #MA plot
   cat("Generating MA plots from the normalized data...\n")
   nblines=length(celFiles)%/%3 + as.numeric((length(celFiles)%%3)!=0)
-  png("../QC_reporting/normPlotMA.png",width=800, height = 300*nblines )
+  png("./QC_reporting/normPlotMA.png",width=800, height = 300*nblines )
   par(mfrow=c(nblines,3))
   MAplot(eset)
   dev.off()
@@ -223,7 +223,7 @@ if(QCout == T){
   # PCA
   cat("Performing PCA of normalized data...\n")
   normPCA = prcomp(normVals)
-  png("../QC_reporting/normPCA.png",width=800,height = 800)
+  png("./QC_reporting/normPCA.png",width=800,height = 800)
   plot(normPCA$rotation[,1],normPCA$rotation[,2],col=color[1:length(celFiles)],pch=16,
        xlab = paste("PC1, ",round(summary(normPCA)$importance["Proportion of Variance",1]*100,digits = 1),"% of variance",sep=""),
        ylab = paste("PC2, ",round(summary(normPCA)$importance["Proportion of Variance",2]*100,digits = 1),"% of variance",sep=""),
