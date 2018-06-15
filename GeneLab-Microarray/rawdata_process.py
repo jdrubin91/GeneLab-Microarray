@@ -36,7 +36,6 @@ def copy(rawdata_directory):
             os.system(unzip_command)
         if '.gz' in file2:
             gunzip_command = "gunzip -f " + out_file_path
-            print gunzip_command
             os.system(gunzip_command)
         if '.tar' in file2:
             untar_command = "tar -xf " + out_file_path + " -C " + rawdata_out
