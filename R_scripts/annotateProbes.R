@@ -5,7 +5,11 @@
 
 require(mogene10sttranscriptcluster.db)
 
-#eset = read.delim("",sep="\t",stringsAsFactors = F)
+# Double check database if running interactively
+# ls("package:mogene10sttranscriptcluster.db") # List of R objects in the package
+# mogene10sttranscriptcluster() # QC info
+
+#eset = read.delim("",sep="\t",header = T, stringsAsFactors = F)
 
 # Mapping Affy transcript cluster IDs to RefSeq names from the imported library
 ID = featureNames(eset) # Pulls out the AffyIDs
