@@ -50,9 +50,11 @@ def run():
     #Either run batch module or just run the processing steps on a single dataset
     if batch:
         import batch_process
+        print "Batch option specified.\nUsing batch file: " + indir + "\nWriting output to: " + outdir
         batch_process.run(indir)
     else:
         import metadata_process, rawdata_process
+        print "Processing " + indir + "\nWriting output to: " + outdir
         metadata_dir = os.path.join(indir,'metadata')
         if os.path.isdir(metadata_dir):
             metadata_process.clean(metadata_dir)
@@ -65,4 +67,6 @@ def run():
             rawdata_process.copy(rawdata_dir)
         else:
             raise IOError('microarray directory within input not found. See README for expected directory structure.')
+
+        print "done."
 
