@@ -3,7 +3,7 @@
 # install.packages("optparse")
 # source("http://bioconductor.org/biocLite.R")
 # biocLite("affy")
-# biocLite("affyPLM")
+# more 
 # biocLite("oligo")
 
 suppressPackageStartupMessages(library("optparse"))
@@ -84,7 +84,7 @@ if(QCout == T){
     }
   }else{
     nblines=length(celFiles)%/%4 + as.numeric((length(celFiles)%%4)!=0)
-    png(paste('./QC_reporting/image',sampNames[i],'.png',sep=''),width=800,height = 200*nblines)
+    png('./QC_reporting/image.png',width=800,height = 200*nblines)
     par(mfrow=c(nblines,4))
     image(raw)
     dev.off()
