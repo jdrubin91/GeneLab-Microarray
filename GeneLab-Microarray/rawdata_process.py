@@ -1,6 +1,6 @@
 __author__ = 'Jonathan Rubin'
 
-import os, config
+import os, subprocess, config
 
 def copy(rawdata_directory):
     #Find name of GLDS number
@@ -27,8 +27,7 @@ def copy(rawdata_directory):
                 untar_command = "tar -xf " + out_file_path + " -C " + rawdata_out
                 os.system(untar_command)
 
-    filelist = os.listdir(rawdata_out)
-    for file2 in filelist:
+    for file2 in os.listdir(rawdata_out):
         out_file_path = os.path.join(rawdata_out,file2)
         if '.zip' in file2:
             unzip_command = "unzip -o " + out_file_path + " -d " + rawdata_out
@@ -36,7 +35,7 @@ def copy(rawdata_directory):
         if '.gz' in file2:
             gunzip_command = "gunzip -f " + out_file_path
             print gunzip_command
-            os.system(gunzip_command)
+            subprocess.call(gunzip_command)
         if '.tar' in file2:
             untar_command = "tar -xf " + out_file_path + " -C " + rawdata_out
             os.system(untar_command)
