@@ -14,7 +14,7 @@ def run(batch_file):
 
     for i in range(len(batch_list)):
         if 'False' in batch_list[i]:
-            GLDS, copy, chip, qc, norm, norm_qc = batch_list[i]
+            GLDS, copy, norm_qc = batch_list[i]
 
             #Copy module, copies and unzips both metadata and raw data. If precise directories are not found,
             #that GLDS is skipped.
@@ -43,27 +43,11 @@ def run(batch_file):
                 update_batch(parent_dir,header,batch_file,batch_list)
                 print "done"
 
-            if chip == 'False':
-                print "Detecting array type for " + GLDS + "..."
-                batch_list[i][2] = 'True'
-                update_batch(parent_dir,header,batch_file,batch_list)
-                print "done"
-
-            if qc == 'False':
-                print "Performing initial QC for " + GLDS + "..."
-                batch_list[i][3] = 'True'
-                update_batch(parent_dir,header,batch_file,batch_list)
-                print "done"
-
-            if norm == 'False':
-                print "Normalizing data for " + GLDS + "..."
-                batch_list[i][4] = 'True'
-                update_batch(parent_dir,header,batch_file,batch_list)
-                print "done"
-
             if norm_qc == 'False':
                 print "Performing QC on normalized data for " + GLDS + "..."
-                batch_list[i][5] = 'True'
+                rawdata_out = os.path.join(config.outdir,GLDS,'microarray')
+                rawdata_process.qc_and_normalize(rawdata_out)
+                batch_list[i][2] = 'True'
                 update_batch(parent_dir,header,batch_file,batch_list)
                 print "done"
 

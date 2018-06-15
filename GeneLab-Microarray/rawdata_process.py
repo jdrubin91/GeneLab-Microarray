@@ -1,6 +1,6 @@
 __author__ = 'Jonathan Rubin'
 
-import os, subprocess, config, metadata_process
+import os, sys, subprocess, config, metadata_process
 
 def copy(rawdata_directory):
     #Find name of GLDS number
@@ -58,4 +58,16 @@ def rename(GLDS_path):
                 extension = filename.split('.')[-1]
                 move_command = "mv " + os.path.join(rawdata_out,filename) + " " + os.path.join(rawdata_out,GLDS+'_microarray_'+key+'.'+extension)
                 os.system(move_command)
+
+def qc_and_normalize(rawdata_out):
+    try:
+        os.chdir(rawdata_out)
+        R_script = os.path.join(config.Rdir,'affyNormQC.R')
+        R_command = "RScript " + R_script + " -n rma --outFile=exprsValues --outType=txt --outputData=TRUE --QCoutput=TRUE --NUSEplot=FALSE"
+        os.system(R_command)
+    except OSError:
+        print "Error: Microarray raw data directory missing. Exiting..."
+        sys.exit(1)
+
+
 

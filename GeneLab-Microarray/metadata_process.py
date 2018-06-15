@@ -59,10 +59,14 @@ def read_assay(metadata_out):
 
     #Create an assay dictionary where the key is the name of the sample file
     assay_dict = dict()
-    with open(assay_file) as F:
-        F.readline()
-        for line in F:
-            linelist = [item.strip('"') for item in line.strip('\n').split()]
-            assay_dict[linelist[0]] = linelist[1:]
+    try:
+        with open(assay_file) as F:
+            F.readline()
+            for line in F:
+                linelist = [item.strip('"') for item in line.strip('\n').split()]
+                assay_dict[linelist[0]] = linelist[1:]
 
-    return assay_dict
+        return assay_dict
+    except:
+        print "File Error: No assay file found in ISA metadata. Exiting..."
+        sys.exit(1)
