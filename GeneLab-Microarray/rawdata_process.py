@@ -53,7 +53,7 @@ def rename(GLDS_path):
     assay_dict = metadata_process.read_assay(metadata_out)
     GLDS = os.path.dirname(GLDS_path)
     for key in assay_dict:
-        for filename in os.listdir(rawdata_out):
+        for filename in os.path.listdir(rawdata_out):
             if key in filename:
                 extension = filename.split('.')[-1]
                 move_command = "mv " + os.path.join(rawdata_out,filename) + " " + os.path.join(rawdata_out,GLDS+'_microarray_'+key+'.'+extension)
