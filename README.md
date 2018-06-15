@@ -44,11 +44,11 @@ If `-b,--batch` option is desired. In addition to calling the flag, users must s
 #Directory=/opt/genelab-genomespace-dev_mount_point/
 ```
 
-The rest of the file is a tab delimited txt file with 6 columns:
+The rest of the file is a tab delimited txt file with 3 columns:
 
 ```
-GLDS#     Copied    Chip      1.QC/QA     2.Normalization     3.Normalized_QC/QA
-GLDS-4    False     False     False       False               False
+GLDS#     Copied    Normalize/QC
+GLDS-4    False     False
 ```
 
 The first column is the name of a folder within the specified Directory. All subsequent columns are booleans (True or False) and are used to keep track of the progress of processing the desired data in batch. GeneLab-Microarray will overwrite the specified batch.txt file changing booleans to True or Skipped when the specific step is finished. An example of a batch.txt file can be found within the `batch/` folder
