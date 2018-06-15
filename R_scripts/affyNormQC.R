@@ -1,32 +1,29 @@
 #!/usr/bin/env Rscript
 
-library("optparse")
-# Read options
-option_list=list(
-  make_option("--normalization",type="character",default="rma",help="Normalization method [rma (default, full rma), quantile (no background correction), background (no quant. normalization), log2 (no quant. norm. or background correction)"),
-  make_option("--outFile",type="character",default="expValues",help="Name of the output file"),
-  make_option("--outType",type="character",default="R",help="Format of output data: R (Rdata eset object), txt (tab delimited file with identifiers and sample names)"),
-  make_option("--outputData",type="logical",default=TRUE,help="Output data at all"),
-  make_option("--QCoutput",type="logical",default=TRUE,help="Output concatenated PDF file of QC plots (default = TRUE)"),
-  make_option("--NUSEplot",type="logical",default=TRUE,help="Include a NUSE plot in the QC output, adds significantly to runtime (default = TRUE)")
-)
-
-opt_parser = OptionParser(option_list=option_list);
-opt = parse_args(opt_parser);
-
-norm = opt$normalization
-QCout = opt$QCoutput
-NUSEplot = opt$NUSEplot
-
-if(is.null(opt$input)){
-  print_help(opt_parser)
-  stop("Input required!", call.=FALSE)
-}
-
+# install.packages("optparse")
 # source("http://bioconductor.org/biocLite.R")
 # biocLite("affy")
 # biocLite("affyPLM")
 # biocLite("oligo")
+
+library("optparse")
+
+# Read options
+option_list=list(
+  make_option(c("-n","--normalization"),type="character",default="rma",help="Normalization method [rma (default, full rma), quantile (no background correction), background (no quant. normalization), log2 (no quant. norm. or background correction)"),
+  make_option("--outFile",type="character",default="expValues",help="Name of the output file (default expValues"),
+  make_option("--outType",type="character",default="R",help="Format of output data: R (Rdata eset object, default), txt (tab delimited file with identifiers and sample names)"),
+  make_option("--outputData",type="logical",default=TRUE,help="Output data at all (default TRUE)"),
+  make_option("--QCoutput",type="logical",default=TRUE,help="Output QC_reporting directory of QC plots (default = TRUE)"),
+  make_option("--NUSEplot",type="logical",default=TRUE,help="Include a NUSE plot in the QC output, adds significantly to runtime (default = TRUE)")
+)
+
+opt_parser = OptionParser(option_list=option_list)
+opt = parse_args(opt_parser)
+
+norm = opt$normalization
+QCout = opt$QCoutput
+NUSEplot = opt$NUSEplot
 
 detach_package <- function(pkg, character.only = FALSE){
   if(!character.only)
@@ -71,39 +68,34 @@ if(QCout == T){
   toMatch = c(8,183,31,45,51,100,101,118,128,139,147,183,254,421,467,477,
               483,493,498,503,508,535,552,575,635,655)
   color = grDevices::colors()[rep(toMatch,3)] # Create a library of colors for plotting
-  if (NUSEplot == T){
-    numPlts = 10
-  }else{
-    numPlts = 9
-  }
-  outPlts=vector(numPlts, mode = 'list')
-  cntPlts=1
+  if(!file.exists('../QC_reporting/')) dir.create('../QC_reporting/')
   
   #Images
-  cat("Generating raw images\n")
-  nblines=length(celFiles)%/%4 + as.numeric((length(celFiles)%%4)!=0) 
-  par(mfrow=c(nblines,4))
-  image(raw)
-  outPlts[[cntPlts]] <- recordPlot()
-  cntPlts = cntPlts + 1
-  graphics.off()
+  cat("Generating raw images")
+  for(i in 1:length(celFiles)){
+    png(paste('../QC_reporting/image_',sampNames[i],'.png',sep=''),width=800, height = 800)
+    image(raw, which = i)
+    dev.off()
+    cat(".")
+  }
+  cat("\n")
 
-    #MA plot
+  #MA plot
   cat("Generating raw data MA plots...\n")
-  nblines=length(celFiles)%/%3 + as.numeric((length(celFiles)%%3)!=0) 
+  nblines=length(celFiles)%/%3 + as.numeric((length(celFiles)%%3)!=0)
+  png("../QC_reporting/rawPlotMA.png",width=800, height = 300*nblines )
   par(mfrow=c(nblines,3))
   if(st == T){
     MAplot(raw)
   }else{
     MAplot(raw,type="pm")
   }
-  outPlts[[cntPlts]] <- recordPlot()
-  cntPlts = cntPlts + 1
-  graphics.off()
+  dev.off()
   
   # Intensity distributions of the pm probes from each microarray on the same graph
   cat("Generating initial distribution plots")
   mypms = pm(raw)
+  png("../QC_reporting/rawDensityDistributions.png",width=800,height=800 )
   ylims = c(0,.8)
   xlims = c(0,16)
   for(i in 1:ncol(mypms)){
@@ -117,42 +109,38 @@ if(QCout == T){
     }
   }
   legend(13,0.8,col=color[1:length(celFiles)],legend=sampNames
-         ,pch=15,bty = "n",cex = 0.8,pt.cex = 0.8,y.intersp = 0.6)
+         ,pch=15,bty = "n",cex = 0.9,pt.cex = 0.8,y.intersp = 0.8)
   cat("\n")
-  outPlts[[cntPlts]] <- recordPlot()
-  cntPlts = cntPlts + 1
-  graphics.off()
+  dev.off()
   
   # Boxplots
+  png("../QC_reporting/rawBoxplot.png",width=800,height = 400)
   par(mar=c(7,5,1,1))
   if(st == T){
     boxplot(oligo::rma(raw, background=FALSE, normalize=FALSE, subset=NULL, target="core"), las=2,
             names = sampNames, main="Raw intensities",col=color[1:length(celFiles)])
-    mtext(text="log2 Intensity", side=2, line=2.5, las=0) 
   }else{
     boxplot(raw,las=2,outline=FALSE,col=color[1:length(celFiles)],main="Raw intensities",names=sampNames)
-    mtext(text="log2 Intensity", side=2, line=2.5, las=0)
   }
-  outPlts[[cntPlts]] <- recordPlot()
-  cntPlts = cntPlts + 1
-  graphics.off()
+  mtext(text="log2 Intensity", side=2, line=2.5, las=0)
+  dev.off()
   
   # PCA
   cat("Performing PCA of raw data...\n")
   rawPCA = prcomp(mypms)
-  plot(rawPCA$rotation[,1],rawPCA$rotation[,2],col=color[1:length(celFiles)],pch=15,
+  png("../QC_reporting/rawPCA.png",width=800,height = 800)
+  plot(rawPCA$rotation[,1],rawPCA$rotation[,2],col=color[1:length(celFiles)],pch=16,
        xlab = paste("PC1, ",round(summary(rawPCA)$importance["Proportion of Variance",1]*100,digits = 1),"% of variance",sep=""),
        ylab = paste("PC2, ",round(summary(rawPCA)$importance["Proportion of Variance",2]*100,digits = 1),"% of variance",sep=""),
        main="PCA of raw data"
   )
-  text(rawPCA$rotation[,1],rawPCA$rotation[,2],labels = sampNames, cex = 0.7,pos = 3)
-  outPlts[[cntPlts]] <- recordPlot()
-  cntPlts = cntPlts + 1
-  graphics.off()
+  text(rawPCA$rotation[,1],rawPCA$rotation[,2],labels = sampNames, cex = 1,pos = 3)
+  dev.off()
   
   if(NUSEplot == T){
     #NUSE plot
     cat("Fitting probe-level model and generating NUSE plot...\n")
+    png("../QC_reporting/NUSE.png",width=800,height = 600)
     if(st == T){
       Pset = fitProbeLevelModel(raw)
       NUSE(Pset, col = color[1:length(sampNames)], las=2)
@@ -162,9 +150,7 @@ if(QCout == T){
     }
     title(main="NUSE plot of microarray experiments")
     abline(h=1.1,lty=1,col="red")
-    outPlts[[cntPlts]] <- recordPlot()
-    cntPlts = cntPlts + 1
-    graphics.off()
+    dev.off()
   }
 }
 
@@ -186,7 +172,7 @@ if(norm=='rma'){
 outFH = opt$outFile
 if(opt$outputData == TRUE){
   if(opt$outType == "R"){
-    save(eset,file=outFH)
+    save(eset,file=paste(outFH,".rda",sep=""))
   }else if(opt$outType == "txt"){
     write.exprs(eset,file=paste(outFH,".txt",sep=""),sep="\t")
   }else{
@@ -196,7 +182,8 @@ if(opt$outputData == TRUE){
 
 if(QCout == T){
   cat("Post normalization QC steps...\n")
-  # Post-normalization QC step
+  # Post-normalization QC
+  png("../QC_reporting/normDensityDistributions.png",width=800,height=800 )
   ylims = c(0,.8)
   xlims = c(0,16)
   normVals = exprs(eset)
@@ -210,12 +197,11 @@ if(QCout == T){
     }
   }
   legend(13,0.8,col=color[1:length(celFiles)],legend=sampNames
-         ,pch=15,bty = "n",cex = 0.8,pt.cex = 0.8,y.intersp = 0.6)
-  outPlts[[cntPlts]] <- recordPlot()
-  cntPlts = cntPlts + 1
-  graphics.off()
+         ,pch=15,bty = "n",cex = 0.9,pt.cex = 0.8,y.intersp = 0.8)
+  dev.off()
   
   # Boxplots
+  png("../QC_reporting/normBoxplot.png",width=800,height = 400)
   par(mar=c(7,5,1,1))
   if(st == T){
     boxplot(normVals,las=2,outline=FALSE,col=color[1:length(celFiles)],main="Normalized intensities",transfo='identity',names=sampNames)
@@ -224,35 +210,25 @@ if(QCout == T){
     boxplot(normVals,las=2,outline=FALSE,col=color[1:length(celFiles)],main="Normalized intensities",names=sampNames)
     mtext(text="log2 Intensity", side=2, line=2.5, las=0)
   }
-  outPlts[[cntPlts]] <- recordPlot()
-  cntPlts = cntPlts + 1
-  graphics.off()
+  dev.off()
   
   #MA plot
   cat("Generating MA plots from the normalized data...\n")
-  nblines=length(celFiles)%/%3 + as.numeric((length(celFiles)%%3)!=0) 
+  nblines=length(celFiles)%/%3 + as.numeric((length(celFiles)%%3)!=0)
+  png("../QC_reporting/normPlotMA.png",width=800, height = 300*nblines )
   par(mfrow=c(nblines,3))
   MAplot(eset)
-  outPlts[[cntPlts]] <- recordPlot()
-  cntPlts = cntPlts + 1
-  graphics.off()
+  dev.off()
   
   # PCA
   cat("Performing PCA of normalized data...\n")
   normPCA = prcomp(normVals)
-  plot(normPCA$rotation[,1],normPCA$rotation[,2],col=color[1:length(celFiles)],pch=15,
+  png("../QC_reporting/normPCA.png",width=800,height = 800)
+  plot(normPCA$rotation[,1],normPCA$rotation[,2],col=color[1:length(celFiles)],pch=16,
        xlab = paste("PC1, ",round(summary(normPCA)$importance["Proportion of Variance",1]*100,digits = 1),"% of variance",sep=""),
        ylab = paste("PC2, ",round(summary(normPCA)$importance["Proportion of Variance",2]*100,digits = 1),"% of variance",sep=""),
        main="PCA of normalized data"
   )
-  text(normPCA$rotation[,1],normPCA$rotation[,2],labels = sampNames, cex = 0.7,pos = 3)
-  outPlts[[cntPlts]] <- recordPlot()
-  cntPlts = cntPlts + 1
-  graphics.off()
-  
-  pdf("qc_plots.pdf",onefile = T)
-  for (myPlt in outPlts){
-    replayPlot(myPlt)
-  }
+  text(normPCA$rotation[,1],normPCA$rotation[,2],labels = sampNames, cex = 1,pos = 3)
   dev.off()
 }
