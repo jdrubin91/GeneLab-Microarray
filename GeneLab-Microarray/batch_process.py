@@ -34,12 +34,41 @@ def run(batch_file):
                 rawdata_dir = os.path.join(parent_dir,GLDS,'microarray')
                 if os.path.isdir(rawdata_dir):
                     rawdata_process.copy(rawdata_dir)
+                    rawdata_process.rename(os.path.join(congif.outdir,GLDS))
                 else:
                     print "microarray directory within " + GLDS + " not found, skipping..."
                     copy, chip, qc, norm, norm_qc = ['Skipped' for j in range(5)]
                     batch_list[i] = [GLDS, copy, chip, qc, norm, norm_qc]
 
+
+                #Rename rawdata files according to Analysis Wworking Group specifications
+                rawda
+
                 batch_list[i][1] = 'True'
+                update_batch(parent_dir,header,batch_file,batch_list)
+                print "done"
+
+            if chip == 'False':
+                print "Detecting array type for ",GLDS,"..."
+                batch_list[i][2] = 'True'
+                update_batch(parent_dir,header,batch_file,batch_list)
+                print "done"
+
+            if qc == 'False':
+                print "Performing initial QC for ",GLDS,"..."
+                batch_list[i][3] = 'True'
+                update_batch(parent_dir,header,batch_file,batch_list)
+                print "done"
+
+            if norm == 'False':
+                print "Normalizing data for ",GLDS,"..."
+                batch_list[i][4] = 'True'
+                update_batch(parent_dir,header,batch_file,batch_list)
+                print "done"
+
+            if norm_qc == 'False':
+                print "Performing QC on normalized data for ",GLDS,"..."
+                batch_list[i][5] = 'True'
                 update_batch(parent_dir,header,batch_file,batch_list)
                 print "done"
 

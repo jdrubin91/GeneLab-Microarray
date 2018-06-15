@@ -36,15 +36,14 @@ def run():
 
 
     #Write full paths to locations to a config.py file to be used by other scripts in this package
-    outfile = open(os.path.join(srcdir,'config.py'),'w')
-    outfile.write('indir = "' + indir + '"\n')
-    outfile.write('outdir = "' + outdir + '"\n')
-    outfile.write('srcdir = "' + srcdir + '"\n')
-    outfile.write('tempdir = "' + tempdir + '"\n')
-    outfile.write('R_dir = "' + R_dir + '"\n')
-    outfile.write('chip = "' + chip + '"\n')
-    outfile.write('batch = "' + str(batch) + '"\n')
-    outfile.close()
+    with open(os.path.join(srcdir,'config.py'),'w') as outfile:
+        outfile.write('indir = "' + indir + '"\n')
+        outfile.write('outdir = "' + outdir + '"\n')
+        outfile.write('srcdir = "' + srcdir + '"\n')
+        outfile.write('tempdir = "' + tempdir + '"\n')
+        outfile.write('R_dir = "' + R_dir + '"\n')
+        outfile.write('chip = "' + chip + '"\n')
+        outfile.write('batch = "' + str(batch) + '"\n')
 
 
     #Either run batch module or just run the processing steps on a single dataset
