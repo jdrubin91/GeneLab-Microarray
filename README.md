@@ -43,8 +43,9 @@ If `-b,--batch` option is desired. In addition to calling the flag, users must s
 
 The rest of the file is a tab delimited txt file with 6 columns:
 
-```python
-GLDS#\tCopied\tChip\t1.QC/QA\t2.Normalization\t3.Normalized_QC/QA
+```
+GLDS#     Copied    Chip      1.QC/QA     2.Normalization     3.Normalized_QC/QA
+GLDS-4    False     False     False       False               False
 ```
 
-The first column is the name of a folder within the specified Directory. All subsequent columns are booleans (True or False) and are used to keep track of the progress of processing the desired data in batch. GeneLab-Microarray will overwrite the specified batch.txt file changing booleans to True or Skipped when the specific step is finished.
+The first column is the name of a folder within the specified Directory. All subsequent columns are booleans (True or False) and are used to keep track of the progress of processing the desired data in batch. GeneLab-Microarray will overwrite the specified batch.txt file changing booleans to True or Skipped when the specific step is finished. An example of a batch.txt file can be found within the `batch/` folder
