@@ -51,7 +51,7 @@ def rename(GLDS_path):
     metadata_out = os.path.join(GLDS_path,'metadata')
     rawdata_out = os.path.join(GLDS_path,'microarray')
     assay_dict = metadata_process.read_assay(metadata_out)
-    GLDS = os.path.dirname(GLDS_path)
+    GLDS = os.path.basename(GLDS_path)
     for key in assay_dict:
         for filename in os.listdir(rawdata_out):
             if key in filename:
