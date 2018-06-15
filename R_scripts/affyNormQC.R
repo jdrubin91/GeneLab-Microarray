@@ -14,6 +14,10 @@ option_list=list(
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 
+norm = opt$normalization
+QCout = opt$QCoutput
+NUSEplot = opt$NUSEplot
+
 if(is.null(opt$input)){
   print_help(opt_parser)
   stop("Input required!", call.=FALSE)
@@ -48,24 +52,26 @@ tryCatch({raw = ReadAffy()}, error=function(e){
   stop("No .CEL files detected in the current directory", call. = F)
   })
 
-if (grepl("-st-",raw@cdfName)){
+if (grepl("-st-",raw@cdfName,ignore.case = T)){
   detach_package(affy)
   rm(raw)
   require(oligo)
-  #raw = oligo ReadAffy(celFiles)
+  raw = read.celfiles(celFiles)
+  st = T
 }else{
   require(affyPLM)
+  st = F
 }
 #require(oligo)
 
 
 ## Raw QC
-if(opt$QCoutput == T){
+if(QCout == T){
   # Prepare plotting options
   toMatch = c(8,183,31,45,51,100,101,118,128,139,147,183,254,421,467,477,
               483,493,498,503,508,535,552,575,635,655)
   color = grDevices::colors()[rep(toMatch,3)] # Create a library of colors for plotting
-  if (opt$NUSEplot == T){
+  if (NUSEplot == T){
     numPlts = 10
   }else{
     numPlts = 9
@@ -80,12 +86,17 @@ if(opt$QCoutput == T){
   image(raw)
   outPlts[[cntPlts]] <- recordPlot()
   cntPlts = cntPlts + 1
-  
-  #MA plot
+  graphics.off()
+
+    #MA plot
   cat("Generating raw data MA plots...\n")
   nblines=length(celFiles)%/%3 + as.numeric((length(celFiles)%%3)!=0) 
   par(mfrow=c(nblines,3))
-  MAplot(raw,type="pm")
+  if(st == T){
+    MAplot(raw)
+  }else{
+    MAplot(raw,type="pm")
+  }
   outPlts[[cntPlts]] <- recordPlot()
   cntPlts = cntPlts + 1
   graphics.off()
@@ -114,7 +125,14 @@ if(opt$QCoutput == T){
   
   # Boxplots
   par(mar=c(7,5,1,1))
-  boxplot(raw,las=2,outline=FALSE,col=color[1:length(celFiles)],main="Raw intensities",names=sampNames)
+  if(st == T){
+    boxplot(oligo::rma(raw, background=FALSE, normalize=FALSE, subset=NULL, target="core"), las=2,
+            names = sampNames, main="Raw intensities",col=color[1:length(celFiles)])
+    mtext(text="log2 Intensity", side=2, line=2.5, las=0) 
+  }else{
+    boxplot(raw,las=2,outline=FALSE,col=color[1:length(celFiles)],main="Raw intensities",names=sampNames)
+    mtext(text="log2 Intensity", side=2, line=2.5, las=0)
+  }
   outPlts[[cntPlts]] <- recordPlot()
   cntPlts = cntPlts + 1
   graphics.off()
@@ -132,11 +150,16 @@ if(opt$QCoutput == T){
   cntPlts = cntPlts + 1
   graphics.off()
   
-  if(opt$NUSEplot == T){
+  if(NUSEplot == T){
     #NUSE plot
     cat("Fitting probe-level model and generating NUSE plot...\n")
-    Pset=fitPLM(raw)
-    NUSE(Pset,col = color[1:length(sampNames)])
+    if(st == T){
+      Pset = fitProbeLevelModel(raw)
+      NUSE(Pset, col = color[1:length(sampNames)], las=2)
+    }else{
+      Pset=fitPLM(raw)
+      NUSE(Pset,col = color[1:length(sampNames)], las=2)
+    }
     title(main="NUSE plot of microarray experiments")
     abline(h=1.1,lty=1,col="red")
     outPlts[[cntPlts]] <- recordPlot()
@@ -145,8 +168,9 @@ if(opt$QCoutput == T){
   }
 }
 
-norm = opt$normalization
+
 ## Normalize
+cat("Normalizing with selected normalization technique...\n")
 if(norm=='rma'){
   eset = rma(raw)
 }else if(norm=='quantile'){
@@ -156,7 +180,7 @@ if(norm=='rma'){
 }else if(norm=='log2'){
   eset = rma(raw, background = F, normalize = F)
 }else{
-  stop("Normalization did not occur, please examine inputs and default values",call. = F)
+  stop("Normalization did not occur, please examine script inputs and default values",call. = F)
 }
 
 outFH = opt$outFile
@@ -170,7 +194,8 @@ if(opt$outputData == TRUE){
   }
 }
 
-if(opt$QCoutput == T){
+if(QCout == T){
+  cat("Post normalization QC steps...\n")
   # Post-normalization QC step
   ylims = c(0,.8)
   xlims = c(0,16)
@@ -183,7 +208,6 @@ if(opt$QCoutput == T){
       plot(density(normVals[,i]),ylim = ylims,xlim=xlims,axes=T,xlab='',main='',col=color[i])
       par(new=T)
     }
-    print(i)
   }
   legend(13,0.8,col=color[1:length(celFiles)],legend=sampNames
          ,pch=15,bty = "n",cex = 0.8,pt.cex = 0.8,y.intersp = 0.6)
@@ -193,7 +217,13 @@ if(opt$QCoutput == T){
   
   # Boxplots
   par(mar=c(7,5,1,1))
-  boxplot(normVals,las=2,outline=FALSE,col=color[1:length(celFiles)],main="Normalized intensities",names=sampNames)
+  if(st == T){
+    boxplot(normVals,las=2,outline=FALSE,col=color[1:length(celFiles)],main="Normalized intensities",transfo='identity',names=sampNames)
+    mtext(text="log2 Intensity", side=2, line=2.5, las=0) 
+  }else{
+    boxplot(normVals,las=2,outline=FALSE,col=color[1:length(celFiles)],main="Normalized intensities",names=sampNames)
+    mtext(text="log2 Intensity", side=2, line=2.5, las=0)
+  }
   outPlts[[cntPlts]] <- recordPlot()
   cntPlts = cntPlts + 1
   graphics.off()
@@ -203,6 +233,9 @@ if(opt$QCoutput == T){
   nblines=length(celFiles)%/%3 + as.numeric((length(celFiles)%%3)!=0) 
   par(mfrow=c(nblines,3))
   MAplot(eset)
+  outPlts[[cntPlts]] <- recordPlot()
+  cntPlts = cntPlts + 1
+  graphics.off()
   
   # PCA
   cat("Performing PCA of normalized data...\n")
