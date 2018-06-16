@@ -3,7 +3,7 @@
 # install.packages("optparse")
 # source("http://bioconductor.org/biocLite.R")
 # biocLite("affy")
-# more 
+# biocLite("affyPLM")
 # biocLite("oligo")
 
 suppressPackageStartupMessages(library("optparse"))
