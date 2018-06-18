@@ -63,7 +63,7 @@ def qc_and_normalize(rawdata_out):
     try:
         os.chdir(rawdata_out)
         R_script = os.path.join(config.R_dir,'affyNormQC.R')
-        R_command = "Rscript " + R_script + " --normalization rma --outFile=exprsValues --outType=both --outputData=TRUE --QCoutput=TRUE --NUSEplot=FALSE"
+        R_command = "Rscript " + R_script + " --normalization rma --outFile=exprsValues --outType=both --outputData=TRUE --QCoutput=TRUE --NUSEplot=TRUE"
         os.system(R_command)
     except OSError:
         print "Error: Microarray raw data directory missing. Exiting..."
