@@ -31,7 +31,6 @@ def clean(metadata_directory):
 
             #Copy the last modified metadata
             rsync_command = "rsync -r " + metadata_zip + " " + metadata_out
-            print rsync_command
             #Unzip it into the metadata_out directory
             unzip_command = "unzip -o -qq " + os.path.join(metadata_out,os.path.basename(metadata_zip)) + " -d " + metadata_out
             #Remove the .zip compressed file to avoid confusion and save space
