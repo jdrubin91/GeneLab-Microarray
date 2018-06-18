@@ -44,7 +44,7 @@ def run(batch_file):
                 print "done"
 
             if norm_qc == 'False':
-                print "Performing QC on normalized data for " + GLDS + "..."
+                print "Performing QC, normalization, and post-normalization QC on data for " + GLDS + "..."
                 rawdata_out = os.path.join(config.outdir,GLDS,'microarray')
                 rawdata_process.qc_and_normalize(rawdata_out)
                 batch_list[i][2] = 'True'
