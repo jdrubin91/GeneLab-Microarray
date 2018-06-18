@@ -30,14 +30,14 @@ def clean(metadata_directory):
             metadata_zip = os.path.join(metadata_directory,os.path.basename(path))
 
             #Copy the last modified metadata
-            rsync_command = "rsync -r " + metadata_zip + " " + metadata_out
+            cp_command = "cp -r " + metadata_zip + " " + metadata_out
             #Unzip it into the metadata_out directory
             unzip_command = "unzip -o -qq " + os.path.join(metadata_out,os.path.basename(metadata_zip)) + " -d " + metadata_out
             #Remove the .zip compressed file to avoid confusion and save space
             remove_zip_command = "rm " + os.path.join(metadata_out,os.path.basename(metadata_zip))
 
             #Execute commands
-            os.system(rsync_command)
+            os.system(cp_command)
             os.system(unzip_command)
             os.system(remove_zip_command)
 

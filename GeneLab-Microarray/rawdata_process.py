@@ -14,8 +14,8 @@ def copy(rawdata_directory):
     for file1 in os.listdir(rawdata_directory):
         if 'raw' in file1 or 'RAW' in file1 or 'Raw' in file1 or 'CEL' in file1 or not 'processed' in file1:
             out_file_path = os.path.join(rawdata_out,file1)
-            rsync_command = "rsync " + os.path.join(rawdata_directory,file1) + " " + out_file_path
-            os.system(rsync_command)
+            cp_command = "cp " + os.path.join(rawdata_directory,file1) + " " + out_file_path
+            os.system(cp_command)
             if '.zip' in file1:
                 unzip_command = "unzip -o -qq " + out_file_path + " -d " + rawdata_out
                 os.system(unzip_command)
@@ -63,7 +63,7 @@ def qc_and_normalize(rawdata_out):
     try:
         os.chdir(rawdata_out)
         R_script = os.path.join(config.R_dir,'affyNormQC.R')
-        R_command = "Rscript " + R_script + " --normalization rma --outFile=exprsValues --outType=both --outputData=TRUE --QCoutput=TRUE --NUSEplot=TRUE"
+        R_command = "Rscript " + R_script + " --normalization rma --outFile=exprsValues --outType=both --outputData=TRUE --QCoutput=TRUE --NUSEplot=FALSE"
         os.system(R_command)
     except OSError:
         print "Error: Microarray raw data directory missing. Exiting..."
