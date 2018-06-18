@@ -8,7 +8,7 @@
 # Read options
 option_list=list(
   make_option(c("-i","--input"),type="character",help="Name of (or path to) the input file"),
-  make_option(c("-a","--annotationLibrary"),type="character",help="If you know the annotation db library, specify it here. Otherwise, this script will try and detect it")
+  make_option(c("-a","--arrayInfo"),type="character",default="arrayInfo.txt",help="Name of (or path to) a file containing the array information [Line 1: Manufacturer, line 2: Array version]")
 )
 
 opt_parser = OptionParser(option_list=option_list)
@@ -18,6 +18,18 @@ if (is.null(opt$input)){
   print_help(opt_parser)
   stop("At least one argument must be supplied (input file)", call.=FALSE)
 }
+
+# aiFH = "arrayInfo.txt"
+aiFH = opt$arrayInfo
+
+tryCatch({
+    aInf = read.delim(aiFH,header=F,stringsAsFactors = F)
+    manuf = aInf[1,1]
+    vers = aInf[2,1]
+  }, error=function(e){
+    stop("Array info file not found or organization not recognized, check options help", call. = F)
+  }
+)
 
 if (!is.null(opt$annotationLibrary)){
   aLib = opt$annotationLibrary
@@ -35,6 +47,7 @@ if (!is.null(opt$annotationLibrary)){
 # ls("package:mogene10sttranscriptcluster.db") # List of R objects in the package
 # mogene10sttranscriptcluster() # QC info
 
+# inFH = "expValues.txt"
 inFH = opt$input
 if(grepl(".rda",inFH) == T){
   eset = load(inFH)
@@ -48,11 +61,14 @@ if(grepl(".rda",inFH) == T){
 
 
 # Mapping Affy transcript cluster IDs to RefSeq names from the imported library
-ID = featureNames(eset) # Pulls out the AffyIDs
-mapFun = function(id){ # Function to match the primary RefSeq ID for a given AffyID and return NA in all other cases
-  return(tryCatch(get(id, env=mogene10sttranscriptclusterREFSEQ)[1], error=function(e) NA))
+mapFun = function(id,environ){ # Function to match the primary RefSeq ID for a given AffyID and return NA in all other cases
+  return(tryCatch(get(id, env=eviron)[1], error=function(e) NA))
 }
-RefSeq = lapply(ID,FUN = mapFun) # Applying mapFun to all AffyIDs
+
+ID = featureNames(eset) # Pulls out the AffyIDs
+ID = rownames(eset)
+
+RefSeq = lapply(ID,FUN = mapFun, environ=mogene10sttranscriptclusterREFSEQ) # Applying mapFun to all AffyIDs
 
 # Replace AffyIDs with RefSeq IDs, drop probes w/o RefSeq IDs?
 normVals = exprs(eset)
