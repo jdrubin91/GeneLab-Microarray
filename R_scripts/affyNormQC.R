@@ -14,6 +14,7 @@ option_list=list(
   make_option(c("-o","--outFile"),type="character",default="expValues",help="Name of the output file [without extension!] (default: expValues)"),
   make_option(c("-t","--outType"),type="character",default="both",help="Format of output data: R (Rdata eset object), txt (tab delimited file with identifiers and sample names), both (default)"),
   make_option("--outputData",type="logical",default=TRUE,help="Output data at all (default TRUE)"),
+  make_option(c("-a","--arrayInfoOnly"),type="logical",default=FALSE,help="Detect-affy-array-only mode. If true, script will exit after outputting the arrayInfo file. (Default: FALSE)"),
   make_option("--QCoutput",type="logical",default=TRUE,help="Output QC_reporting directory of QC plots (default = TRUE)"),
   make_option("--NUSEplot",type="logical",default=FALSE,help="Include a NUSE plot in the QC output, adds significantly to runtime (default = FALSE)")
 )
@@ -52,6 +53,9 @@ tryCatch({raw = ReadAffy()}, error=function(e){
 # Output array information to a separate file
 write.table(c("Affymetrix",as.character(raw@cdfName)),file = "arrayInfo.txt",quote = F,
             col.names = F, row.names = F)
+
+# Exit script if arrayInfoOnly mode is True
+if(opt$arrayInfoOnly == TRUE) stop("Detect-affy-array-only mode is on, exiting...", call. = F)
 
 if (grepl("-st-",raw@cdfName,ignore.case = T)){
   detach_package(affy)
@@ -187,23 +191,23 @@ if(QCout == T){
   }
 }
 
-
-## Normalize
-cat("\nNormalizing with selected normalization technique...\n")
-if(norm=='rma'){
-  eset = rma(raw)
-}else if(norm=='quantile'){
-  eset = rma(raw, background = F, normalize = T)
-}else if(norm=='background'){
-  eset = rma(raw, background = T, normalize = F)
-}else if(norm=='log2'){
-  eset = rma(raw, background = F, normalize = F)
-}else{
-  stop("Normalization did not occur, please examine script inputs and default values",call. = F)
-}
-
 outFH = opt$outFile
 if(opt$outputData == TRUE){
+  
+  ## Normalize
+  cat("\nNormalizing with selected normalization technique...\n")
+  if(norm=='rma'){
+    eset = rma(raw)
+  }else if(norm=='quantile'){
+    eset = rma(raw, background = F, normalize = T)
+  }else if(norm=='background'){
+    eset = rma(raw, background = T, normalize = F)
+  }else if(norm=='log2'){
+    eset = rma(raw, background = F, normalize = F)
+  }else{
+    stop("Normalization did not occur, please examine script inputs and default values",call. = F)
+  }
+  
   if(opt$outType == "both"){
     save(eset,file=paste(outFH,".rda",sep=""))
     write.exprs(eset,file=paste(outFH,".txt",sep=""),sep="\t")
