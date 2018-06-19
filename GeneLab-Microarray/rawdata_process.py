@@ -65,6 +65,9 @@ def qc_and_normalize(rawdata_out):
         R_script = os.path.join(config.R_dir,'affyNormQC.R')
         R_command = "Rscript " + R_script + " --normalization rma --outFile=exprsValues --outType=both --outputData=TRUE --QCoutput=TRUE --NUSEplot=TRUE"
         os.system(R_command)
+        if not 'exprsValues.txt' in os.listdir(rawdata_out):
+            print "Warning: Normalized expression file missing, some processing steps may have failed"
+        os.chdir(config.srcdir)
     except OSError:
         print "Error: Microarray raw data directory missing. Exiting..."
         sys.exit(1)
