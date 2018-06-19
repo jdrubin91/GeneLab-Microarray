@@ -1,6 +1,7 @@
 __author__ = 'Jonathan Rubin'
 
 import plotly.plotly as py
+import plotly
 import plotly.graph_objs as go
 import os, config
 
@@ -9,7 +10,7 @@ def MA_plotly(diffExp_file):
     sig_text = list()
     non_sig = list()
     non_sig_text = list()
-    pval_cut = 0.01
+    pval_cut = 0.1
     with open(diffExp_file) as F:
         header = F.readline().strip('\n').split('\t')
         fc_index = [i for i in range(len(header)) if 'FC' in header[i]][0]+1
@@ -19,7 +20,7 @@ def MA_plotly(diffExp_file):
             linelist = line.strip('\n').split('\t')
             FC = linelist[fc_index]
             Exp = linelist[exp_index]
-            pval = linelist[p_index]
+            pval = float(linelist[p_index])
             if pval < pval_cut:
                 sig.append((Exp,FC))
                 sig_text.append(linelist[0])
@@ -67,7 +68,8 @@ def MA_plotly(diffExp_file):
         ),
     )
     fig_comp = go.Figure(data=data_comp, layout=layout_comp)
-    py.iplot(fig_comp, filename='MA-Plot')
+    plotly.offline.plot(fig_comp, filename='/Users/jonathanrubin/Google Drive/NASA/home/batch_out/GLDS-4/microarray/MA-Plot.html',
+        auto_open=False,)
 
 
 

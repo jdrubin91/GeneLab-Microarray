@@ -15,6 +15,7 @@ def copy(rawdata_directory):
         if 'raw' in file1 or 'RAW' in file1 or 'Raw' in file1 or 'CEL' in file1 or not 'processed' in file1:
             out_file_path = os.path.join(rawdata_out,file1)
             cp_command = "cp " + os.path.join(rawdata_directory,file1) + " " + out_file_path
+            print cp_command
             os.system(cp_command)
             if '.zip' in file1:
                 unzip_command = "unzip -o -qq " + out_file_path + " -d " + rawdata_out
@@ -56,7 +57,7 @@ def rename(GLDS_path):
         for filename in os.listdir(rawdata_out):
             if key in filename:
                 extension = filename.split('.')[-1]
-                move_command = "mv " + os.path.join(rawdata_out,filename) + " " + os.path.join(rawdata_out,GLDS+'_microarray_'+key+'.'+extension)
+                move_command = "mv '" + os.path.join(rawdata_out,filename) + "' " + os.path.join(rawdata_out,GLDS+'_microarray_'+key+'.'+extension)
                 os.system(move_command)
 
 def qc_and_normalize(rawdata_out):
