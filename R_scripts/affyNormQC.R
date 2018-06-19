@@ -16,7 +16,8 @@ option_list=list(
   make_option("--outputData",type="logical",default=TRUE,help="Output data at all (default TRUE)"),
   make_option(c("-a","--arrayInfoOnly"),type="logical",default=FALSE,help="Detect-affy-array-only mode. If true, script will exit after outputting the arrayInfo file. (Default: FALSE)"),
   make_option("--QCoutput",type="logical",default=TRUE,help="Output QC_reporting directory of QC plots (default = TRUE)"),
-  make_option("--NUSEplot",type="logical",default=FALSE,help="Include a NUSE plot in the QC output, adds significantly to runtime (default = FALSE)")
+  make_option("--NUSEplot",type="logical",default=FALSE,help="Include a NUSE plot in the QC output, adds significantly to runtime (default = FALSE)"),
+  make_option("--GLDS",type="character",help="GLDS accession number for plot outputs (ie '21' for GLDS-21)")
 )
 
 opt_parser = OptionParser(option_list=option_list)
@@ -25,6 +26,14 @@ opt = parse_args(opt_parser)
 norm = opt$normalization
 QCout = opt$QCoutput
 NUSEplot = opt$NUSEplot
+
+if (is.null(opt$GLDS)){ # Include GLDS accession number in outputs if provided
+  print_help(opt_parser)
+  glAn = ''
+  cat("Warning: No GLDS accession number provided")
+}else{
+  glAn = paste('GLDS-',opt$GLDS,sep='')
+}
 
 detach_package = function(pkg, character.only = FALSE){
   if(!character.only)
@@ -51,7 +60,7 @@ tryCatch({raw = ReadAffy()}, error=function(e){
   })
 
 # Output array information to a separate file
-write.table(c("Affymetrix",as.character(raw@cdfName)),file = "arrayInfo.txt",quote = F,
+write.table(c("Affymetrix",as.character(raw@cdfName)),file = paste(glAn,"_arrayInfo.txt",sep=""),quote = F,
             col.names = F, row.names = F)
 
 # Exit script if arrayInfoOnly mode is True

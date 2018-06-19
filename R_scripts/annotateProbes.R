@@ -11,7 +11,7 @@ suppressPackageStartupMessages(library("genefilter"))
 # Read options
 option_list=list(
   make_option(c("-i","--input"),type="character",help="Name of (or path to) the input file (\t delimited .txt file)"),
-  make_option(c("-a","--arrayInfo"),type="character",default="arrayInfo.txt",help="Name of (or path to) a file containing the array information [Line 1: Manufacturer, line 2: Array version]"),
+  make_option(c("-a","--arrayInfo"),type="character",default="*_arrayInfo.txt",help="Name of (or path to) a file containing the array information [Line 1: Manufacturer, line 2: Array version]"),
   make_option(c("-o","--output"),type="character",default="annotExpValues.txt",help="Name of (or path to) file to write results to (default: annotExpValues.txt)"),
   make_option(c("-q","--QCoutput"),type="logical",default=TRUE,help="Output QC_reporting directory of QC plots (default = TRUE)"),
   make_option("--GLDS",type="character",help="GLDS accession number for plot outputs (ie '21' for GLDS-21)")
