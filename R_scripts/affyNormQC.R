@@ -11,7 +11,7 @@ suppressPackageStartupMessages(library("optparse"))
 # Read options
 option_list=list(
   make_option(c("-n","--normalization"),type="character",default="rma",help="Normalization method [rma (default, full rma), quantile (no background correction), background (no quant. normalization), log2 (no quant. norm. or background correction)"),
-  make_option(c("-o","--outFile"),type="character",default="expValues",help="Name of the output file [without extension!] (default: expValues"),
+  make_option(c("-o","--outFile"),type="character",default="expValues",help="Name of the output file [without extension!] (default: expValues)"),
   make_option(c("-t","--outType"),type="character",default="both",help="Format of output data: R (Rdata eset object), txt (tab delimited file with identifiers and sample names), both (default)"),
   make_option("--outputData",type="logical",default=TRUE,help="Output data at all (default TRUE)"),
   make_option("--QCoutput",type="logical",default=TRUE,help="Output QC_reporting directory of QC plots (default = TRUE)"),
@@ -49,6 +49,7 @@ tryCatch({raw = ReadAffy()}, error=function(e){
   stop("No .CEL files detected in the current directory", call. = F)
   })
 
+# Output array information to a separate file
 write.table(c("Affymetrix",as.character(raw@cdfName)),file = "arrayInfo.txt",quote = F,
             col.names = F, row.names = F)
 
@@ -67,6 +68,7 @@ if (grepl("-st-",raw@cdfName,ignore.case = T)){
 
 ## Raw QC
 if(QCout == T){
+  cat("Performing intial QC")
   # Prepare plotting options
   toMatch = c(8,183,31,45,51,100,101,118,128,139,147,183,254,421,467,477,
               483,493,498,503,508,535,552,575,635,655)
@@ -74,7 +76,7 @@ if(QCout == T){
   if(!file.exists('./QC_reporting/')) dir.create('./QC_reporting/')
   
   #Images
-  cat("Generating raw images")
+  cat("\tGenerating raw images")
   if(st == T){
     for(i in 1:length(celFiles)){
       png(paste('./QC_reporting/image_',sampNames[i],'.png',sep=''),width=800, height = 800)
@@ -92,7 +94,7 @@ if(QCout == T){
   cat("\n")
 
   #MA plot
-  cat("Generating raw data MA plots...\n")
+  cat("\tGenerating raw data MA plots...\n")
   nblines=length(celFiles)%/%3 + as.numeric((length(celFiles)%%3)!=0)
   png("./QC_reporting/rawPlotMA.png",width=800, height = 300*nblines )
   par(mfrow=c(nblines,3))
@@ -104,7 +106,7 @@ if(QCout == T){
   dev.off()
   
   # Intensity distributions of the pm probes from each microarray on the same graph
-  cat("Generating initial distribution plots")
+  cat("\tGenerating initial distribution plots")
   mypms = pm(raw)
   png("./QC_reporting/rawDensityDistributions.png",width=800,height=800 )
   ylims = c(0,.8)
@@ -121,15 +123,15 @@ if(QCout == T){
   }
   legend(13,0.8,col=color[1:length(celFiles)],legend=sampNames
          ,pch=15,bty = "n",cex = 0.9,pt.cex = 0.8,y.intersp = 0.8)
-  cat("\n")
   dev.off()
+  cat("\n")
   
   # Boxplots
   png("./QC_reporting/rawBoxplot.png",width=800,height = 400)
   par(mar=c(7,5,1,1))
   if(st == T){
     boxplot(oligo::rma(raw, background=FALSE, normalize=FALSE, subset=NULL, target="core"), las=2,
-            names = sampNames, main="Raw intensities",col=color[1:length(celFiles)])
+            names = sampNames, main="Raw intensities",col=color[1:length(celFiles)]);
   }else{
     boxplot(raw,las=2,outline=FALSE,col=color[1:length(celFiles)],main="Raw intensities",names=sampNames)
   }
@@ -137,7 +139,7 @@ if(QCout == T){
   dev.off()
   
   # PCA
-  cat("Performing PCA of raw data...\n")
+  cat("\tPerforming PCA of raw data...\n")
   rawPCA = prcomp(mypms)
   png("./QC_reporting/rawPCA.png",width=800,height = 800)
   plot(rawPCA$rotation[,1],rawPCA$rotation[,2],col=color[1:length(celFiles)],pch=16,
@@ -148,9 +150,9 @@ if(QCout == T){
   text(rawPCA$rotation[,1],rawPCA$rotation[,2],labels = sampNames, cex = 1,pos = 3)
   dev.off()
   
+  #NUSE plot
   if(NUSEplot == T){
-    #NUSE plot
-    cat("Fitting probe-level model and generating NUSE plot...\n")
+    cat("\tFitting probe-level model and generating NUSE plot...\n")
     png("./QC_reporting/NUSE.png",width=800,height = 600)
     if(st == T){
       Pset = fitProbeLevelModel(raw)
@@ -167,7 +169,7 @@ if(QCout == T){
 
 
 ## Normalize
-cat("Normalizing with selected normalization technique...\n")
+cat("\nNormalizing with selected normalization technique...\n")
 if(norm=='rma'){
   eset = rma(raw)
 }else if(norm=='quantile'){
@@ -227,7 +229,7 @@ if(QCout == T){
   dev.off()
   
   #MA plot
-  cat("Generating MA plots from the normalized data...\n")
+  cat("\tGenerating MA plots from the normalized data...\n")
   nblines=length(celFiles)%/%3 + as.numeric((length(celFiles)%%3)!=0)
   png("./QC_reporting/normPlotMA.png",width=800, height = 300*nblines )
   par(mfrow=c(nblines,3))
@@ -235,7 +237,7 @@ if(QCout == T){
   dev.off()
   
   # PCA
-  cat("Performing PCA of normalized data...\n")
+  cat("\tPerforming PCA of normalized data...\n")
   normPCA = prcomp(normVals)
   png("./QC_reporting/normPCA.png",width=800,height = 800)
   plot(normPCA$rotation[,1],normPCA$rotation[,2],col=color[1:length(celFiles)],pch=16,
