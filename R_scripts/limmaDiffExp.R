@@ -44,7 +44,8 @@ contrast.matrix <- makeContrasts(flight-ground,levels=design)
 fit2 <- contrasts.fit(fit, contrast.matrix)
 fit2 <- eBayes(fit2)
 
-#Here we write the results to a tab delimited text file that is ordered by adjuste p-value
+#Here we write the results to a tab delimited text file that is ordered by adjusted p-value
+#coef refers to which column is of interest (1 is log2FC), adjust refers to multiple hypothesis testing method ("BH" = Benjamini & Hochberg)
 table <- data.frame(topTable(fit2, coef=1, n=Inf, adjust="BH"))
 results <- decideTests(fit2)
 write.table(table,file="~/Google\ Drive/NASA/home/batch_out/GLDS-4/microarray/diffExpression.txt",sep="\t")
