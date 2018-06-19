@@ -25,7 +25,7 @@ norm = opt$normalization
 QCout = opt$QCoutput
 NUSEplot = opt$NUSEplot
 
-detach_package <- function(pkg, character.only = FALSE){
+detach_package = function(pkg, character.only = FALSE){
   if(!character.only)
   {
     pkg <- deparse(substitute(pkg))
@@ -63,8 +63,6 @@ if (grepl("-st-",raw@cdfName,ignore.case = T)){
   suppressPackageStartupMessages(require(affyPLM))
   st = F
 }
-#require(oligo)
-
 
 ## Raw QC
 if(QCout == T){
@@ -152,18 +150,40 @@ if(QCout == T){
   
   #NUSE plot
   if(NUSEplot == T){
-    cat("\tFitting probe-level model and generating NUSE plot...\n")
-    png("./QC_reporting/NUSE.png",width=800,height = 600)
+    cat("\tFitting probe-level model and generating RLE/NUSE plots...\n")
     if(st == T){
       Pset = fitProbeLevelModel(raw)
+      # RLE plot
+      png("./QC_reporting/RLE.png",width=800,height = 600)
+      par(mar=c(7,5,1,1))
+      RLE(Pset, col = color[1:length(sampNames)],
+          names = sampNames, las=2, main="Relative Log Expression (RLE) plot")
+      abline(h=0,lty=1,col="red")
+      dev.off()
+      # NUSE plot
+      png("./QC_reporting/NUSE.png",width=800,height = 600)
+      par(mar=c(7,5,1,1))
       NUSE(Pset, col = color[1:length(sampNames)], las=2)
+      title(main="NUSE plot of microarray experiments")
+      abline(h=1.1,lty=1,col="red")
+      dev.off()
     }else{
       Pset=fitPLM(raw)
+      # RLE plot
+      png("./QC_reporting/RLE.png",width=800,height = 600)
+      par(mar=c(7,5,1,1))
+      RLE(Pset, col = color[1:length(sampNames)],
+          names = sampNames, las=2, main="Relative Log Expression (RLE) plot")
+      abline(h=0,lty=1,col="red")
+      dev.off()
+      # NUSE plot
+      png("./QC_reporting/NUSE.png",width=800,height = 600)
+      par(mar=c(7,5,1,1))
       NUSE(Pset,col = color[1:length(sampNames)], las=2)
+      title(main="NUSE plot of microarray experiments")
+      abline(h=1.1,lty=1,col="red")
+      dev.off()
     }
-    title(main="NUSE plot of microarray experiments")
-    abline(h=1.1,lty=1,col="red")
-    dev.off()
   }
 }
 
