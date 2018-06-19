@@ -1,7 +1,6 @@
 #!/usr/bin/env Rscript
 
 # install.packages("optparse")
-# install.packages("hash")
 # source("http://bioconductor.org/biocLite.R")
 # biocLite("genefilter")
 # biocLite("mogene10sttranscriptcluster.db")
@@ -11,10 +10,11 @@ suppressPackageStartupMessages(library("genefilter"))
 
 # Read options
 option_list=list(
-  make_option(c("-i","--input"),type="character",help="Name of (or path to) the input file"),
+  make_option(c("-i","--input"),type="character",help="Name of (or path to) the input file (\t delimited .txt file)"),
   make_option(c("-a","--arrayInfo"),type="character",default="arrayInfo.txt",help="Name of (or path to) a file containing the array information [Line 1: Manufacturer, line 2: Array version]"),
   make_option(c("-o","--output"),type="character",default="annotExpValues.txt",help="Name of (or path to) file to write results to (default: annotExpValues.txt)"),
-  make_option(c("-q","--QCoutput"),type="logical",default=TRUE,help="Output QC_reporting directory of QC plots (default = TRUE)")
+  make_option(c("-q","--QCoutput"),type="logical",default=TRUE,help="Output QC_reporting directory of QC plots (default = TRUE)"),
+  make_option("--GLDS",type="character",help="GLDS accession number for plot outputs (ie '21' for GLDS-21)")
 )
 
 opt_parser = OptionParser(option_list=option_list)
@@ -43,57 +43,44 @@ arrPackages = c("mogene10sttranscriptcluster.db")
 
 # Call the appropriate annotation package
 tryCatch({
-    annotPack = arrPackages[grep(pattern = arrVer,x = arrays,ignore.case = T)]
-    suppressPackageStartupMessages(library(annotPack,character.only = T))
-    packObjs = ls(paste("package:",as.character(annotPack),sep=""))
-    annotEnv = packObjs[grepl(pattern = "REFSEQ",x = packObjs, ignore.case = T)]
+    annotPack = arrPackages[grep(pattern = arrVer,x = arrays,ignore.case = T)] # Pick out appropriate package by the array version
+    suppressPackageStartupMessages(library(annotPack,character.only = T)) # Load selected package
+    packObjs = ls(paste("package:",as.character(annotPack),sep="")) # Stores a list of all the objects in the selected package
+    annotEnv = packObjs[grepl(pattern = "REFSEQ",x = packObjs, ignore.case = T)] # Select the enivornment from the package to map probes to RefSeq IDs
   }, error=function(e){
     stop("Error: Array version wasn't not recognized or the annotation package was unable to load.\n
          Check that the appropriate packages are installed and the array version is contained in the list of known arrays", call. = F)
   }
 )
 
-
-# Double check database if running interactively
-# ls("package:mogene10sttranscriptcluster.db") # List of R objects in the package
-# mogene10sttranscriptcluster() # QC info
-
 # inFH = "expValues.txt"
 inFH = opt$input
-if(grepl(".rda",inFH) == T){
-  eset = load(file = inFH)
-}else if(grepl(".txt",inFH) == T){
-  tryCatch({
-    eset = read.delim(inFH,header=T,sep = "\t")
-    row.names(eset) = eset[,1]
-    eset[,1] = NULL
-    neset = new("ExpressionSet",exprs = as.matrix(eset))
-    neset@annotation = annotPack
-  }, error=function(e){
-    stop(".txt file was not recognized", call. = F)
-    })
-  }else{
-  stop("Plese provide a .rda or .txt input file")
-}
+tryCatch({
+  eset = read.delim(inFH,header=T,sep = "\t")
+  row.names(eset) = eset[,1]
+  eset[,1] = NULL
+  neset = new("ExpressionSet",exprs = as.matrix(eset))
+  neset@annotation = annotPack
+}, error=function(e){
+  stop("Input file was not recognized", call. = F)
+})
 
-cat("Filtering out unmapped probes...\n")
+cat("Filtering out unannotated probes...\n")
 filt = nsFilter(neset, var.filter = F,require.entrez = T,remove.dupEntrez = T)
-cat("\tUnampped probes removed:",filt[[2]]$numRemoved.ENTREZID,"\n")
-cat("\tDuplicated probes removed:",filt[[2]]$numDupsRemoved,"\n")
-print(filt[[2]])
+nDups = filt[[2]]$numDupsRemoved # Number of probes removed that map to non-unique gene IDs
 
 # Mapping probe IDs to RefSeq names from the imported library
-cat("Mapping probes IDs to RefSeq IDs...\n")
-mapFun = function(id, environ){ # Function to match the primary RefSeq ID for a given AffyID and return NA in all other cases
+mapFun = function(id, environ){ # Function to match the primary RefSeq ID for a given probe ID and return NA in all other cases
   return(tryCatch(get(id, env=environ)[1], error=function(e) NA))
 }
 
-
 filtID = featureNames(filt[[1]]) # Pulls out the probe IDs
 
-filtRefSeq = lapply(filtID,FUN = mapFun, environ= eval(parse(text=annotEnv))) # Applying mapFun to all AffyIDs
+cat("Mapping probes IDs to RefSeq IDs...\n")
+filtRefSeq = lapply(filtID,FUN = mapFun, environ= eval(parse(text=annotEnv))) # Applying mapFun to all probe IDs
 
-length(filtRefSeq)
+cat("\tDuplicated probes removed:",nDups,"\n")
+cat("\tUnampped probes removed:",nrow(eset)-sum(!is.na(filtRefSeq))-nDups,"\n")
 cat("Annotated probes remaining:",sum(!is.na(filtRefSeq)),"\n")
 if(sum(!is.na(filtRefSeq)) > length(unique(filtRefSeq[!is.na(filtRefSeq)]))){
   cat("\n\tWarning: non-unique probe to RefSeq mappings encountered \n")
@@ -114,21 +101,31 @@ if(opt$QCoutput == T){
               483,493,498,503,508,535,552,575,635,655)
   color = grDevices::colors()[rep(toMatch,3)] # Create a library of colors for plotting
   sampNames = colnames(normVals)
+  sampNames = gsub(".CEL","",sampNames)
+  if (is.null(opt$GLDS)){ # Include GLDS accession number in plot titles if provided
+    print_help(opt_parser)
+    glAn = ''
+    cat("Warning: Generating plots without accession number")
+  }else{
+    glAn = paste('GLDS-',opt$GLDS,sep='')
+  }
   if(!file.exists('./QC_reporting/')) dir.create('./QC_reporting/')
   
   # Post-normalization QC
   cat("Post annotation/filtering QC...\n")
   
   # Density distributions
-  png("./QC_reporting/filtDensityDistributions.png",width=800,height=800 )
+  png(paste("./QC_reporting/",glAn,"_microarray_filtDensityDistributions.png",sep=""),width=800,height=800 )
   ylims = c(0,.8)
   xlims = c(0,16)
   for(i in 1:ncol(normVals)){
     if(i == 1){
-      plot(density(normVals[,i]),ylim = ylims,xlim=xlims,xlab='Normalized, annotated expression values[log2]',main='Normalized expression distributions',col=color[i])
+      plot(density(normVals[,i]),ylim = ylims,xlim=xlims
+           ,xlab='Normalized, annotated expression values[log2]'
+           ,main=paste(glAn,' Normalized expression distributions',sep=''),col=color[i])
       par(new=T)
     }else{
-      plot(density(normVals[,i]),ylim = ylims,xlim=xlims,axes=T,xlab='',main='',col=color[i])
+      plot(density(normVals[,i]),ylim = ylims,xlim=xlims,axes=F,xlab='',ylab='',main='',col=color[i])
       par(new=T)
     }
   }
@@ -138,11 +135,11 @@ if(opt$QCoutput == T){
   
   # PCA plot
   filtPCA = prcomp(normVals)
-  png("./QC_reporting/filtPCA.png",width=800,height = 800)
+  png(paste("./QC_reporting/",glAn,"_microarray_filtPCA.png",sep=""),width=800,height = 800)
   plot(filtPCA$rotation[,1],filtPCA$rotation[,2],col=color[1:length(sampNames)],pch=16,
        xlab = paste("PC1, ",round(summary(filtPCA)$importance["Proportion of Variance",1]*100,digits = 1),"% of variance",sep=""),
        ylab = paste("PC2, ",round(summary(filtPCA)$importance["Proportion of Variance",2]*100,digits = 1),"% of variance",sep=""),
-       main="PCA of normalized, filtered probes"
+       main=paste(glAn," PCA of normalized, filtered probes", sep = "")
   )
   text(filtPCA$rotation[,1],filtPCA$rotation[,2],labels = sampNames, cex = 1,pos = 3)
   dev.off()

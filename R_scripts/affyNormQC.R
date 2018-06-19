@@ -66,7 +66,7 @@ if (grepl("-st-",raw@cdfName,ignore.case = T)){
 
 ## Raw QC
 if(QCout == T){
-  cat("Performing intial QC")
+  cat("Performing intial QC\n")
   # Prepare plotting options
   toMatch = c(8,183,31,45,51,100,101,118,128,139,147,183,254,421,467,477,
               483,493,498,503,508,535,552,575,635,655)
