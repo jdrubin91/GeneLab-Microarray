@@ -105,6 +105,7 @@ normVals = normVals[!is.na(filtRefSeq),]
 rownames(normVals) = filtRefSeq[!is.na(filtRefSeq)]
 
 # Save filtered expression values to working directory
+outFH = opt$output
 write.table(normVals,file=outFH,sep="\t",quote = F)
 
 if(opt$QCoutput == T){
