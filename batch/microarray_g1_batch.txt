@@ -1,5 +1,5 @@
-#Directory=
-GLDS-#	Copy	QC/Normalize
+#Directory=/opt/genelab-genomespace-dev_mount_point/
+GLDS#   Copied  Normalize/QC
 GLDS-4	False	False
 GLDS-21	False   False
 GLDS-25  False   False
