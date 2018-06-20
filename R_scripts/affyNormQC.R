@@ -12,7 +12,7 @@ suppressPackageStartupMessages(library("optparse"))
 option_list=list(
   make_option(c("-n","--normalization"),type="character",default="rma",help="Normalization method [rma (default, full rma), quantile (no background correction), background (no quant. normalization), log2 (no quant. norm. or background correction)"),
   make_option(c("-o","--outFile"),type="character",default="expValues",help="Name of the output file [without extension!] (default: expValues)"),
-  make_option(c("-t","--outType"),type="character",default="txt",help="Format of output data: R (Rdata eset object), txt (tab delimited file with identifiers and sample names), both (default)"),
+  make_option(c("-t","--outType"),type="character",default="txt",help="Format of output data: R (Rdata eset object), txt (tab delimited file with identifiers and sample names), both (txt)"),
   make_option("--outputData",type="logical",default=TRUE,help="Output data at all (default TRUE)"),
   make_option(c("-a","--arrayInfoOnly"),type="logical",default=FALSE,help="Detect-affy-array-only mode. If true, script will exit after outputting the arrayInfo file. (Default: FALSE)"),
   make_option("--QCoutput",type="logical",default=TRUE,help="Output QC_reporting directory of QC plots (default = TRUE)"),
@@ -84,7 +84,7 @@ if(QCout == T){
   toMatch = c(8,183,31,45,51,100,101,118,128,139,147,183,254,421,467,477,
               483,493,498,503,508,535,552,575,635,655)
   color = grDevices::colors()[rep(toMatch,3)] # Create a library of colors for plotting
-  if(!file.exists(paste('./',glAn,'_QC_reporting/'))) dir.create('./',glAn,'_QC_reporting/')
+  if(!file.exists(paste('./',glAn,'_QC_reporting/',sep=''))) dir.create(paste('./',glAn,'_QC_reporting/',sep=''))
   
   #Images
   cat("\tGenerating raw images")
