@@ -15,7 +15,6 @@ def copy(rawdata_directory):
         if 'raw' in file1 or 'RAW' in file1 or 'Raw' in file1 or 'CEL' in file1 or not 'processed' in file1:
             out_file_path = os.path.join(rawdata_out,file1)
             cp_command = "cp " + os.path.join(rawdata_directory,file1) + " " + out_file_path
-            print cp_command
             os.system(cp_command)
             if '.zip' in file1:
                 unzip_command = "unzip -o -qq " + out_file_path + " -d " + rawdata_out
@@ -48,6 +47,19 @@ def copy(rawdata_directory):
             os.system(remove_command)
 
     
+def detect_array(GLDS_path):
+    try:
+        os.chdir(rawdata_out)
+        R_script = os.path.join(config.R_dir,'affyNormQC.R')
+        R_command = "Rscript " + R_script + " --arrayInfoOnly=TRUE"
+        os.system(R_command)
+        if not 'exprsValues.txt' in os.listdir(rawdata_out):
+            print "Warning: Normalized expression file missing, some processing steps may have failed"
+        os.chdir(config.srcdir)
+    except OSError:
+        print "Error: Microarray raw data directory missing. Exiting..."
+        sys.exit(1)
+
 def rename(GLDS_path):
     metadata_out = os.path.join(GLDS_path,'metadata')
     rawdata_out = os.path.join(GLDS_path,'microarray')
@@ -73,5 +85,8 @@ def qc_and_normalize(rawdata_out):
         print "Error: Microarray raw data directory missing. Exiting..."
         sys.exit(1)
 
-
+def limma_differential():
+    condition1,condition2 = config.visualize.split(',')
+    limma_script = os.path.join(config.R_dir,'limmaDiffExp.R')
+    limma_differential_command = "Rscript " + limma_script + " OPTIONS GO HERE"
 
