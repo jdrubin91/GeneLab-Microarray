@@ -3,9 +3,9 @@
 ## Table of Contents
 1. <A href=#Installation>Installation</A>
 2. <A href=#Running>Running GeneLab-Microarray</A>
-    - <A href=#ProcessMode>Process Mode</A>
-        * <A href=#BatchSubmode>Batch Submode</A>
-    - <A href=#VisualizationMode>Visualization Mode</A>
+   - <A href=#ProcessMode>Process Mode</A>
+        + <A href=#BatchSubmode>Batch Submode</A>
+   - <A href=#VisualizationMode>Visualization Mode</A>
 3. <A href=#Directory>Directory Structure</A>
 4. <A href=#BatchFile>Batch File Format</A>
 5. <A href=#affyNormQC>Affy QC and Normalization</A>
