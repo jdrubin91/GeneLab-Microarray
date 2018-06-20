@@ -144,7 +144,7 @@ if(QCout == T){
     boxplot(oligo::rma(raw, background=FALSE, normalize=FALSE, subset=NULL, target="core"), las=2,
             names = sampNames, main=paste(glAn," Raw intensities",sep=""),col=color[1:length(celFiles)]);
   }else{
-    boxplot(raw,las=2,outline=FALSE,col=color[1:length(celFiles)],paste(glAn," Raw intensities",sep=""),names=sampNames)
+    boxplot(raw,las=2,outline=FALSE,col=color[1:length(celFiles)],main = paste(glAn," Raw intensities",sep=""),names=sampNames)
   }
   mtext(text="log2 Intensity", side=2, line=2.5, las=0)
   dev.off()
@@ -152,11 +152,11 @@ if(QCout == T){
   # PCA
   cat("\tPerforming PCA of raw data...\n")
   rawPCA = prcomp(mypms)
-  png("./QC_reporting/rawPCA.png",width=800,height = 800)
+  png(paste('./',glAn,'_QC_reporting/',glAn,'_rawPCA.png',sep=''),width=800,height = 800)
   plot(rawPCA$rotation[,1],rawPCA$rotation[,2],col=color[1:length(celFiles)],pch=16,
        xlab = paste("PC1, ",round(summary(rawPCA)$importance["Proportion of Variance",1]*100,digits = 1),"% of variance",sep=""),
        ylab = paste("PC2, ",round(summary(rawPCA)$importance["Proportion of Variance",2]*100,digits = 1),"% of variance",sep=""),
-       main="PCA of raw data"
+       main=paste(glAn," PCA of raw data",sep="")
   )
   text(rawPCA$rotation[,1],rawPCA$rotation[,2],labels = sampNames, cex = 1,pos = 3)
   dev.off()
@@ -167,33 +167,33 @@ if(QCout == T){
     if(st == T){
       Pset = fitProbeLevelModel(raw)
       # RLE plot
-      png("./QC_reporting/RLE.png",width=800,height = 600)
+      png(paste('./',glAn,'_QC_reporting/',glAn,'_RLE.png',sep=''),width=800,height = 600)
       par(mar=c(7,5,1,1))
       RLE(Pset, col = color[1:length(sampNames)],
-          names = sampNames, las=2, main="Relative Log Expression (RLE) plot")
+          names = sampNames, las=2, main=paste(glAn," Relative Log Expression (RLE) plot",sep=""))
       abline(h=0,lty=1,col="red")
       dev.off()
       # NUSE plot
-      png("./QC_reporting/NUSE.png",width=800,height = 600)
+      png(paste('./',glAn,'_QC_reporting/',glAn,'_NUSE.png',sep=''),width=800,height = 600)
       par(mar=c(7,5,1,1))
       NUSE(Pset, col = color[1:length(sampNames)], las=2)
-      title(main="NUSE plot of microarray experiments")
+      title(main=paste(glAn," NUSE plot of microarray experiments",sep=""))
       abline(h=1.1,lty=1,col="red")
       dev.off()
     }else{
       Pset=fitPLM(raw)
       # RLE plot
-      png("./QC_reporting/RLE.png",width=800,height = 600)
+      png(paste('./',glAn,'_QC_reporting/',glAn,'_RLE.png',sep=''),width=800,height = 600)
       par(mar=c(7,5,1,1))
       RLE(Pset, col = color[1:length(sampNames)],
           names = sampNames, las=2, main="Relative Log Expression (RLE) plot")
       abline(h=0,lty=1,col="red")
       dev.off()
       # NUSE plot
-      png("./QC_reporting/NUSE.png",width=800,height = 600)
+      png(paste('./',glAn,'_QC_reporting/',glAn,'_NUSE.png',sep=''),width=800,height = 600)
       par(mar=c(7,5,1,1))
       NUSE(Pset,col = color[1:length(sampNames)], las=2)
-      title(main="NUSE plot of microarray experiments")
+      title(main=paste(glAn," NUSE plot of microarray experiments",sep=""))
       abline(h=1.1,lty=1,col="red")
       dev.off()
     }
@@ -225,20 +225,21 @@ if(opt$outputData == TRUE){
   }else if(opt$outType == "txt"){
     write.exprs(eset,file=paste(outFH,".txt",sep=""),sep="\t")
   }else{
-    stop("Help, I don't know how to save this data!")
+    print_help(opt_parser)
+    stop("Help, I don't know how to save this data!",call. = F)
   }
 }
 
 if(QCout == T){
   cat("Post normalization QC steps...\n")
   # Post-normalization QC
-  png("./QC_reporting/normDensityDistributions.png",width=800,height=800 )
+  png(paste('./',glAn,'_QC_reporting/',glAn,'_normDensityDistributions.png',sep=''),width=800,height=800 )
   ylims = c(0,.8)
   xlims = c(0,16)
   normVals = exprs(eset)
   for(i in 1:ncol(normVals)){
     if(i == 1){
-      plot(density(normVals[,i]),ylim = ylims,xlim=xlims,xlab='Normalized expression values[log2]',main='Normalized expression distributions',col=color[i])
+      plot(density(normVals[,i]),ylim = ylims,xlim=xlims,xlab='Normalized expression values[log2]',main=paste(glAn,'Normalized expression distributions',sep=''),col=color[i])
       par(new=T)
     }else{
       plot(density(normVals[,i]),ylim = ylims,xlim=xlims,axes=T,xlab='',main='',col=color[i])
@@ -250,13 +251,13 @@ if(QCout == T){
   dev.off()
   
   # Boxplots
-  png("./QC_reporting/normBoxplot.png",width=800,height = 400)
+  png(paste('./',glAn,'_QC_reporting/',glAn,'_normBoxplot.png',sep=''),width=800,height = 400)
   par(mar=c(7,5,1,1))
   if(st == T){
-    boxplot(normVals,las=2,outline=FALSE,col=color[1:length(celFiles)],main="Normalized intensities",transfo='identity',names=sampNames)
+    boxplot(normVals,las=2,outline=FALSE,col=color[1:length(celFiles)],main=paste(glAn," Normalized intensities",sep=""),transfo='identity',names=sampNames)
     mtext(text="log2 Intensity", side=2, line=2.5, las=0) 
   }else{
-    boxplot(normVals,las=2,outline=FALSE,col=color[1:length(celFiles)],main="Normalized intensities",names=sampNames)
+    boxplot(normVals,las=2,outline=FALSE,col=color[1:length(celFiles)],main=paste(glAn," Normalized intensities",sep=""),names=sampNames)
     mtext(text="log2 Intensity", side=2, line=2.5, las=0)
   }
   dev.off()
@@ -264,7 +265,7 @@ if(QCout == T){
   #MA plot
   cat("\tGenerating MA plots from the normalized data...\n")
   nblines=length(celFiles)%/%3 + as.numeric((length(celFiles)%%3)!=0)
-  png("./QC_reporting/normPlotMA.png",width=800, height = 300*nblines )
+  png(paste('./',glAn,'_QC_reporting/',glAn,'_normPlotMA.png',sep=''),width=800, height = 300*nblines )
   par(mfrow=c(nblines,3))
   MAplot(eset)
   dev.off()
@@ -272,11 +273,11 @@ if(QCout == T){
   # PCA
   cat("\tPerforming PCA of normalized data...\n")
   normPCA = prcomp(normVals)
-  png("./QC_reporting/normPCA.png",width=800,height = 800)
+  png(paste('./',glAn,'_QC_reporting/',glAn,'_normPCA.png',sep=''),width=800,height = 800)
   plot(normPCA$rotation[,1],normPCA$rotation[,2],col=color[1:length(celFiles)],pch=16,
        xlab = paste("PC1, ",round(summary(normPCA)$importance["Proportion of Variance",1]*100,digits = 1),"% of variance",sep=""),
        ylab = paste("PC2, ",round(summary(normPCA)$importance["Proportion of Variance",2]*100,digits = 1),"% of variance",sep=""),
-       main="PCA of normalized data"
+       main=paste(glAn," PCA of normalized data",sep="")
   )
   text(normPCA$rotation[,1],normPCA$rotation[,2],labels = sampNames, cex = 1,pos = 3)
   dev.off()
