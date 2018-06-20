@@ -109,8 +109,7 @@ if(opt$QCoutput == T){
   }else{
     glAn = paste('GLDS-',opt$GLDS,sep='')
   }
-  if(!file.exists(paste('./',glAn,'_QC_reporting/'))) dir.create('./',glAn,'_QC_reporting/')
-  
+  if(!file.exists(paste('./',glAn,'_QC_reporting/',sep=''))) dir.create(paste('./',glAn,'_QC_reporting/',sep=''))
   # Post-normalization QC
   cat("Post annotation/filtering QC...\n")
   
