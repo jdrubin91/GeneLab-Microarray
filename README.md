@@ -41,7 +41,7 @@ Example:
 ```
 GeneLab-Microarray --output /opt/jdrubin/batch_out/ /opt/genelab-genomespace-dev_mount_point/GLDS-4/
 ```
-<H4 id="BatchSubmode">Batch Submode<H/4>
+<H4 id="BatchSubmode">Batch Submode</H4>
 Within the processing mode, there is a submode called batch (specified with -b/--batch). Similar to process mode, an output directory must be specified. However, instead of specifying a directory, batch mode takes as input a path to a batch file (see <A href=#BatchFile>batch file format</A> for guidelines on batch files. There are also example batch files within the batch/ directory).
 
 Example:
