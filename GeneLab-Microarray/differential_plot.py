@@ -6,6 +6,7 @@ import plotly.graph_objs as go
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
 import numpy as np
+import math
 import mpld3
 import pygal
 from pygal import config
@@ -79,6 +80,220 @@ class SliderView(mpld3.plugins.PluginBase):
                       "idline": mpld3.utils.get_id(line),
                       "callback_func": callback_func}
 
+def updateSlider(pval_cut):
+    return pval_cut
+
+def MA_mpld3(diffExp_file):
+    css = """
+        table
+        {
+          border-collapse: collapse;
+        }
+        th
+        {
+          color: #ffffff;
+          background-color: #000000;
+        }
+        td
+        {
+          background-color: #cccccc;
+          color: #ffffff;
+        }
+        table, th, td
+        {
+          font-family:Arial, Helvetica, sans-serif;
+          border: 1px solid white;
+          text-align: right;
+          opacity: 0.9;
+        }
+        """
+
+    sig = """<table>
+        <tr>
+            <th></th>
+            <th>{gene}</th>
+        </tr>
+        <tr>
+            <td style="background-color: #000000;">x</td>
+            <td style="background-color: #ff0000;">{x}</td>
+        </tr>
+        <tr>
+            <td style="background-color: #000000;">y</td>
+            <td style="background-color: #ff0000;">{y}</td>
+        </tr>
+        <tr>
+            <td style="background-color: #000000;">p</td>
+            <td style="background-color: #ff0000;">{pval}</td>
+        </tr>
+        </table>"""
+
+    non_sig = """<table>
+        <tr>
+            <th></th>
+            <th>{gene}</th>
+        </tr>
+        <tr>
+            <td style="background-color: #000000;">x</td>
+            <td style="background-color: #0000ff;">{x}</td>
+        </tr>
+        <tr>
+            <td style="background-color: #000000;">y</td>
+            <td style="background-color: #0000ff;">{y}</td>
+        </tr>
+        <tr>
+            <td style="background-color: #000000;">p</td>
+            <td style="background-color: #0000ff;">{pval}</td>
+        </tr>
+        </table>"""
+
+
+    foldChange = list()
+    averageExpression = list()
+    adjustedPvalue = list()
+    geneName = list()
+    log10pval = list()
+    scattersigx = list()
+    scattersigy = list()
+    volcanosigx = list()
+    volcanosigy = list()
+    scatterlabels = list()
+    scattersiglabels = list()
+    volcanolabels = list()
+    volcanosiglabels = list()
+    cell_text = list()
+    pval_cut = 0.1
+    with open(diffExp_file) as F:
+        header = F.readline().strip('\n').split('\t')
+        fc_index = [i for i in range(len(header)) if 'FC' in header[i]][0]+1
+        exp_index = [i for i in range(len(header)) if 'Exp' in header[i]][0]+1
+        p_index = [i for i in range(len(header)) if 'adj' in header[i]][0]+1
+        for line in F:
+            linelist = line.strip('\n').split('\t')
+            gene = linelist[0].strip('"')
+            fc = float(linelist[fc_index])
+            exp = float(linelist[exp_index])
+            pval = float(linelist[p_index])
+            geneName.append(gene)
+            foldChange.append(fc)
+            averageExpression.append(exp)
+            adjustedPvalue.append(pval)
+            if pval < pval_cut:
+                cell_text.append([gene,exp,fc,pval])
+                scattersigx.append(exp)
+                scattersigy.append(fc)
+                scattersiglabels.append(sig.format(gene=gene,x="%.3f" % exp,y="%.3f" % fc,pval="%.3f" % pval))
+                try:
+                    l10p = -math.log(pval,10)
+                    log10pval.append(l10p)
+                    volcanosigy.append(l10p)
+                    volcanosigx.append(fc)
+                    volcanosiglabels.append(sig.format(gene=gene,x="%.3f" % fc,y="%.3f" % -math.log(pval,10),pval="%.3f" % pval))
+                except ValueError:
+                    print "Error: Zero adjusted p-value encountered, cannot display in volcano plot.."
+                    
+            else:
+                log10pval.append(-math.log(pval,10))
+                scatterlabels.append(non_sig.format(gene=gene,x="%.3f" % exp,y="%.3f" % fc,pval="%.3f" % pval))
+                volcanolabels.append(non_sig.format(gene=gene,x="%.3f" % fc,y="%.3f" % -math.log(pval,10),pval="%.3f" % pval))
+
+            
+    
+
+    F = plt.figure(figsize=(18,8))
+    gs = gridspec.GridSpec(1, 2, width_ratios=[2, 1])
+    ax0 = F.add_subplot(gs[0])
+    ax0.grid(color='black', linestyle='dashed')
+    xy = np.vstack([averageExpression,foldChange])
+    z = gaussian_kde(xy)(xy)
+    scatter = ax0.scatter(x=averageExpression,y=foldChange,c=z,s=100,edgecolor="")
+    sigscatter = ax0.scatter(scattersigx,scattersigy,c='r',s=100,edgecolor="")
+    ax0.tick_params(axis='y', which='both', left='on', right='off', labelleft='on')
+    ax0.tick_params(axis='x', which='both', bottom='off', top='off', labelbottom='on')
+    ax0.set_title("Microarray MA Plot", size=25)
+    ax0.set_ylabel("Log Fold Change", size=18)
+    ax0.set_xlabel("Average Expression", size=18)
+
+    ax1 = F.add_subplot(gs[1])
+    volcano = ax1.scatter(x=foldChange,y=log10pval,s=100,edgecolor="",color='navy')
+    sigvolcano = ax1.scatter(volcanosigx,volcanosigy,c='r',s=100,edgecolor="")
+    ax1.tick_params(axis='y', which='both', left='on', right='off', labelleft='on')
+    ax1.tick_params(axis='x', which='both', bottom='off', top='off', labelbottom='on')
+    ax1.set_title("Microarray Volcano Plot", size=25)
+    ax1.set_ylabel("-Log10 P-value", size=18)
+    ax1.set_xlabel("Log Fold Change", size=18)
+    ax1.grid(color='black', linestyle='dashed')
+    ax1.set_ylim(bottom=0)
+
+
+    F.subplots_adjust(left=0.05,right=0.95,hspace = 0.05, wspace = 0.15)
+
+    tooltip = mpld3.plugins.PointHTMLTooltip(scatter, labels=scatterlabels[:int(0.5*len(scatterlabels))], css=css)
+    tooltip2 = mpld3.plugins.PointHTMLTooltip(sigscatter, labels=scattersiglabels, css=css)
+    tooltip3 = mpld3.plugins.PointHTMLTooltip(volcano, labels=volcanolabels[:int(0.5*len(volcanolabels))], css=css)
+    tooltip4 = mpld3.plugins.PointHTMLTooltip(sigvolcano, labels=volcanosiglabels, css=css)
+    # mpld3.plugins.connect(F, tooltip, tooltip2, tooltip3, tooltip4, SliderView(scatter, callback_func="updateSlider"))
+    mpld3.plugins.connect(F, tooltip, tooltip2, tooltip3, tooltip4)
+
+
+    plt.savefig('/Users/jonathanrubin/Google Drive/NASA/home/batch_out/GLDS-4/microarray/MA-Plot_mpld3.png')
+    mpld3.save_html(F,'/Users/jonathanrubin/Google Drive/NASA/home/batch_out/GLDS-4/microarray/MA-Plot_mpld3.html')
+
+    with open('/Users/jonathanrubin/Google Drive/NASA/home/batch_out/GLDS-4/microarray/SignificantGenes.html','w') as sigGenes_file:
+        sigGenes_file.write("""<!DOCTYPE html>
+            <html>
+            <head>
+            <title>List of Significant Genes</title>
+            <style>
+            table {
+                font-family: arial, sans-serif;
+                border-collapse: collapse;
+                width: 100%;
+            }
+
+            td, th {
+                border: 1px solid #dddddd;
+                text-align: left;
+                padding: 8px;
+            }
+
+            tr:nth-child(even) {
+                background-color: #dddddd;
+            }
+            </style>
+            </head>
+            <body style="width: 1300px; overflow:scroll">
+                <h1>List of Significant Genes</h1>
+            <div>
+                <div style="float: middle; width: 1300px; overflow:scroll; padding-bottom:25px; padding-top:25px">
+                    <table> 
+                        <tr>
+                            <th>Gene</th>
+                            <th>Average Expression</th> 
+                            <th>Log Fold Change</th>
+                            <th>Adjusted P-value</th>
+                        </tr>""")
+        for row in cell_text:
+            name,exp,fc,pval = row
+            sigGenes_file.write("""
+                        <tr>
+                            <td>"""+name+"""</td>
+                            <td>"""+str(exp)+"""</td>
+                            <td>"""+str(fc)+"""</td>
+                            <td>"""+str(pval)+"""</td>
+                        </tr>""")
+        sigGenes_file.write("""        </table>
+                </div>
+            </div>
+            
+            </body>
+            </html>""")
+
+
+    with open('/Users/jonathanrubin/Google Drive/NASA/home/batch_out/GLDS-4/microarray/MA-Plot_mpld3.html','a') as html_file:
+        html_file.write('<a style="font-size: 20" href="./SignificantGenes.html">List of Significant Genes</a>')
+
+    plt.close(F)
+
 def MA_plotly(diffExp_file):
     sig = list()
     sig_text = list()
@@ -144,158 +359,7 @@ def MA_plotly(diffExp_file):
     )
     fig_comp = go.Figure(data=data_comp, layout=layout_comp)
     plotly.offline.plot(fig_comp, filename='/Users/jonathanrubin/Google Drive/NASA/home/batch_out/GLDS-4/microarray/MA-Plot.html',
-        auto_open=False,)
-
-def updateSlider(pval_cut):
-    return pval_cut
-
-def MA_mpld3(diffExp_file):
-    foldChange = list()
-    averageExpression = list()
-    adjustedPvalue = list()
-    geneName = list()
-    pval_cut = 0.1
-    with open(diffExp_file) as F:
-        header = F.readline().strip('\n').split('\t')
-        fc_index = [i for i in range(len(header)) if 'FC' in header[i]][0]+1
-        exp_index = [i for i in range(len(header)) if 'Exp' in header[i]][0]+1
-        p_index = [i for i in range(len(header)) if 'adj' in header[i]][0]+1
-        for line in F:
-            linelist = line.strip('\n').split('\t')
-            geneName.append(linelist[0].strip('"'))
-            foldChange.append(float(linelist[fc_index]))
-            averageExpression.append(float(linelist[exp_index]))
-            adjustedPvalue.append(float(linelist[p_index]))
-            
-    css = """
-        table
-        {
-          border-collapse: collapse;
-        }
-        th
-        {
-          color: #ffffff;
-          background-color: #000000;
-        }
-        td
-        {
-          background-color: #cccccc;
-          color: #ffffff;
-        }
-        table, th, td
-        {
-          font-family:Arial, Helvetica, sans-serif;
-          border: 1px solid white;
-          text-align: right;
-          opacity: 0.9;
-        }
-        """
-
-    F = plt.figure(figsize=(18,8))
-    ax0 = F.add_subplot(111)
-    ax0.grid(color='black', linestyle='dashed')
-    x=averageExpression
-    y=foldChange
-    xy = np.vstack([x,y])
-    z = gaussian_kde(xy)(xy)
-    # scatter = ax0.scatter(x=averageExpression,
-    #     y=foldChange,
-    #     color=[(1.0,0.0,0.0,1.0) if pval < pval_cut else (0.0,0.0,0.5,0.3) for pval in adjustedPvalue],
-    #     s=[60 if pval < pval_cut else 40 for pval in adjustedPvalue],
-    #     edgecolor="")
-    scatter = ax0.scatter(x=x,y=y,c=z,s=100,edgecolor="")
-    sigx = [x for x,pval in zip(averageExpression,adjustedPvalue) if pval < pval_cut]
-    sigy = [y for y,pval in zip(foldChange,adjustedPvalue) if pval < pval_cut]
-    sigscatter = ax0.scatter(sigx,sigy,c='r',s=100,edgecolor="")
-    ax0.tick_params(axis='y', which='both', left='on', right='off', labelleft='on')
-    ax0.tick_params(axis='x', which='both', bottom='off', top='off', labelbottom='on')
-    ax0.set_title("Microarray MA-Plot", size=25)
-    ax0.set_ylabel("Log Fold Change", size=18)
-    ax0.set_xlabel("Average Expression", size=18)
-    # labels = ['<div style="margin: 10px;background-color: #ff0000;border: 1px solid white;opacity: 0.9"><p style="font-family: arial;color: #ffffff">Gene: {gene}<br />({x}, {y})</p></div>'.format(gene=gene,x="%.2f" % x,y="%.2f" % y) 
-    #     if pval < pval_cut else '<div style="margin: 10px;background-color: #0000ff;border: 1px solid white;opacity: 0.9"><p style="font-family: arial;color: #ffffff">Gene: {gene}<br />({x}, {y})</p></div>'.format(gene=gene,x="%.2f" % x,y="%.2f" % y) 
-    #     for (gene,x,y,pval) in zip(geneName,averageExpression,foldChange,adjustedPvalue)]
-
-    sig = """<table>
-    <tr>
-        <th></th>
-        <th>{gene}</th>
-    </tr>
-    <tr>
-        <td style="background-color: #000000;">x</td>
-        <td style="background-color: #ff0000;">{x}</td>
-    </tr>
-    <tr>
-        <td style="background-color: #000000;">y</td>
-        <td style="background-color: #ff0000;">{y}</td>
-    </tr>
-    <tr>
-        <td style="background-color: #000000;">p</td>
-        <td style="background-color: #ff0000;">{pval}</td>
-    </tr>
-    </table>"""
-
-    non_sig = """<table>
-    <tr>
-        <th></th>
-        <th>{gene}</th>
-    </tr>
-    <tr>
-        <td style="background-color: #000000;">x</td>
-        <td style="background-color: #0000ff;">{x}</td>
-    </tr>
-    <tr>
-        <td style="background-color: #000000;">y</td>
-        <td style="background-color: #0000ff;">{y}</td>
-    </tr>
-    <tr>
-        <td style="background-color: #000000;">p</td>
-        <td style="background-color: #0000ff;">{pval}</td>
-    </tr>
-    </table>"""
-
-    labels = [sig.format(gene=gene,x="%.3f" % x,y="%.3f" % y,pval="%.3f" % pval) 
-        if pval < pval_cut else non_sig.format(gene=gene,x="%.3f" % x,y="%.3f" % y,pval="%.3f" % pval) 
-        for (gene,x,y,pval) in zip(geneName,averageExpression,foldChange,adjustedPvalue)]
-
-    tooltip = mpld3.plugins.PointHTMLTooltip(scatter, labels=labels, css=css)
-    tooltip2 = mpld3.plugins.PointHTMLTooltip(sigscatter, labels=labels, css=css)
-    mpld3.plugins.connect(F, tooltip, tooltip2, SliderView(scatter, callback_func="updateSlider"))
-
-
-    # ax1 = plt.subplot(gs[1])
-    # columns = ['Gene','AvgExp','LogFC','AdjPval']
-    # cell_text = [[w,"%.3f" % x,"%.3f" % y,"%.3f" % z] for w,x,y,z in zip(geneName,averageExpression,foldChange,adjustedPvalue) if z < pval_cut]
-    # the_table = ax1.table(cellText=cell_text,loc='top right',cellLoc='left',colLabels=columns,bbox=[0,0,1,1])
-    # the_table.auto_set_font_size(False)
-    # the_table.set_fontsize(14)
-    # cellDict=the_table.get_celld()
-    # for i in range(len(cell_text)+1):
-    #     cellDict[(i,0)].set_width(0.35)
-
-    
-    # ax1.set_xlim([0,1])
-    # ax1.set_ylim([0,1])
-    # ax1.grid(color='black', linestyle='solid')
-    # i = np.linspace(0,1,len(cell_text)+1)
-    # k=0
-    # for i in np.linspace(0.95,0,len(cell_text)+1):
-    #     if i == 0.95:
-    #         ax1.text(0.5, i, ' '.join(columns), size=16, ha='center')
-    #     else:
-    #         ax1.text(0.5, i, ' '.join(cell_text[k]), size=16, ha='center')
-    #         k+=1
-            
-    # ax1.tick_params(axis='y', which='both', left='off', right='off', labelleft='off')
-    # ax1.tick_params(axis='x', which='both', bottom='off', top='off', labelbottom='off')
-
-    plt.savefig('/Users/jonathanrubin/Google Drive/NASA/home/batch_out/GLDS-4/microarray/MA-Plot_mpld3.png')
-    mpld3.save_html(F,'/Users/jonathanrubin/Google Drive/NASA/home/batch_out/GLDS-4/microarray/MA-Plot_mpld3.html')
-    with open('/Users/jonathanrubin/Google Drive/NASA/home/batch_out/GLDS-4/microarray/MA-Plot_mpld3.html','a') as html_file:
-        html_file.write('<a style="font-size: 20" href="this is a link">This is a link</a>')
-
-    plt.close(F)
-
+        auto_open=False)
 
 def MA_pygal(diffExp_file):
     foldChange = list()
