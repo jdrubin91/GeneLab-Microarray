@@ -9,11 +9,9 @@ def run():
     parser.add_argument('Directory',
         help='The full path to a directory containing either a single dataset structured according to specifications or a batch.txt file. See README for more information.')
     parser.add_argument('-o','--output',help='Required. Takes as input an output directory.',metavar='',required=True)
-    parser.add_argument('-p','--process',help='Specify for processing mode. Performs data transfer, renaming, quality control, and normalization.',
-        ,default=False,metavar='',action='store_const',const=True)
     parser.add_argument('-b','--batch',help='If batch processing is desired, provide a full path to a batch.txt file as the /Directory/ (see README for format guidelines).'
      ,default=False,action='store_const',const=True,metavar='')
-    parser.add_argument('-v','--visualize',help='Specify for visualization mode. If selected, must input a comma-separated list of factor values (ex. --visualize flight,ground) to compare. Outputs an interactive scatter plot of given conditions.',
+    parser.add_argument('-v','--visualize',help='Specify for visualization mode (default is processing mode). If selected, must input a comma-separated list of factor values and an adjusted p-value cutoff (ex. --visualize flight,ground,0.1) to compare. Outputs an interactive scatter plot of given conditions.',
         ,default=False,metavar='')
 
 
@@ -25,7 +23,6 @@ def run():
 
     #Parse user-provided arguments 
     args = parser.parse_args()
-    process = args.process
     batch = args.batch
     indir = args.Directory
     outdir = args.output
@@ -45,16 +42,15 @@ def run():
         outfile.write('srcdir = "' + srcdir + '"\n')
         outfile.write('tempdir = "' + tempdir + '"\n')
         outfile.write('R_dir = "' + R_dir + '"\n')
-        outfile.write('process = "' + str(process) + '"\n')
         outfile.write('batch = "' + str(batch) + '"\n')
         outfile.write('visualize = "' + str(visualize) + '"\n')
 
 
     #Either run batch module or just run the processing steps on a single dataset
-    if process:
+    if visualize == False:
         if batch:
-            import batch_process
             print "Batch option specified.\nUsing batch file: " + indir + "\nWriting output to: " + outdir
+            import batch_process
             batch_process.run(indir)
         else:
             import metadata_process, rawdata_process
@@ -73,13 +69,11 @@ def run():
                 raise IOError('microarray directory within input not found. See README for expected directory structure.')
 
             print "done."
-    elif visualize != False:
+    else:
+        condition1,condition2,pval_cut = visualize.split(',')
+        print "Visualization mode specified.\nComparing: " + condition1 + " vs. " + condition2 + "\nAdjusted p-value cutoff set at: " + pval_cut
         import differential_plot
         rawdata_process.limma_differential()
         differential_plot.mpld3()
 
-    else:
-        print "Error: A mode was not selected. See help for details on how to run GeneLab-Microarray."
-        parser.print_help()
-        sys.exit(1)
 
