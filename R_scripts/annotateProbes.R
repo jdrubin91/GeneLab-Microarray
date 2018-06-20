@@ -109,13 +109,13 @@ if(opt$QCoutput == T){
   }else{
     glAn = paste('GLDS-',opt$GLDS,sep='')
   }
-  if(!file.exists('./QC_reporting/')) dir.create('./QC_reporting/')
+  if(!file.exists(paste('./',glAn,'_QC_reporting/'))) dir.create('./',glAn,'_QC_reporting/')
   
   # Post-normalization QC
   cat("Post annotation/filtering QC...\n")
   
   # Density distributions
-  png(paste("./QC_reporting/",glAn,"_microarray_filtDensityDistributions.png",sep=""),width=800,height=800 )
+  png(paste("./",glAn,"_QC_reporting/",glAn,"_microarray_filtDensityDistributions.png",sep=""),width=800,height=800)
   ylims = c(0,.8)
   xlims = c(0,16)
   for(i in 1:ncol(normVals)){
@@ -135,7 +135,7 @@ if(opt$QCoutput == T){
   
   # PCA plot
   filtPCA = prcomp(normVals)
-  png(paste("./QC_reporting/",glAn,"_microarray_filtPCA.png",sep=""),width=800,height = 800)
+  png(paste("./",glAn,"_QC_reporting/",glAn,"_microarray_filtPCA.png",sep=""),width=800,height = 800)
   plot(filtPCA$rotation[,1],filtPCA$rotation[,2],col=color[1:length(sampNames)],pch=16,
        xlab = paste("PC1, ",round(summary(filtPCA)$importance["Proportion of Variance",1]*100,digits = 1),"% of variance",sep=""),
        ylab = paste("PC2, ",round(summary(filtPCA)$importance["Proportion of Variance",2]*100,digits = 1),"% of variance",sep=""),
