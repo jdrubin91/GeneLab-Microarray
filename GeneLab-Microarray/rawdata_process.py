@@ -97,8 +97,8 @@ def limma_differential(rawdata_out,metadata_out,GLDS):
         print "Error: No expression count file detected, exiting..."
         sys.exit(1)
     r_option = " -i " + metadata_out
-    group1_option = " --group1=" + condition1
-    group2_option = " --group2=" + condition2
+    group1_option = " --group1='" + condition1 + "'"
+    group2_option = " --group2='" + condition2 + "'"
     o_option = " -o " + GLDS + "_microarray_DGE.txt"
     limma_differential_command = "Rscript --vanilla " + limma_script + d_option + r_option + group1_option + group2_option + o_option
     print limma_differential_command
