@@ -104,6 +104,7 @@ if(sum(group == 0) > 0){
   cat("Warning:",sum(group == 0),"sample(s) not found in either group:\n",rownames(factorValues)[group == 0],"\nIf this is not expected, please ensure the provided factor levels match the factor levels in the study-level metadata exactly\n")
 }
 eset = eset[,!(group == 0 | group == 3)]
+group = group[!(group == 0 | group == 3)]
 
 #Create a design matrix based on the ordering of the columns within eset
 group = as.factor(group)
