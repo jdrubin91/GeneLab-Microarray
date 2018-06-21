@@ -72,11 +72,11 @@ def rename(GLDS_path):
                 move_command = "mv '" + os.path.join(rawdata_out,filename) + "' " + os.path.join(rawdata_out,GLDS+'_microarray_'+key+'.'+extension)
                 os.system(move_command)
 
-def qc_and_normalize(rawdata_out):
+def qc_and_normalize(rawdata_out,GLDS):
     try:
         os.chdir(rawdata_out)
         R_script = os.path.join(config.R_dir,'affyNormQC.R')
-        R_command = "Rscript " + R_script + " --normalization rma --outFile=exprsValues --outType=both --outputData=TRUE --QCoutput=TRUE --NUSEplot=TRUE"
+        R_command = "Rscript " + R_script + " --normalization rma --outFile=exprsValues --outType=both --outputData=TRUE --QCoutput=TRUE --NUSEplot=TRUE --GLDS="+GLDS.split('-')[1]
         os.system(R_command)
         if not 'exprsValues.txt' in os.listdir(rawdata_out):
             print "Warning: Normalized expression file missing, some processing steps may have failed"
@@ -85,8 +85,17 @@ def qc_and_normalize(rawdata_out):
         print "Error: Microarray raw data directory missing. Exiting..."
         sys.exit(1)
 
-def limma_differential():
+def limma_differential(rawdata_out,metadata_out,GLDS):
     condition1,condition2 = config.visualize.split(',')
     limma_script = os.path.join(config.R_dir,'limmaDiffExp.R')
-    limma_differential_command = "Rscript " + limma_script + " OPTIONS GO HERE"
+    d_option = " -d " + GLDS + "_microarray_normalized_annotated.txt"
+    r_option = " -r " + metadata_out
+    group1_option = " --group1=" + config.condition1
+    group2_option = " --group2=" + config.condition2
+    o_option = " -o " + GLDS + "_microarray_DGE.txt"
+    limma_differential_command = "Rscript --vanilla " + limma_script + d_option + r_option + group1_option + group2_option + o_option
+    print limma_differential_command
+    os.system(limma_differential_command)
+
+
 

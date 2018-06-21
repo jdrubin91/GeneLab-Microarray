@@ -2,7 +2,7 @@ __author__ = 'Jonathan Rubin'
   
 import matplotlib
 matplotlib.use('Agg')
-import os, config, math, mpld3
+import os, config, math, mpld3, warnings
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
 import numpy as np
@@ -80,7 +80,7 @@ def updateSlider(pval_cut):
 
 #This function is the one currently in use (JDR 6/20/18) and uses the python package mpld3 to plot interactive MA and volcano plots.
 #I found this one to be the most versatile and least laggy.
-def MA_mpld3(diffExp_file):
+def differential_visualize(rawdata_out,GLDS):
     #In this section of the code, the style of labels is defined. In this case, we are using a table with non_sig hits being blue and sig hits being red
     css = """
         table
@@ -160,7 +160,7 @@ def MA_mpld3(diffExp_file):
     volcanolabels = list()
     volcanosiglabels = list()
     cell_text = list()
-    pval_cut = 0.1
+    pval_cut = config.pval_cut
     with open(diffExp_file) as F:
         header = F.readline().strip('\n').split('\t')
         fc_index = [i for i in range(len(header)) if 'FC' in header[i]][0]+1
@@ -200,56 +200,64 @@ def MA_mpld3(diffExp_file):
 
             
     #In this section the matplotlib figure is initialized and the MA-plot is created
-    F = plt.figure(figsize=(18,8))
-    gs = gridspec.GridSpec(1, 2, width_ratios=[2, 1])
-    ax0 = F.add_subplot(gs[0])
-    ax0.grid(color='black', linestyle='dashed')
-    x = averageExpression
-    y = foldChange
-    xy = np.vstack([x,y])
-    z = gaussian_kde(xy)(xy)
-    idx = np.argsort(z)
-    x, y, z = [x[i] for i in idx], [y[i] for i in idx], [z[i] for i in idx]
-    scatter = ax0.scatter(x=x,y=y,c=z,s=100,edgecolor="")
-    sigscatter = ax0.scatter(scattersigx,scattersigy,c='r',s=100,edgecolor="")
-    ax0.tick_params(axis='y', which='both', left='on', right='off', labelleft='on')
-    ax0.tick_params(axis='x', which='both', bottom='off', top='off', labelbottom='on')
-    ax0.set_title("Microarray MA Plot", size=25)
-    ax0.set_ylabel("Log Fold Change", size=18)
-    ax0.set_xlabel("Average Expression", size=18)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        F = plt.figure(figsize=(18,8))
+        gs = gridspec.GridSpec(1, 2, width_ratios=[2, 1])
+        ax0 = F.add_subplot(gs[0])
+        ax0.grid(color='black', linestyle='dashed')
+        x = averageExpression
+        y = foldChange
+        xy = np.vstack([x,y])
+        z = gaussian_kde(xy)(xy)
+        idx = np.argsort(z)
+        x, y, z = [x[i] for i in idx], [y[i] for i in idx], [z[i] for i in idx]
+        scatter = ax0.scatter(x=x,y=y,c=z,s=100,edgecolor="")
+        sigscatter = ax0.scatter(scattersigx,scattersigy,c='r',s=100,edgecolor="")
+        ax0.tick_params(axis='y', which='both', left='on', right='off', labelleft='on')
+        ax0.tick_params(axis='x', which='both', bottom='off', top='off', labelbottom='on')
+        ax0.set_title("Microarray MA Plot", size=25)
+        ax0.set_ylabel("Log Fold Change", size=18)
+        ax0.set_xlabel("Average Expression", size=18)
 
-    #Here we create the Volcano plot
-    ax1 = F.add_subplot(gs[1])
-    volcano = ax1.scatter(x=foldChange,y=log10pval,s=100,edgecolor="",color='navy')
-    sigvolcano = ax1.scatter(volcanosigx,volcanosigy,c='r',s=100,edgecolor="")
-    ax1.tick_params(axis='y', which='both', left='on', right='off', labelleft='on')
-    ax1.tick_params(axis='x', which='both', bottom='off', top='off', labelbottom='on')
-    ax1.set_title("Microarray Volcano Plot", size=25)
-    ax1.set_ylabel("-Log10 P-value", size=18)
-    ax1.set_xlabel("Log Fold Change", size=18)
-    ax1.grid(color='black', linestyle='dashed')
-    ax1.set_ylim(bottom=0)
+        #Here we create the Volcano plot
+        ax1 = F.add_subplot(gs[1])
+        x = foldChange
+        y = log10pval
+        xy = np.vstack([x,y])
+        z = gaussian_kde(xy)(xy)
+        idx = np.argsort(z)
+        x, y, z = [x[i] for i in idx], [y[i] for i in idx], [z[i] for i in idx]
+        volcano = ax1.scatter(x=x,y=y,c=z,s=100,edgecolor="")
+        sigvolcano = ax1.scatter(volcanosigx,volcanosigy,c='r',s=100,edgecolor="")
+        ax1.tick_params(axis='y', which='both', left='on', right='off', labelleft='on')
+        ax1.tick_params(axis='x', which='both', bottom='off', top='off', labelbottom='on')
+        ax1.set_title("Microarray Volcano Plot", size=25)
+        ax1.set_ylabel("-Log10 P-value", size=18)
+        ax1.set_xlabel("Log Fold Change", size=18)
+        ax1.grid(color='black', linestyle='dashed')
+        ax1.set_ylim(bottom=0)
 
-    #This line adjusts the whitespace around the subplots since I noticed there was a lot of wasted space
-    F.subplots_adjust(left=0.05,right=0.95,hspace = 0.05, wspace = 0.15)
+        #This line adjusts the whitespace around the subplots since I noticed there was a lot of wasted space
+        F.subplots_adjust(left=0.05,right=0.95,hspace = 0.05, wspace = 0.15)
 
-    #This is the bulk of the mpld3 code, basically we're creating 'tooltips' which allows us to have the interactive labels
-    tooltip = mpld3.plugins.PointHTMLTooltip(scatter, labels=scatterlabels[:int(0.5*len(scatterlabels))], css=css)
-    tooltip2 = mpld3.plugins.PointHTMLTooltip(sigscatter, labels=scattersiglabels, css=css)
-    tooltip3 = mpld3.plugins.PointHTMLTooltip(volcano, labels=volcanolabels[:int(0.5*len(volcanolabels))], css=css)
-    tooltip4 = mpld3.plugins.PointHTMLTooltip(sigvolcano, labels=volcanosiglabels, css=css)
-    # mpld3.plugins.connect(F, tooltip, tooltip2, tooltip3, tooltip4, SliderView(scatter, callback_func="updateSlider"))
+        #This is the bulk of the mpld3 code, basically we're creating 'tooltips' which allows us to have the interactive labels
+        tooltip = mpld3.plugins.PointHTMLTooltip(scatter, labels=scatterlabels[:int(0.5*len(scatterlabels))], css=css)
+        tooltip2 = mpld3.plugins.PointHTMLTooltip(sigscatter, labels=scattersiglabels, css=css)
+        tooltip3 = mpld3.plugins.PointHTMLTooltip(volcano, labels=volcanolabels[:int(0.5*len(volcanolabels))], css=css)
+        tooltip4 = mpld3.plugins.PointHTMLTooltip(sigvolcano, labels=volcanosiglabels, css=css)
+        # mpld3.plugins.connect(F, tooltip, tooltip2, tooltip3, tooltip4, SliderView(scatter, callback_func="updateSlider"))
 
-    #This connects our plots together
-    mpld3.plugins.connect(F, tooltip, tooltip2, tooltip3, tooltip4)
+        #This connects our plots together
+        mpld3.plugins.connect(F, tooltip, tooltip2, tooltip3, tooltip4)
 
-    #Here we save both a png version of the plot (non-interactive) and the interactive html version of the plot
-    plt.savefig('/Users/jonathanrubin/Google Drive/NASA/home/batch_out/GLDS-4/microarray/MA-Plot_mpld3.png')
-    mpld3.save_html(F,'/Users/jonathanrubin/Google Drive/NASA/home/batch_out/GLDS-4/microarray/MA-Plot_mpld3.html')
-    plt.close(F)
+        #Here we save both a png version of the plot (non-interactive) and the interactive html version of the plot
+        plt.savefig(os.path.join(rawdata_out,GLDS+'_visualization_results.png'))
+        mpld3.save_html(F,os.path.join(rawdata_out,'_visualization_results.html'))
+        plt.close(F)
 
     #This section of the code creates an html table of significant genes
-    with open('/Users/jonathanrubin/Google Drive/NASA/home/batch_out/GLDS-4/microarray/SignificantGenes.html','w') as sigGenes_file:
+    with open(os.path.join(rawdata_out,GLDS+'_significant_genes_'+str(pval_cut)+'.html','w')) as sigGenes_file:
         sigGenes_file.write("""<!DOCTYPE html>
             <html>
             <head>
@@ -301,8 +309,8 @@ def MA_mpld3(diffExp_file):
 
 
     #Finally this short section appends a link to the bottom of the graph html that will go directly to the list of significant genes
-    with open('/Users/jonathanrubin/Google Drive/NASA/home/batch_out/GLDS-4/microarray/MA-Plot_mpld3.html','a') as html_file:
-        html_file.write('<a style="font-size: 20" href="./SignificantGenes.html">List of Significant Genes</a>')
+    with open(os.path.join(rawdata_out,'_visualization_results.html'),'a') as html_file:
+        html_file.write('<a style="font-size: 20" href="'+GLDS+'_significant_genes_'+str(pval_cut)+'.html">List of Significant Genes</a>')
 
 
 

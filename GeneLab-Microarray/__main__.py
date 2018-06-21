@@ -1,8 +1,6 @@
 __author__ = 'Jonathan Rubin'
 
-import argparse
-import sys
-import os
+import os,sys,argparse
 
 def run():
     parser = argparse.ArgumentParser(prog='GeneLab-Microarray',usage='%(prog)s [options] Directory',description='Standardized processing pipeline for microarray data on GeneLab.')
@@ -26,7 +24,7 @@ def run():
     batch = args.batch
     indir = args.Directory
     outdir = args.output
-    visualize = args.visualize
+    condition1,condition2,pval_cut = args.visualize.split(',')
 
 
     #Get full paths to locations within this package
@@ -43,7 +41,9 @@ def run():
         outfile.write('tempdir = "' + tempdir + '"\n')
         outfile.write('R_dir = "' + R_dir + '"\n')
         outfile.write('batch = "' + str(batch) + '"\n')
-        outfile.write('visualize = "' + str(visualize) + '"\n')
+        outfile.write('condition1 = "' + condition1 + '"\n')
+        outfile.write('condition2 = "' + condition2 + '"\n')
+        outfile.write('pval_cut = "' + pval_cut + '"\n')
 
 
     #Either run batch module or just run the processing steps on a single dataset
@@ -55,16 +55,21 @@ def run():
         else:
             import metadata_process, rawdata_process
             print "Processing " + indir + "\nWriting output to: " + outdir
-            metadata_dir = os.path.join(indir,'metadata')
+            GLDS = os.path.basename(indir)
+            rawdata_out = os.path.join(outdir,GLDS,'microarray')
+            metadata_out = os.path.join(outdir,GLDS,'metadata')
+            metadata_in = os.path.join(indir,'metadata')
+            rawdata_in = os.path.join(indir,'microarray')
             if os.path.isdir(metadata_dir):
-                metadata_process.clean(metadata_dir)
+                metadata_process.clean(metadata_in)
             else:
                 raise IOError('metadata directory within input not found. See README for expected directory structure.')
 
             #Copy rawdata into output
-            rawdata_dir = os.path.join(indir,'microarray')
             if os.path.isdir(rawdata_dir):
-                rawdata_process.copy(rawdata_dir)
+                rawdata_process.copy(rawdata_in)
+                rawdata_process.rename(os.path.join(outdir,GLDS))
+                rawdata_process.qc_and_normalize(rawdata_out,GLDS)
             else:
                 raise IOError('microarray directory within input not found. See README for expected directory structure.')
 
@@ -73,7 +78,11 @@ def run():
         condition1,condition2,pval_cut = visualize.split(',')
         print "Visualization mode specified.\nComparing: " + condition1 + " vs. " + condition2 + "\nAdjusted p-value cutoff set at: " + pval_cut
         import differential_plot
-        rawdata_process.limma_differential()
-        differential_plot.mpld3()
+        rawdata_out = os.path.join(outdir,'microarray')
+        metadata_out = os.path.join(outdir,'metadata')
+        GLDS = os.path.basename(outdir)
+        rawdata_process.limma_differential(rawdata_out,metadata_out,GLDS)
+        differential_plot.differential_visualize(rawdata_out,GLDS)
+        print "done. Output in: " + rawdata_out
 
 
