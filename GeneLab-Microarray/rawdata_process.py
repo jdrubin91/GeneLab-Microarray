@@ -92,6 +92,7 @@ def limma_differential(rawdata_out,metadata_out,GLDS):
         d_option = " -d " + GLDS + "_microarray_normalized_annotated.txt"
     elif GLDS + "_microarray_normalized.txt" in os.listdir(rawdata_out):
         print "Warning: No annotated expression file detected, using unannotated file instead - Labelling will be done with probe IDs and will need to be converted to gene names later."
+        d_option = " -d " + GLDS + "_microarray_normalized.txt"
     else:
         print "Error: No expression count file detected, exiting..."
         sys.exit(1)
