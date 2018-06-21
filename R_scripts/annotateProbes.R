@@ -10,7 +10,7 @@ suppressPackageStartupMessages(library("optparse"))
 
 # Read options
 option_list=list(
-  make_option(c("-i","--input"),type="character",help="Name of (or path to) the input file (\t delimited .txt file)"),
+  make_option(c("-i","--input"),type="character",help="Name of (or path to) the input file (\\t delimited .txt file)"),
   make_option(c("-a","--arrayInfo"),type="character",default="arrayInfo.txt",help="Name of (or path to) a file containing the array information [Line 1: Manufacturer, line 2: Array version]"),
   make_option(c("-o","--output"),type="character",default="annotExpValues.txt",help="Name of (or path to) file to write results to (default: annotExpValues.txt)"),
   make_option(c("-q","--QCoutput"),type="logical",default=TRUE,help="Output QC_reporting directory of QC plots (default = TRUE)"),
@@ -49,6 +49,7 @@ tryCatch({
     suppressPackageStartupMessages(library(annotPack,character.only = T)) # Load selected package
     packObjs = ls(paste("package:",as.character(annotPack),sep="")) # Stores a list of all the objects in the selected package
     annotEnv = packObjs[grepl(pattern = "REFSEQ",x = packObjs, ignore.case = T)] # Select the enivornment from the package to map probes to RefSeq IDs
+    cat("Annotating with R package:",annotPack,"\n")
   }, error=function(e){
     stop("Error: Array version wasn't not recognized or the annotation package was unable to load.\n
          Check that the appropriate packages are installed and the array version is contained in the list of known arrays", call. = F)
@@ -59,8 +60,6 @@ tryCatch({
 inFH = opt$input
 tryCatch({
   eset = read.delim(inFH,header=T,sep = "\t",stringsAsFactors = F)
-  row.names(eset) = eset[,1]
-  eset[,1] = NULL
   neset = new("ExpressionSet",exprs = as.matrix(eset))
   neset@annotation = annotPack
 }, error=function(e){

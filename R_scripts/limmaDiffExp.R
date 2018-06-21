@@ -10,7 +10,7 @@ suppressPackageStartupMessages(library("optparse"))
 # Read options
 option_list=list(
   make_option(c("-d","--exprData"),type="character",help="Name of (or path to) the input file (\\t delimited .txt file)"),
-  make_option(c("-r","--RSApath"),type="character",help="Path to the directory containing the dataset metadata"),
+  make_option(c("-i","--ISApath"),type="character",help="Path to the directory containing the dataset metadata"),
   make_option("--group1",type="character",help="'_'delimited list of factors to select samples for group 1 [ex: flight_geneKO]"),
   make_option("--group2",type="character",help="'_'delimited list of factors to select samples for group 2 [ex: ground_geneKO]"),
   make_option(c("-o","--output"),type="character",default="DGE.txt",help="Name of (or path to) file to write results to (default: DGE.txt)")
@@ -24,23 +24,23 @@ if (is.null(opt$exprData)){
   stop("No expression data provided", call.=FALSE)
 }else inFH = opt$exprData
 
-if (is.null(opt$RSApath)){
+if (is.null(opt$ISApath)){
   print_help(opt_parser)
-  stop("No RSA directory provided", call.=FALSE)
-} else rsaFH = opt$RSApath
+  stop("No ISA directory provided", call.=FALSE)
+} else isaFH = opt$ISApath
 
 suppressPackageStartupMessages(library("Risa"))
 suppressPackageStartupMessages(library("limma"))
 
 # Read in ISA tab file and extract assay file
-# rsaFH = "../metadata/GLDS-4_metadata_GSE18388-ISA/"
+# isaFH = "../metadata/GLDS-4_metadata_GSE18388-ISA/"
 tryCatch({
-    rsaIN = readISAtab(rsaFH)
+    isaIN = readISAtab(isaFH)
   }, error=function(e){
     stop("ISA directory could not be read by Risa", call. = F)
   }
 )
-studyFactors = rsaIN@study.files[[1]]
+studyFactors = isaIN@study.files[[1]]
 
 # Read in underscore-delimited factor levels and split into lists
 if (!is.null(opt$group1) & !is.null(opt$group2)){
