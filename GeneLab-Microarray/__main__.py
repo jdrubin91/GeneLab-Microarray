@@ -3,13 +3,12 @@ __author__ = 'Jonathan Rubin'
 import os,sys,argparse
 
 def run():
-    parser = argparse.ArgumentParser(prog='GeneLab-Microarray',usage='%(prog)s [options] Directory',description='Standardized processing pipeline for microarray data on GeneLab.')
-    parser.add_argument('Directory',
-        help='The full path to a directory containing either a single dataset structured according to specifications or a batch.txt file. See README for more information.')
-    parser.add_argument('-o','--output',help='Required. Takes as input an output directory.',metavar='',required=True)
-    parser.add_argument('-b','--batch',help='If batch processing is desired, provide a full path to a batch.txt file as the /Directory/ (see README for format guidelines).'
+    parser = argparse.ArgumentParser(prog='GeneLab-Microarray',usage='%(prog)s [options] Output',description='Standardized processing pipeline for microarray data on GeneLab.')
+    parser.add_argument('Output', help='The full path to the desired output directory.')
+    parser.add_argument('-p','--process',help='Specify for process mode. If specified, give a directory to a GLDS directory to be processed.',metavar='',default=False)
+    parser.add_argument('-b','--batch',help='Specify for batch processing submode (must also specify process). If specified, input the full directory to a batch.txt file (see README for format guidelines) to the process flag.'
      ,default=False,action='store_const',const=True,metavar='')
-    parser.add_argument('-v','--visualize',help='Specify for visualization mode (default is processing mode). If selected, must input a comma-separated list of factor values and an adjusted p-value cutoff (ex. --visualize flight,ground,0.1) to compare. Outputs an interactive scatter plot of given conditions.',
+    parser.add_argument('-v','--visualize',help='Specify for visualization mode. If selected, must input a comma-separated list of factor values and an adjusted p-value cutoff (ex. --visualize flight,ground,0.1) to compare.',
         ,default=False,metavar='')
 
 
@@ -22,8 +21,8 @@ def run():
     #Parse user-provided arguments 
     args = parser.parse_args()
     batch = args.batch
-    indir = args.Directory
-    outdir = args.output
+    indir = args.process
+    outdir = args.Output
     condition1,condition2,pval_cut = args.visualize.split(',')
 
 
@@ -47,7 +46,7 @@ def run():
 
 
     #Either run batch module or just run the processing steps on a single dataset
-    if visualize == False:
+    if process != False:
         if batch:
             print "Batch option specified.\nUsing batch file: " + indir + "\nWriting output to: " + outdir
             import batch_process
@@ -74,7 +73,7 @@ def run():
                 raise IOError('microarray directory within input not found. See README for expected directory structure.')
 
             print "done."
-    else:
+    elif visualize != False:
         condition1,condition2,pval_cut = visualize.split(',')
         print "Visualization mode specified.\nComparing: " + condition1 + " vs. " + condition2 + "\nAdjusted p-value cutoff set at: " + pval_cut
         import differential_plot
@@ -84,5 +83,8 @@ def run():
         rawdata_process.limma_differential(rawdata_out,metadata_out,GLDS)
         differential_plot.differential_visualize(rawdata_out,GLDS)
         print "done. Output in: " + rawdata_out
+    else:
+        print "Error: Neither process mode nor visualize mode specified. See help for information on how to run GeneLab-Microarray exiting..."
+        sys.exit(1)
 
 

@@ -161,6 +161,7 @@ def differential_visualize(rawdata_out,GLDS):
     volcanosiglabels = list()
     cell_text = list()
     pval_cut = config.pval_cut
+    diffExp_file = os.path.join(rawdata_out,GLDS + "_microarray_DGE.txt")
     with open(diffExp_file) as F:
         header = F.readline().strip('\n').split('\t')
         fc_index = [i for i in range(len(header)) if 'FC' in header[i]][0]+1
