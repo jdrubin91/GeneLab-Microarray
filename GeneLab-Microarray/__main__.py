@@ -82,7 +82,7 @@ def run():
         import differential_plot
         rawdata_out = os.path.join(outdir,'microarray')
         metadata_out = os.path.join(outdir,'metadata')
-        GLDS = os.path.basename(outdir)
+        GLDS = os.path.basename(os.path.dirname(outdir))
         rawdata_process.limma_differential(rawdata_out,metadata_out,GLDS)
         differential_plot.differential_visualize(rawdata_out,GLDS)
         print "done. Output in: " + rawdata_out
