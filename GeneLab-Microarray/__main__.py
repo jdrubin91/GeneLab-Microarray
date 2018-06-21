@@ -9,7 +9,7 @@ def run():
     parser.add_argument('-b','--batch',help='Specify for batch processing submode (must also specify process). If specified, input the full directory to a batch.txt file (see README for format guidelines) to the process flag.'
      ,default=False,action='store_const',const=True,metavar='')
     parser.add_argument('-v','--visualize',help='Specify for visualization mode. If selected, must input a comma-separated list of factor values and an adjusted p-value cutoff (ex. --visualize flight,ground,0.1) to compare.',
-        ,default=False,metavar='')
+        default=False,metavar='')
 
 
     #If user does not provide any arguments, simply display help message
