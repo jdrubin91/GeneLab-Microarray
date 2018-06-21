@@ -23,7 +23,7 @@ def run():
     batch = args.batch
     indir = args.process
     outdir = args.Output
-    condition1,condition2,pval_cut = args.visualize.split(',')
+    visualize = args.visualize
 
 
     #Get full paths to locations within this package
@@ -40,9 +40,7 @@ def run():
         outfile.write('tempdir = "' + tempdir + '"\n')
         outfile.write('R_dir = "' + R_dir + '"\n')
         outfile.write('batch = "' + str(batch) + '"\n')
-        outfile.write('condition1 = "' + condition1 + '"\n')
-        outfile.write('condition2 = "' + condition2 + '"\n')
-        outfile.write('pval_cut = "' + pval_cut + '"\n')
+        outfile.write('visualize = "' + str(visualize) + '"\n')
 
 
     #Either run batch module or just run the processing steps on a single dataset
@@ -75,6 +73,10 @@ def run():
             print "done."
     elif visualize != False:
         condition1,condition2,pval_cut = visualize.split(',')
+        with open(os.path.join(srcdir,'config.py'),'a'):
+            outfile.write('condition1 = "' + condition1 + '"\n')
+            outfile.write('condition2 = "' + condition2 + '"\n')
+            outfile.write('pval_cut = "' + pval_cut + '"\n')
         print "Visualization mode specified.\nComparing: " + condition1 + " vs. " + condition2 + "\nAdjusted p-value cutoff set at: " + pval_cut
         import differential_plot
         rawdata_out = os.path.join(outdir,'microarray')
