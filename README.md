@@ -30,6 +30,13 @@ If you are installing on the DP server, run this pip command instead:
 pip install --user -e .
 ```
 
+Additionally, you will need to run the following pip installations:
+```
+pip install --user matplotlib
+pip install --user mpld3
+pip install --user scipy
+```
+
 Once the above steps are completed without error, you should be able to call GeneLab-Microarray from any directory. Try:
 
 ```
