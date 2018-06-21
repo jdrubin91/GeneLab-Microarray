@@ -6,15 +6,13 @@
 #biocLite("limma")
 
 suppressPackageStartupMessages(library("optparse"))
-suppressPackageStartupMessages(library("Risa"))
-suppressPackageStartupMessages(library("limma"))
 
 # Read options
 option_list=list(
-  make_option(c("-d","--exprData"),type="character",help="Name of (or path to) the input file (\t delimited .txt file)"),
+  make_option(c("-d","--exprData"),type="character",help="Name of (or path to) the input file (\\t delimited .txt file)"),
   make_option(c("-r","--RSApath"),type="character",help="Path to the directory containing the dataset metadata"),
-  make_option(c("-1","--group1"),type="character",help="'_'delimited list of factors to select samples for group 1 [ex: flight_geneKO]"),
-  make_option(c("-2","--group2"),type="character",help="'_'delimited list of factors to select samples for group 2 [ex: ground_geneKO]"),
+  make_option("--group1",type="character",help="'_'delimited list of factors to select samples for group 1 [ex: flight_geneKO]"),
+  make_option("--group2",type="character",help="'_'delimited list of factors to select samples for group 2 [ex: ground_geneKO]"),
   make_option(c("-o","--output"),type="character",default="DGE.txt",help="Name of (or path to) file to write results to (default: DGE.txt)")
 )
 
@@ -30,6 +28,9 @@ if (is.null(opt$RSApath)){
   print_help(opt_parser)
   stop("No RSA directory provided", call.=FALSE)
 } else rsaFH = opt$RSApath
+
+suppressPackageStartupMessages(library("Risa"))
+suppressPackageStartupMessages(library("limma"))
 
 # Read in ISA tab file and extract assay file
 # rsaFH = "../metadata/GLDS-4_metadata_GSE18388-ISA/"
@@ -53,10 +54,10 @@ if (!is.null(opt$group1) & !is.null(opt$group2)){
 }
 
 #From assay file, extract column containing 'Factor Value'
-factorValues = studyFactors[,grepl("Factor Value",colnames(assayFactors))]
+factorValues = studyFactors[,grepl("Factor Value",colnames(studyFactors))]
 #Also extract sample names from assay file, these should be in the same order as factor values
 tryCatch({
-  rownames(factorValues) = studyFactors[,grepl("Sample Name",colnames(assayFactors))]
+  rownames(factorValues) = studyFactors[,grepl("Sample Name",colnames(studyFactors))]
 }, error=function(e){
   stop("Error: Unable to pull sample names from the study level metadata", call. = F)
 }
@@ -118,4 +119,5 @@ fit2 <- eBayes(fit2)
 #coef refers to which column is of interest (1 is log2FC), adjust refers to multiple hypothesis testing method ("BH" = Benjamini & Hochberg)
 table <- data.frame(topTable(fit2, coef=1, n=Inf, adjust="BH"))
 write.table(table,file=opt$output,sep="\t")
+cat("All done! Differential expression information saved to:",opt$output,"\n")
 
