@@ -57,13 +57,13 @@ def run():
             metadata_out = os.path.join(outdir,GLDS,'metadata')
             metadata_in = os.path.join(indir,'metadata')
             rawdata_in = os.path.join(indir,'microarray')
-            if os.path.isdir(metadata_dir):
+            if os.path.isdir(metadata_in):
                 metadata_process.clean(metadata_in)
             else:
                 raise IOError('metadata directory within input not found. See README for expected directory structure.')
 
             #Copy rawdata into output
-            if os.path.isdir(rawdata_dir):
+            if os.path.isdir(rawdata_in):
                 rawdata_process.copy(rawdata_in)
                 rawdata_process.rename(os.path.join(outdir,GLDS))
                 rawdata_process.qc_and_normalize(rawdata_out,GLDS)
