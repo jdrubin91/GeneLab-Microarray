@@ -54,7 +54,7 @@ suppressPackageStartupMessages(require(affy))
 celFiles <- list.celfiles(full.names=TRUE)
 sampNames = gsub(".*_microarray_","",celFiles)
 sampNames = gsub(".CEL","",sampNames)
-sampNames = gsub("./","",sampNames)
+sampNames = gsub("./","",sampNames) # Extract sample naems form the list of .CEL files
 
 tryCatch({raw = ReadAffy()}, error=function(e){
   stop("No .CEL files detected in the current directory", call. = F)
@@ -243,7 +243,7 @@ if(QCout == T){
       plot(density(normVals[,i]),ylim = ylims,xlim=xlims,xlab='Normalized expression values[log2]',main=paste(glAn,' Normalized expression distributions',sep=''),col=color[i])
       par(new=T)
     }else{
-      plot(density(normVals[,i]),ylim = ylims,xlim=xlims,axes=T,xlab='',main='',col=color[i])
+      plot(density(normVals[,i]),ylim = ylims,xlim=xlims,axes=F,xlab='',ylab='',main='',col=color[i])
       par(new=T)
     }
   }
