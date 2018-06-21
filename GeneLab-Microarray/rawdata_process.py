@@ -86,6 +86,7 @@ def qc_and_normalize(rawdata_out,GLDS):
         sys.exit(1)
 
 def limma_differential(rawdata_out,metadata_out,GLDS):
+    import config
     condition1,condition2,pval_cut = config.visualize.split(',')
     limma_script = os.path.join(config.R_dir,'limmaDiffExp.R')
     if GLDS + "_microarray_normalized_annotated.txt" in os.listdir(rawdata_out):
