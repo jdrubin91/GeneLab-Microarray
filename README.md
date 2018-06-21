@@ -27,7 +27,7 @@ pip install -e .
 If you are installing on the DP server, run this pip command instead:
 
 ```
-pip --user install -e .
+pip install --user -e .
 ```
 
 Once the above steps are completed without error, you should be able to call GeneLab-Microarray from any directory. Try:
