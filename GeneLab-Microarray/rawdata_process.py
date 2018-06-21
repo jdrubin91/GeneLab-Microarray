@@ -73,10 +73,11 @@ def rename(GLDS_path):
                 os.system(move_command)
 
 def qc_and_normalize(rawdata_out,GLDS):
+    print rawdata_out, GLDS
     try:
         os.chdir(rawdata_out)
         R_script = os.path.join(config.R_dir,'affyNormQC.R')
-        R_command = "Rscript " + R_script + " --normalization rma --outFile=exprsValues --outType=both --outputData=TRUE --QCoutput=TRUE --NUSEplot=TRUE --GLDS="+GLDS.split('-')[1]
+        R_command = "Rscript " + R_script + " --normalization rma -o expValues --outType=txt --outputData=TRUE --QCoutput=TRUE --NUSEplot=TRUE --GLDS="+GLDS.split('-')[1]
         os.system(R_command)
         if not 'exprsValues.txt' in os.listdir(rawdata_out):
             print "Warning: Normalized expression file missing, some processing steps may have failed"
