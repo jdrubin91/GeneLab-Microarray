@@ -4,13 +4,14 @@
 # source("http://bioconductor.org/biocLite.R")
 # biocLite("genefilter")
 # biocLite("mogene10sttranscriptcluster.db")
+# biocLite("moe430a.db")
 
 suppressPackageStartupMessages(library("optparse"))
 
 # Read options
 option_list=list(
   make_option(c("-i","--input"),type="character",help="Name of (or path to) the input file (\t delimited .txt file)"),
-  make_option(c("-a","--arrayInfo"),type="character",default="*_arrayInfo.txt",help="Name of (or path to) a file containing the array information [Line 1: Manufacturer, line 2: Array version]"),
+  make_option(c("-a","--arrayInfo"),type="character",default="arrayInfo.txt",help="Name of (or path to) a file containing the array information [Line 1: Manufacturer, line 2: Array version]"),
   make_option(c("-o","--output"),type="character",default="annotExpValues.txt",help="Name of (or path to) file to write results to (default: annotExpValues.txt)"),
   make_option(c("-q","--QCoutput"),type="logical",default=TRUE,help="Output QC_reporting directory of QC plots (default = TRUE)"),
   make_option("--GLDS",type="character",help="GLDS accession number for plot outputs (ie '21' for GLDS-21)")
@@ -39,8 +40,8 @@ tryCatch({
 )
 
 # Set-up array version:annotation database pseudo-dictionary
-arrays = c("MoGene-1_0-st-v1")
-arrPackages = c("mogene10sttranscriptcluster.db")
+arrays = c("MoGene-1_0-st-v1","MOE430A")
+arrPackages = c("mogene10sttranscriptcluster.db","moe430a.db")
 
 # Call the appropriate annotation package
 tryCatch({
@@ -57,7 +58,7 @@ tryCatch({
 # inFH = "expValues.txt"
 inFH = opt$input
 tryCatch({
-  eset = read.delim(inFH,header=T,sep = "\t")
+  eset = read.delim(inFH,header=T,sep = "\t",stringsAsFactors = F)
   row.names(eset) = eset[,1]
   eset[,1] = NULL
   neset = new("ExpressionSet",exprs = as.matrix(eset))

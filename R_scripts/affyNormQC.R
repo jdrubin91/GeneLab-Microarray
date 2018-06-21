@@ -98,7 +98,7 @@ if(QCout == T){
     }
   }else{
     nblines=length(celFiles)%/%4 + as.numeric((length(celFiles)%%4)!=0)
-    png(paste('./',glAn,'_QC_reporting/',glAn,'_image.png',sep=''),width=800,height = 200*nblines)
+    png(paste('./',glAn,'_QC_reporting/',glAn,'_images.png',sep=''),width=800,height = 200*nblines)
     par(mfrow=c(nblines,4))
     image(raw)
     dev.off()
@@ -220,11 +220,11 @@ if(opt$outputData == TRUE){
   
   if(opt$outType == "both"){
     save(eset,file=paste(outFH,".rda",sep=""))
-    write.exprs(eset,file=paste(outFH,".txt",sep=""),sep="\t")
+    write.table(exprs(eset),file=paste(outFH,".txt",sep=""),sep="\t",quote = F)
   }else if(opt$outType == "R"){
     save(eset,file=paste(outFH,".rda",sep=""))
   }else if(opt$outType == "txt"){
-    write.exprs(eset,file=paste(outFH,".txt",sep=""),sep="\t")
+    write.table(exprs(eset),file=paste(outFH,".txt",sep=""),sep="\t",quote = F)
   }else{
     print_help(opt_parser)
     stop("Help, I don't know how to save this data!",call. = F)
