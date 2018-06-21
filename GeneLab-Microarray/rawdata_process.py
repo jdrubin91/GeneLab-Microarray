@@ -89,7 +89,7 @@ def limma_differential(rawdata_out,metadata_out,GLDS):
     condition1,condition2 = config.visualize.split(',')
     limma_script = os.path.join(config.R_dir,'limmaDiffExp.R')
     d_option = " -d " + GLDS + "_microarray_normalized_annotated.txt"
-    r_option = " -r " + metadata_out
+    r_option = " -i " + metadata_out
     group1_option = " --group1=" + config.condition1
     group2_option = " --group2=" + config.condition2
     o_option = " -o " + GLDS + "_microarray_DGE.txt"
