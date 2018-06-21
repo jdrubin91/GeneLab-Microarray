@@ -34,7 +34,7 @@ def run():
 
     #Write full paths to locations to a config.py file to be used by other scripts in this package
     with open(os.path.join(srcdir,'config.py'),'w') as outfile:
-        outfile.write('indir = "' + indir + '"\n')
+        outfile.write('indir = "' + str(indir) + '"\n')
         outfile.write('outdir = "' + outdir + '"\n')
         outfile.write('srcdir = "' + srcdir + '"\n')
         outfile.write('tempdir = "' + tempdir + '"\n')
