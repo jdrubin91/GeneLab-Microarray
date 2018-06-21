@@ -101,7 +101,7 @@ if(sum(group == 3) == nrow(factorValues)){
 cat(sum(group == 1),"sample(s) found in group 1:\n",rownames(factorValues)[group == 1],"\n")
 cat(sum(group == 2),"sample(s) found in group 2:\n",rownames(factorValues)[group == 2],"\n")
 if(sum(group == 0) > 0){
-  cat("Warning:",sum(group == 0),"sample(s) not found in either group:\n",rownames(factorValues)[group == 0],"\nIf this is not expected, please ensure the provided factor levels match the factor levels in the study-level metadata exactly")
+  cat("Warning:",sum(group == 0),"sample(s) not found in either group:\n",rownames(factorValues)[group == 0],"\nIf this is not expected, please ensure the provided factor levels match the factor levels in the study-level metadata exactly\n")
 }
 eset = eset[,!(group == 0 | group == 3)]
 

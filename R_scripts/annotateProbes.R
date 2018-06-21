@@ -6,6 +6,13 @@
 # biocLite("mogene10sttranscriptcluster.db")
 # biocLite("moe430a.db")
 
+# biocLite("drosophila2.db")
+# biocLite("hgu133plus2.db")
+# biocLite("ath1121501.db")
+# biocLite("yeast2.db")
+# biocLite("hugene10sttranscriptcluster.db")
+# biocLite("rat2302.db")
+
 suppressPackageStartupMessages(library("optparse"))
 
 # Read options
@@ -40,8 +47,23 @@ tryCatch({
 )
 
 # Set-up array version:annotation database pseudo-dictionary
-arrays = c("MoGene-1_0-st-v1","MOE430A")
-arrPackages = c("mogene10sttranscriptcluster.db","moe430a.db")
+arrayNames = c("MoGene-1_0-st-v1",
+               "MOE430A",
+               "Drosophila_2",
+               "HG-U133_Plus_2",
+               "ATH1-121501",
+               "HuGene-1_0-st-v1",
+               "Yeast_2",
+               "Rat230_2")
+
+arrPackages = c("mogene10sttranscriptcluster.db",
+                "moe430a.db",
+                "drosophila2.db",
+                "hgu133plus2.db",
+                "ath1121501.db",
+                "hugene10sttranscriptcluster.db",
+                "yeast2.db",
+                "rat2302.db")
 
 # Call the appropriate annotation package
 tryCatch({
