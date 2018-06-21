@@ -73,13 +73,12 @@ def rename(GLDS_path):
                 os.system(move_command)
 
 def qc_and_normalize(rawdata_out,GLDS):
-    print rawdata_out, GLDS
     try:
         os.chdir(rawdata_out)
         R_script = os.path.join(config.R_dir,'affyNormQC.R')
-        R_command = "Rscript " + R_script + " --normalization rma -o expValues --outType=txt --outputData=TRUE --QCoutput=TRUE --NUSEplot=TRUE --GLDS="+GLDS.split('-')[1]
+        R_command = "Rscript " + R_script + " --normalization rma -o "+GLDS+"_microarray_normalized --outType=txt --outputData=TRUE --QCoutput=TRUE --NUSEplot=TRUE --GLDS="+GLDS.split('-')[1]
         os.system(R_command)
-        if not 'exprsValues.txt' in os.listdir(rawdata_out):
+        if not GLDS+'_microarray_normalized.txt' in os.listdir(rawdata_out):
             print "Warning: Normalized expression file missing, some processing steps may have failed"
         os.chdir(config.srcdir)
     except OSError:
@@ -89,7 +88,13 @@ def qc_and_normalize(rawdata_out,GLDS):
 def limma_differential(rawdata_out,metadata_out,GLDS):
     condition1,condition2 = config.visualize.split(',')
     limma_script = os.path.join(config.R_dir,'limmaDiffExp.R')
-    d_option = " -d " + GLDS + "_microarray_normalized_annotated.txt"
+    if GLDS + "_microarray_normalized_annotated.txt" in os.listdir(rawdata_out):
+        d_option = " -d " + GLDS + "_microarray_normalized_annotated.txt"
+    elif GLDS + "_microarray_normalized.txt" in os.listdir(rawdata_out):
+        print "Warning: No annotated expression file detected, using unannotated file instead - Labelling will be done with probe IDs and will need to be converted to gene names later."
+    else:
+        print "Error: No expression count file detected, exiting..."
+        sys.exit(1)
     r_option = " -i " + metadata_out
     group1_option = " --group1=" + config.condition1
     group2_option = " --group2=" + config.condition2
