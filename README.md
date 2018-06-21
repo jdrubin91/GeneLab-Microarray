@@ -37,40 +37,37 @@ GeneLab-Microarray --help
 ```
 
 <H2 id="Running">Running GeneLab-Microarray</H2>
-Gene-Lab microarray has two modes: process and visualization. 
+Gene-Lab microarray has two modes: process and visualization. There are 3 possible flags to give GeneLab-Microarray (--process,--batch, and --visualize). In all cases, an output directory must be specified as the last argument (no flags) - this is a positional argument.
 
 <H3 id="ProcessMode">Process Mode</H3>
-The default for this package is processing mode which requires as input a path to a GLDS directory. GeneLab-Microarray will copy raw files from your specified directory into your output directory (specified with the -o/--output flag - Note: the output option is required). 
-
-
+Processing mode requires as input a path to a GLDS directory. GeneLab-Microarray will copy raw files from your specified directory into your output directory, rename them according to standard specifications, and perform QC and normalization.
+<br></br>
 Example:
 ```
-GeneLab-Microarray --output /opt/jdrubin/batch_out/ /opt/genelab-genomespace-dev_mount_point/GLDS-4/
+GeneLab-Microarray --process /opt/genelab-genomespace-dev_mount_point/GLDS-4/ /opt/jdrubin/batch_out/
 ```
+
 <H4 id="BatchSubmode">Batch Submode</H4>
-Within the processing mode, there is a submode called batch (specified with -b/--batch). Similar to process mode, an output directory must be specified. However, instead of specifying a directory, batch mode takes as input a path to a batch file (see <A href=#BatchFile>batch file format</A> for guidelines on batch files. There are also example batch files within the batch/ directory).
-
-
+Within the processing mode, there is a submode called batch (specified with -b/--batch). This submode will batch process all GLDS directories specified within a batch.txt file (see <A href=#BatchFile>batch file format</A>). If specified, input into process a batch.txt file instead of a GLDS directory. There are example batch files within the batch/ directory.
+<br></br>
 Example:
 ```
-GeneLab-Microarray --output /opt/jdrubin/batch_out/ --batch /opt/jdrubin/GeneLab-Microarray/batch/batch.txt
+GeneLab-Microarray --batch --process /opt/jdrubin/GeneLab-Microarray/batch/batch.txt /opt/jdrubin/batch_out/
 ```
 
 <H3 id="VisualizationMode">Visualization Mode</H3>
-The visualization mode for GeneLab-Microarray is specified with the -v/--visualize flag and takes as input a comma separated list of factor values followed by an adjusted p-value cutoff (for plotting purposes). The visualization mode will output an html file with interactive graphs and a png file with identical graphs that can be used for publication. Similar to other modes, an output must be specified. As input, the visualization mode takes a path to a GLDS folder that has already been processed by GeneLab-Microarray.
-
-
+The visualization mode for GeneLab-Microarray is specified with the -v/--visualize flag and takes as input a comma separated list of factor values followed by an adjusted p-value cutoff (for plotting purposes). The visualization mode will output an html file with interactive graphs and a png file with identical graphs that can be used for publication. Similar to other modes, an output directory must be specified as a positional argument at the end (in this case this is also the input directory). Visualize mode assumes the input data has been processed using GeneLab-Microarray (looks for specific filenames within specific directories).
+<br></br>
 Example:
 ```
-GeneLab-Microarray --output /opt/jdrubin/batch_out/ --visualize flight,ground,0.1 /opt/jdrubin/batch_out/GLDS-4/
+GeneLab-Microarray --visualize flight,ground,0.1 /opt/jdrubin/batch_out/GLDS-4/
 ```
 
 The visualization mode can also do comparisons with multiple factor values which are specified with underscore delimiters.
-
-
+<br></br>
 Example:
 ```
-GeneLab-Microarray --output /opt/jdrubin/batch_out/ --visualize flight_geneKO,flight_noKO,0.1 /opt/jdrubin/batch_out/GLDS-4/
+GeneLab-Microarray --visualize flight_geneKO,flight_noKO,0.1 /opt/jdrubin/batch_out/GLDS-4/
 ```
 
 <H2 id="Directory">Directory Structure</H2>
@@ -79,7 +76,7 @@ GeneLab-Microarray expects directories to be in a specific structure. A parent d
 ```
 GLDS-#/
   metadata/
-    Metadata_ISA.zip
+    metadata_ISA.zip
   microarray/
     microarray_raw.tar
 ```
@@ -92,7 +89,7 @@ If `-b,--batch` option is desired. In addition to calling the flag, users must s
 #Directory=/opt/genelab-genomespace-dev_mount_point/
 ```
 
-The rest of the file is a tab delimited txt file with 3 columns:
+The rest of the file is a tab delimited txt file with 3 columns (header is required):
 
 ```
 GLDS#     Copied    Normalize/QC
