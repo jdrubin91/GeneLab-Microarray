@@ -72,6 +72,7 @@ def run():
 
             print "done."
     elif visualize != False:
+        import rawdata_process
         condition1,condition2,pval_cut = visualize.split(',')
         with open(os.path.join(srcdir,'config.py'),'a') as outfile:
             outfile.write('condition1 = "' + condition1 + '"\n')
