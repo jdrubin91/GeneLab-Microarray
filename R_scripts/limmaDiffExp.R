@@ -1,9 +1,9 @@
 #!/usr/bin/env Rscript
 
 # install.packages("optparse")
-#source("http://bioconductor.org/biocLite.R")
-#biocLite("Risa")
-#biocLite("limma")
+# source("http://bioconductor.org/biocLite.R")
+# biocLite("Risa")
+# biocLite("limma")
 
 suppressPackageStartupMessages(library("optparse"))
 

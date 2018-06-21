@@ -9,6 +9,8 @@
 3. <A href=#Directory>Directory Structure</A>
 4. <A href=#BatchFile>Batch File Format</A>
 5. <A href=#affyNormQC>Affy QC and Normalization</A>
+6. <A href=#annotateProbe>Probe annotation</A>
+7. <A href=#limmaDiffExp>Limma Differential Expression</A>
 
 
 <H2 id="Installation">Installation</H2>
@@ -100,7 +102,7 @@ GLDS-4    False     False
 The first column is the name of a folder within the specified Directory. All subsequent columns are booleans (True or False) and are used to keep track of the progress of processing the desired data in batch. GeneLab-Microarray will overwrite the specified batch.txt file changing booleans to True or Skipped when the specific step is finished. An example of a batch.txt file can be found within the `batch/` folder
 
 <H2 id="affyNormQC">Affy QC and Normalization</H2>
-This script is to be called from the directory containing Affymetrix microarray files (with a .CEL extension). It can determine the version of the array and load the appropriate packages (ie "affy" for earlier microarrays and "oligo" for the newer arrays). No inputs are required to run it, but to view the available options, simply run the line below:
+The `affyNormQC.R` script is to be called from the directory containing Affymetrix microarray files (with a .CEL extension). It can determine the version of the array and load the appropriate packages (ie "affy" for earlier microarrays and "oligo" for the newer arrays). No inputs are required to run it, but to view the available options, simply run the line below:
 
 ```
 Rscript --vanilla affyNormQC.R --help
@@ -115,9 +117,55 @@ biocLite("affy")
 biocLite("affyPLM")
 biocLite("oligo")
 ```
-An example run with specified options for all available parameters is given below:
+An example run with all of the options explicitly set to the default or example options:
 
 ```
-Rscript --vanilla affyNormQC.R -n rma --outFile=GLDS-n_FLT-GC_microarray_exprsValues --outType=txt --outputData=TRUE --QCoutput=TRUE --NUSEplot=TRUE
+Rscript --vanilla affyNormQC.R -n rma -o expValues --outType=txt --outputData=TRUE --arrayInfoOnly=FALSE --QCoutput=TRUE --NUSEplot=FALSE --GLDS=21
+```
+
+This script can also be used to detect the Affymetrix array information only, outputting a text file containing the manufacturer and the array version and quitting before normalizing the data or performing QC. This option can be accessed by setting `--arrayInfoOnly=TRUE`. However, the array information txt file will be output in the standard mode as well.
+
+<H2 id="annotateProbe">Probe annotation</H2>
+The `annotateProbe.R` script can be used to map probe IDs to RefSeq gene IDs using annotation packages. If an array type has not been seen before, the annotation package will need to be manually loaded into the array:annotation pseudo-dictonary. The available options for the script are viewable by the following command:
+
+```
+Rscript --vanilla annotateProbes.R --help
+```
+
+The required packages to be install prior to running shown here, as well as in the script immediately below the shebang.
+
+```
+install.packages("optparse")
+source("http://bioconductor.org/biocLite.R")
+biocLite("genefilter")
+biocLite("mogene10sttranscriptcluster.db")
+```
+
+An example call with all of the default/recommended options explicitly defined:
+
+```
+Rscript --vanilla annotateProbes.R -i normalizedProbeExpressions.txt -a GLDS-4_arrayInfo.txt -o annotExpValues.txt --QCoutput=TRUE --GLDS=4
+```
+
+<H2 id="limmaDiffExp">Limma Differential Expression</H2>
+The `limmaDiffExp.R` script can be used to calculate changes in expression between two groups of samples for a given dataset. The available options can be examined by calling:
+
+```
+Rscript --vanilla limmaDiffExp.R --help
+```
+
+This script requires the packages: `optparse`, `Risa`, and `limma`. If these packages are not installed, they can be by running the following line in an R session:
+
+```
+install.packages("optparse")
+source("http://bioconductor.org/biocLite.R")
+biocLite("Risa")
+biocLite("limma")
+```
+
+An example call with options set for all parameters is shown below:
+
+```
+Rscript --vanilla limmaDiffExp.R -d GLDS-4_microarray_normalized_annotated.txt -r ../metadata/example_RSA_directory --group1=flight_KO --group2=ground_KO -o GLDS-4_microarray_DGE.txt
 ```
 

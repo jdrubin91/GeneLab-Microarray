@@ -6,7 +6,6 @@
 # biocLite("mogene10sttranscriptcluster.db")
 
 suppressPackageStartupMessages(library("optparse"))
-suppressPackageStartupMessages(library("genefilter"))
 
 # Read options
 option_list=list(
@@ -24,6 +23,8 @@ if (is.null(opt$input)){
   print_help(opt_parser)
   stop("At least one argument must be supplied (input file)", call.=FALSE)
 }
+
+suppressPackageStartupMessages(library("genefilter"))
 
 # aiFH = "arrayInfo.txt"
 aiFH = opt$arrayInfo
