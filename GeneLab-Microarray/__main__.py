@@ -44,7 +44,7 @@ def run():
 
 
     #Either run batch module or just run the processing steps on a single dataset
-    if process != False:
+    if indir != False:
         if batch:
             print "Batch option specified.\nUsing batch file: " + indir + "\nWriting output to: " + outdir
             import batch_process
