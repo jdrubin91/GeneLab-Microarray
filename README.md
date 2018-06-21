@@ -102,7 +102,7 @@ GLDS-4    False     False
 The first column is the name of a folder within the specified Directory. All subsequent columns are booleans (True or False) and are used to keep track of the progress of processing the desired data in batch. GeneLab-Microarray will overwrite the specified batch.txt file changing booleans to True or Skipped when the specific step is finished. An example of a batch.txt file can be found within the `batch/` folder
 
 <H2 id="affyNormQC">Affy QC and Normalization</H2>
-The `affyNormQC.R` script is to be called from the directory containing Affymetrix microarray files (with a .CEL extension). It can determine the version of the array and load the appropriate packages (ie "affy" for earlier microarrays and "oligo" for the newer arrays). No inputs are required to run it, but to view the available options, simply run the line below:
+The ` affyNormQC.R ` script is to be called from the directory containing Affymetrix microarray files (with a .CEL extension). It can determine the version of the array and load the appropriate packages (ie "affy" for earlier microarrays and "oligo" for the newer arrays). No inputs are required to run it, but to view the available options, simply run the line below:
 
 ```
 Rscript --vanilla affyNormQC.R --help
@@ -126,7 +126,7 @@ Rscript --vanilla affyNormQC.R -n rma -o expValues --outType=txt --outputData=TR
 This script can also be used to detect the Affymetrix array information only, outputting a text file containing the manufacturer and the array version and quitting before normalizing the data or performing QC. This option can be accessed by setting `--arrayInfoOnly=TRUE`. However, the array information txt file will be output in the standard mode as well.
 
 <H2 id="annotateProbe">Probe annotation</H2>
-The `annotateProbe.R` script can be used to map probe IDs to RefSeq gene IDs using annotation packages. If an array type has not been seen before, the annotation package will need to be manually loaded into the array:annotation pseudo-dictonary. The available options for the script are viewable by the following command:
+The ` annotateProbes.R ` script can be used to map probe IDs to RefSeq gene IDs using annotation packages. If an array type has not been seen before, the annotation package will need to be manually loaded into the array:annotation pseudo-dictonary. The available options for the script are viewable by the following command:
 
 ```
 Rscript --vanilla annotateProbes.R --help
@@ -148,7 +148,7 @@ Rscript --vanilla annotateProbes.R -i normalizedProbeExpressions.txt -a GLDS-4_a
 ```
 
 <H2 id="limmaDiffExp">Limma Differential Expression</H2>
-The `limmaDiffExp.R` script can be used to calculate changes in expression between two groups of samples for a given dataset. The available options can be examined by calling:
+The ` limmaDiffExp.R ` script can be used to calculate changes in expression between two groups of samples for a given dataset. The available options can be examined by calling:
 
 ```
 Rscript --vanilla limmaDiffExp.R --help
