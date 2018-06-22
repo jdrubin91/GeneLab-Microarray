@@ -153,7 +153,7 @@ if(opt$QCoutput == T){
   }
   legend(13,0.8,col=color[1:length(sampNames)],legend=sampNames
          ,pch=15,bty = "n",cex = 0.9,pt.cex = 0.8,y.intersp = 0.8)
-  dev.off()
+  garbage <- dev.off()
   
   # PCA plot
   filtPCA = prcomp(normVals)
@@ -164,6 +164,6 @@ if(opt$QCoutput == T){
        main=paste(glAn," PCA of normalized, filtered probes", sep = "")
   )
   text(filtPCA$rotation[,1],filtPCA$rotation[,2],labels = sampNames, cex = 1,pos = 3)
-  dev.off()
+  garbage <- dev.off()
 }
 
