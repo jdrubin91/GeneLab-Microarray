@@ -14,8 +14,6 @@ def run(batch_file):
             else:
                 batch_list.append(linelist)
 
-    print batch_list
-    sys.exit(1)
 
     for i in range(len(batch_list)):
         if 'False' in batch_list[i]:
