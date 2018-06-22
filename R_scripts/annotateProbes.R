@@ -67,18 +67,18 @@ arrPackages = c("mogene10sttranscriptcluster.db",
 
 # Call the appropriate annotation package
 tryCatch({
-    annotPack = arrPackages[grep(pattern = arrVer,x = arrays,ignore.case = T)] # Pick out appropriate package by the array version
+    annotPack = arrPackages[grep(pattern = arrVer,x = arrayNames,ignore.case = T)] # Pick out appropriate package by the array version
     suppressPackageStartupMessages(library(annotPack,character.only = T)) # Load selected package
     packObjs = ls(paste("package:",as.character(annotPack),sep="")) # Stores a list of all the objects in the selected package
     annotEnv = packObjs[grepl(pattern = "REFSEQ",x = packObjs, ignore.case = T)] # Select the enivornment from the package to map probes to RefSeq IDs
     cat("Annotating with R package:",annotPack,"\n")
   }, error=function(e){
-    stop("Error: Array version wasn't not recognized or the annotation package was unable to load.\n
+    stop("Array version wasn't not recognized or the annotation package was unable to load.\n
          Check that the appropriate packages are installed and the array version is contained in the list of known arrays", call. = F)
   }
 )
 
-# inFH = "expValues.txt"
+# inFH = "exprsValues.txt"
 inFH = opt$input
 tryCatch({
   eset = read.delim(inFH,header=T,sep = "\t",stringsAsFactors = F)
