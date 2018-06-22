@@ -37,6 +37,31 @@ pip install --user mpld3
 pip install --user scipy
 ```
 
+And to finish installation, open an R session and run the following commands:
+```
+install.packages("optparse")
+source("http://bioconductor.org/biocLite.R")
+biocLite("zlibbioc")
+biocLite("Biobase")
+biocLite("affy")
+biocLite("S4Vectors")
+biocLite("IRanges")
+biocLite("XVector")
+biocLite("Biostrings")
+biocLite("affyPLM")
+biocLite("bit")
+biocLite("ff")
+biocLite("bitops")
+biocLite("RCurl")
+biocLite("GenomicRanges")
+biocLite("matrixStats")
+biocLite("Rcpp")
+biocLite("bit64")
+biocLite("digest")
+biocLite("RSQLite")
+biocLite("oligo")
+```
+
 Once the above steps are completed without error, you should be able to call GeneLab-Microarray from any directory. Try:
 
 ```
