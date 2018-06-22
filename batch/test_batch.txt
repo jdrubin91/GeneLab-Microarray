@@ -2,5 +2,5 @@
 GLDS#   Copied  Normalize/QC
 GLDS-1  False   False
 GLDS-7	False	False
-GLDS-62	Flase	False
+GLDS-62	False	False
 GLDS-63	False	False

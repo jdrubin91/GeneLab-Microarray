@@ -47,6 +47,8 @@ def run(batch_file):
                 batch_list[i][1] = 'True'
                 update_batch(parent_dir,header,batch_file,batch_list)
                 print "done"
+            elif copy != 'True':
+                print "Warning: Files were not copied for " + GLDS + ". If this was not desired, check batch file and make sure this GLDS was set to 'False'."
 
             if norm_qc == 'False':
                 print "Performing QC, normalization, and post-normalization QC on data for " + GLDS + "..."
@@ -55,6 +57,8 @@ def run(batch_file):
                 batch_list[i][2] = 'True'
                 update_batch(parent_dir,header,batch_file,batch_list)
                 print "done"
+            elif norm_qc != 'True':
+                print "Warning: QC and normalization not performed for " + GLDS + ". If this was not desired, check batch file and make sure this GLDS was set to 'False'."
 
 
 def update_batch(parent_dir,header,batch_file,batch_list):
