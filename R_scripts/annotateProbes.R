@@ -144,7 +144,7 @@ if(opt$QCoutput == T){
     if(i == 1){
       plot(density(normVals[,i]),ylim = ylims,xlim=xlims
            ,xlab='Normalized, annotated expression values[log2]'
-           ,main=paste(glAn,' Normalized expression distributions',sep=''),col=color[i])
+           ,main=paste(glAn,' Normalized, filtered expression distributions',sep=''),col=color[i])
       par(new=T)
     }else{
       plot(density(normVals[,i]),ylim = ylims,xlim=xlims,axes=F,xlab='',ylab='',main='',col=color[i])

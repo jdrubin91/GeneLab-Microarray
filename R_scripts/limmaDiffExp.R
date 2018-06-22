@@ -43,8 +43,8 @@ suppressPackageStartupMessages(library("limma"))
 if(tabISA==TRUE){
   tryCatch({
     isaFiles = dir(isaFH)
-    sFile = isaFiles[grep("^i_*",isaFiles)]
-    studyFactors = read.delim(paste(isaFH,sFile,sep=""), header=T, sep="",stringsAsFactors = F)
+    sFile = isaFiles[grep("^s_*",isaFiles)]
+    studyFactors = read.delim(paste(isaFH,sFile,sep=""),header=T, sep="",stringsAsFactors = F)
   }, error=function(e){
     stop("ISA files could not be read by parsing tab-delimited files", call. = F)
   })
@@ -72,14 +72,18 @@ if (!is.null(opt$group1) & !is.null(opt$group2)){
 }
 
 #From assay file, extract column containing 'Factor Value'
-factorValues = studyFactors[,grepl("Factor Value",colnames(studyFactors))]
-#Also extract sample names from assay file, these should be in the same order as factor values
 tryCatch({
-  rownames(factorValues) = studyFactors[,grepl("Sample Name",colnames(studyFactors))]
+  if(tabISA == TRUE){
+    factorValues = studyFactors[,grepl("Factor.Value",colnames(studyFactors))]
+    rownames(factorValues) = studyFactors[,grepl("Sample.Name",colnames(studyFactors))]
+    
+  }else{
+    factorValues = studyFactors[,grepl("Factor Value",colnames(studyFactors))]
+    rownames(factorValues) = studyFactors[,grepl("Sample Name",colnames(studyFactors))]
+  }
 }, error=function(e){
   stop("Error: Unable to pull sample names from the study level metadata", call. = F)
-}
-)
+})
 
 # Read in an expression value txt file
 # inFH = "annotExpValues.txt"
