@@ -29,18 +29,36 @@ if (is.null(opt$ISApath)){
   stop("No ISA directory provided", call.=FALSE)
 } else isaFH = opt$ISApath
 
-suppressPackageStartupMessages(library("Risa"))
+tryCatch({
+  suppressPackageStartupMessages(library("Risa"))
+  tabISA = FALSE
+}, error=function(e){
+  cat("Warning: Risa package could not be loaded. Metadata will be parsed as tab-delimited files.\n")
+  tabISA = TRUE
+})
 suppressPackageStartupMessages(library("limma"))
 
 # Read in ISA tab file and extract assay file
 # isaFH = "../metadata/GLDS-4_metadata_GSE18388-ISA/"
-tryCatch({
+if(tabISA==TRUE){
+  tryCatch({
+    isaFiles = dir(isaFH)
+    sFile = isaFiles[grep("^i_*",isaFiles)]
+    studyFactors = read.delim(paste(isaFH,sFile,sep=""), header=T, sep="",stringsAsFactors = F)
+  }, error=function(e){
+    stop("ISA files could not be read by parsing tab-delimited files", call. = F)
+  })
+  isaFiles = dir(isaFH)
+  sFile = isaFiles[grep("^i_*",isaFiles)]
+}else{
+  tryCatch({
     isaIN = readISAtab(isaFH)
+    studyFactors = isaIN@study.files[[1]]
   }, error=function(e){
     stop("ISA directory could not be read by Risa", call. = F)
-  }
-)
-studyFactors = isaIN@study.files[[1]]
+  })
+}
+
 
 # Read in underscore-delimited factor levels and split into lists
 if (!is.null(opt$group1) & !is.null(opt$group2)){

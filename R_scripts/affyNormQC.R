@@ -93,7 +93,7 @@ if(QCout == T){
     for(i in 1:length(celFiles)){
       png(paste('./',glAn,'_QC_reporting/',glAn,'_',sampNames[i],'_image.png',sep=''),width=800, height = 800)
       image(raw, which = i)
-      dev.off()
+      garbage <- dev.off()
       cat(".")
     }
   }else{
@@ -101,7 +101,7 @@ if(QCout == T){
     png(paste('./',glAn,'_QC_reporting/',glAn,'_images.png',sep=''),width=800,height = 200*nblines)
     par(mfrow=c(nblines,4))
     image(raw)
-    dev.off()
+    garbage <- dev.off()
   }
   cat("\n")
 
@@ -115,7 +115,7 @@ if(QCout == T){
   }else{
     MAplot(raw,type="pm")
   }
-  dev.off()
+  garbage <- dev.off()
   
   # Intensity distributions of the pm probes from each microarray on the same graph
   cat("\tGenerating initial distribution plots")
@@ -135,7 +135,7 @@ if(QCout == T){
   }
   legend(13,0.8,col=color[1:length(celFiles)],legend=sampNames
          ,pch=15,bty = "n",cex = 0.9,pt.cex = 0.8,y.intersp = 0.8)
-  dev.off()
+  garbage <- dev.off()
   cat("\n")
   
   # Boxplots
@@ -148,7 +148,7 @@ if(QCout == T){
     boxplot(raw,las=2,outline=FALSE,col=color[1:length(celFiles)],main = paste(glAn," Raw intensities",sep=""),names=sampNames)
   }
   mtext(text="log2 Intensity", side=2, line=2.5, las=0)
-  dev.off()
+  garbage <- dev.off()
   
   # PCA
   cat("\tPerforming PCA of raw data...\n")
@@ -160,7 +160,7 @@ if(QCout == T){
        main=paste(glAn," PCA of raw data",sep="")
   )
   text(rawPCA$rotation[,1],rawPCA$rotation[,2],labels = sampNames, cex = 1,pos = 3)
-  dev.off()
+  garbage <- dev.off()
   
   #NUSE plot
   if(NUSEplot == T){
@@ -173,14 +173,14 @@ if(QCout == T){
       RLE(Pset, col = color[1:length(sampNames)],
           names = sampNames, las=2, main=paste(glAn," Relative Log Expression (RLE) plot",sep=""))
       abline(h=0,lty=1,col="red")
-      dev.off()
+      garbage <- dev.off()
       # NUSE plot
       png(paste('./',glAn,'_QC_reporting/',glAn,'_NUSE.png',sep=''),width=800,height = 600)
       par(mar=c(7,5,1,1))
       NUSE(Pset, col = color[1:length(sampNames)], las=2)
       title(main=paste(glAn," NUSE plot of microarray experiments",sep=""))
       abline(h=1.1,lty=1,col="red")
-      dev.off()
+      garbage <- dev.off()
     }else{
       Pset=fitPLM(raw)
       # RLE plot
@@ -189,14 +189,14 @@ if(QCout == T){
       RLE(Pset, col = color[1:length(sampNames)],
           names = sampNames, las=2, main="Relative Log Expression (RLE) plot")
       abline(h=0,lty=1,col="red")
-      dev.off()
+      garbage <- dev.off()
       # NUSE plot
       png(paste('./',glAn,'_QC_reporting/',glAn,'_NUSE.png',sep=''),width=800,height = 600)
       par(mar=c(7,5,1,1))
       NUSE(Pset,col = color[1:length(sampNames)], las=2)
       title(main=paste(glAn," NUSE plot of microarray experiments",sep=""))
       abline(h=1.1,lty=1,col="red")
-      dev.off()
+      garbage <- dev.off()
     }
   }
 }
@@ -249,7 +249,7 @@ if(QCout == T){
   }
   legend(13,0.8,col=color[1:length(celFiles)],legend=sampNames
          ,pch=15,bty = "n",cex = 0.9,pt.cex = 0.8,y.intersp = 0.8)
-  dev.off()
+  garbage <- dev.off()
   
   # Boxplots
   png(paste('./',glAn,'_QC_reporting/',glAn,'_normBoxplot.png',sep=''),width=800,height = 400)
@@ -261,7 +261,7 @@ if(QCout == T){
     boxplot(normVals,las=2,outline=FALSE,col=color[1:length(celFiles)],main=paste(glAn," Normalized intensities",sep=""),names=sampNames)
     mtext(text="log2 Intensity", side=2, line=2.5, las=0)
   }
-  dev.off()
+  garbage <- dev.off()
   
   #MA plot
   cat("\tGenerating MA plots from the normalized data...\n")
@@ -269,7 +269,7 @@ if(QCout == T){
   png(paste('./',glAn,'_QC_reporting/',glAn,'_normPlotMA.png',sep=''),width=800, height = 300*nblines )
   par(mfrow=c(nblines,3))
   MAplot(eset)
-  dev.off()
+  garbage <- dev.off()
   
   # PCA
   cat("\tPerforming PCA of normalized data...\n")
@@ -281,5 +281,5 @@ if(QCout == T){
        main=paste(glAn," PCA of normalized data",sep="")
   )
   text(normPCA$rotation[,1],normPCA$rotation[,2],labels = sampNames, cex = 1,pos = 3)
-  dev.off()
+  garbage <- dev.off()
 }

@@ -60,6 +60,7 @@ biocLite("bit64")
 biocLite("digest")
 biocLite("RSQLite")
 biocLite("oligo")
+biocLite("XML")
 ```
 
 Once the above steps are completed without error, you should be able to call GeneLab-Microarray from any directory. Try:
