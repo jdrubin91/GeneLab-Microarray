@@ -78,7 +78,7 @@ tryCatch({
   }
 )
 
-# inFH = "exprsValues.txt"
+# inFH = "expValues.txt"
 inFH = opt$input
 tryCatch({
   eset = read.delim(inFH,header=T,sep = "\t",stringsAsFactors = F)
