@@ -9,7 +9,10 @@ def run(batch_file):
         header = F.readline()
         for line in F:
             linelist = line.strip('\n').split()
-            batch_list.append(linelist)
+            if len(linelist) != 3:
+                print "Error, batch file line not formatted properly: " + line + " Skipping..."
+            else:
+                batch_list.append(linelist)
 
 
     for i in range(len(batch_list)):
