@@ -10,10 +10,12 @@ def run(batch_file):
         for line in F:
             linelist = line.strip('\n').split()
             if len(linelist) != 3:
-                print "Error, batch file line not formatted properly: " + line + " Skipping..."
+                print "Error, batch file line not formatted properly: " + line + " skipping..."
             else:
                 batch_list.append(linelist)
 
+    print batch_list
+    sys.exit(1)
 
     for i in range(len(batch_list)):
         if 'False' in batch_list[i]:
