@@ -177,6 +177,6 @@ biocLite("limma")
 An example call with options set for all parameters is shown below:
 
 ```
-Rscript --vanilla limmaDiffExp.R -d GLDS-4_microarray_normalized_annotated.txt -r ../metadata/example_RSA_directory --group1=flight_KO --group2=ground_KO -o GLDS-4_microarray_DGE.txt
+Rscript --vanilla limmaDiffExp.R -d GLDS-4_microarray_normalized_annotated.txt -i ../metadata/example_RSA_directory --group1=flight_KO --group2=ground_KO -o GLDS-4_microarray_DGE.txt
 ```
 
