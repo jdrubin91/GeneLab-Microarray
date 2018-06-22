@@ -70,6 +70,16 @@ biocLite("ath1121501.db")
 biocLite("yeast2.db")
 biocLite("hugene10sttranscriptcluster.db")
 biocLite("rat2302.db")
+biocLite("limma")
+biocLite("colorspace")
+biocLite("plyr")
+biocLite("scales")
+biocLite("lazyeval")
+biocLite("rlang")
+biocLite("tibble")
+
+
+biocLite("Risa")
 ```
 
 Once the above steps are completed without error, you should be able to call GeneLab-Microarray from any directory. Try:
