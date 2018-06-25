@@ -14,19 +14,13 @@
 
 
 <H2 id="Installation">Installation</H2>
-To install GeneLab-Microarray:
-
-```
-pip install GeneLab-Microarray
-```
-
-If you are installing on the DP server, run this pip command instead:
+GeneLab-Microarray writes to itself so to ensure you can easily run it, it is recommended to pip install with the --user flag. Example:
 
 ```
 pip install --user GeneLab-Microarray
 ```
 
-GeneLab-Microarray should install mpld3 and scipy automatically however matplotlib will need to be installed manually. To do this, run the following pip command:
+GeneLab-Microarray should install mpld3 and scipy automatically however matplotlib will need to be installed manually if it is not installed. To do this, run the following pip command:
 
 ```
 pip install --user matplotlib
