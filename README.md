@@ -14,27 +14,22 @@
 
 
 <H2 id="Installation">Installation</H2>
-To install GeneLab-Microarray, follow the steps below to clone this repository and add it to your path:
+To install GeneLab-Microarray:
 
 ```
-git clone https://github.com/jdrubin91/GeneLab-Microarray.git
-cd GeneLab-Microarray/
-pip install -e .
+pip install GeneLab-Microarray
 ```
-
-* Note: You should be in the topmost GeneLab-Microarray directory when pip installing (not the one that contains .py scripts)
 
 If you are installing on the DP server, run this pip command instead:
 
 ```
-pip install --user -e .
+pip install --user GeneLab-Microarray
 ```
 
-Additionally, you will need to run the following pip installations:
+GeneLab-Microarray should install mpld3 and scipy automatically however matplotlib will need to be installed manually. To do this, run the following pip command:
+
 ```
 pip install --user matplotlib
-pip install --user mpld3
-pip install --user scipy
 ```
 
 And to finish installation, open an R session and run the following commands:
