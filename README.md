@@ -14,27 +14,22 @@
 
 
 <H2 id="Installation">Installation</H2>
-To install GeneLab-Microarray, follow the steps below to clone this repository and add it to your path:
+To install GeneLab-Microarray:
 
 ```
-git clone https://github.com/jdrubin91/GeneLab-Microarray.git
-cd GeneLab-Microarray/
-pip install -e .
+pip install GeneLab-Microarray
 ```
-
-* Note: You should be in the topmost GeneLab-Microarray directory when pip installing (not the one that contains .py scripts)
 
 If you are installing on the DP server, run this pip command instead:
 
 ```
-pip install --user -e .
+pip install --user GeneLab-Microarray
 ```
 
-Additionally, you will need to run the following pip installations:
+GeneLab-Microarray should install mpld3 and scipy automatically however matplotlib will need to be installed manually. To do this, run the following pip command:
+
 ```
 pip install --user matplotlib
-pip install --user mpld3
-pip install --user scipy
 ```
 
 And to finish installation, open an R session and run the following commands:
@@ -77,7 +72,13 @@ biocLite("scales")
 biocLite("lazyeval")
 biocLite("rlang")
 biocLite("tibble")
+biocLite("graph")
+biocViews("biocViews")
 
+biocLite("mzR") # I think this requires manual installation of ncdf first?
+biocLite("MSnbase")
+
+biocLite("RBGL")
 
 biocLite("Risa")
 ```
@@ -142,20 +143,17 @@ GLDS-#/
 
 
 <H2 id="BatchFile">Batch File Format</H2>
-If `-b,--batch` option is desired. In addition to calling the flag, users must submit the full path to a batch.txt file (examples and a simple script to create this batch.txt file is located in the batch subdirectory). Briefly, the batch.txt file expects the first line to begin with '#' followed by 'Directory=' then a full path to a directory. For example:
+If `-b,--batch` option is desired. In addition to calling the flag, users must submit the full path to a batch.txt file (examples and a simple script to create this batch.txt file is located in the batch subdirectory). 
+
+Briefly, the batch.txt file expects the first line to begin with '#' followed by 'Directory=' then a full path to a directory. The rest of the file is a tab delimited txt file with 3 columns (header is required). The first column is the name of a folder within the specified Directory. All subsequent columns are booleans (True or False) and are used to keep track of the progress of processing the desired data in batch. For example:
 
 ```
 #Directory=/opt/genelab-genomespace-dev_mount_point/
-```
-
-The rest of the file is a tab delimited txt file with 3 columns (header is required):
-
-```
 GLDS#     Copied    Normalize/QC
 GLDS-4    False     False
 ```
 
-The first column is the name of a folder within the specified Directory. All subsequent columns are booleans (True or False) and are used to keep track of the progress of processing the desired data in batch. GeneLab-Microarray will overwrite the specified batch.txt file changing booleans to True or Skipped when the specific step is finished. An example of a batch.txt file can be found within the `batch/` folder
+GeneLab-Microarray will overwrite the specified batch.txt file changing booleans to True or Skipped when the specific step is finished. An example of a batch.txt file can be found within the `batch/` folder
 
 <H2 id="affyNormQC">Affy QC and Normalization</H2>
 The `affyNormQC.R` script is to be called from the directory containing Affymetrix microarray files (with a .CEL extension). It can determine the version of the array and load the appropriate packages (ie "affy" for earlier microarrays and "oligo" for the newer arrays). No inputs are required to run it, but to view the available options, simply run the line below:
