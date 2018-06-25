@@ -1,7 +1,7 @@
 __author__ = 'Jonathan Rubin'
 
 from stat import ST_MTIME
-import os, sys, time, config
+import os, sys, time, subprocess, config
 
 def clean(metadata_directory):
     #Path to the directory (absolute)
@@ -30,26 +30,26 @@ def clean(metadata_directory):
             metadata_zip = os.path.join(metadata_directory,os.path.basename(path))
 
             #Copy the last modified metadata
-            cp_command = "cp -r " + metadata_zip + " " + metadata_out
+            cp_command = ["cp","-r",metadata_zip,metadata_out]
             #Unzip it into the metadata_out directory
-            unzip_command = "unzip -o -qq " + os.path.join(metadata_out,os.path.basename(metadata_zip)) + " -d " + metadata_out
+            unzip_command = ["unzip", "-o", "-qq",os.path.join(metadata_out,os.path.basename(metadata_zip)),"-d",metadata_out]
             #Remove the .zip compressed file to avoid confusion and save space
-            remove_zip_command = "rm " + os.path.join(metadata_out,os.path.basename(metadata_zip))
+            remove_zip_command = ["rm",os.path.join(metadata_out,os.path.basename(metadata_zip))]
 
             #Execute commands
-            os.system(cp_command)
-            os.system(unzip_command)
-            os.system(remove_zip_command)
+            subprocess.call(cp_command)
+            subprocess.call(unzip_command)
+            subprocess.call(remove_zip_command)
 
             i += 1
 
     #Loop through the metadata_out directory in case the unzipping produces a folder. If so, mv contents of folder up one directory and remove folder
     for filename in os.listdir(metadata_out):
         if os.path.isdir(os.path.join(metadata_out,filename)):
-            move_command = "mv " + os.path.join(metadata_out,filename,"*") + " " + metadata_out
-            remove_folder_command = "rm -r " + os.path.join(metadata_out,filename)
-            os.system(move_command)
-            os.system(remove_folder_command)
+            move_command = ["mv", os.path.join(metadata_out,filename,"*"),metadata_out]
+            remove_folder_command = ["rm", "-r",os.path.join(metadata_out,filename)]
+            subprocess.call(move_command)
+            subprocess.call(remove_folder_command)
 
 def read_assay(metadata_out):
     #Loop through metadata files, find the assay file (starts with 'a_')

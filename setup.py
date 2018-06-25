@@ -8,6 +8,6 @@ setup(name='GeneLab-Microarray',version='0.1',
     author_email='jonathan.d.rubin@nasa.gov', 
     license='GPL-3.0',
     packages=['GeneLab-Microarray'], 
-    install_requires=['scipy', 'mpld3','matplotlib'],
+    install_requires=['scipy', 'mpld3'],
     zip_safe=False,
     scripts=['bin/GeneLab-Microarray'])
