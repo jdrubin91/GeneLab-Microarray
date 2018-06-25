@@ -70,8 +70,11 @@ def rename(GLDS_path):
             if key in filename:
                 extension = filename.split('.')[-1]
                 move_command = ["mv", os.path.join(rawdata_out,filename), os.path.join(rawdata_out,GLDS+'_microarray_'+key+'.'+extension)]
-                print move_command
-                subprocess.call(move_command)
+                try:
+                    subprocess.check_call(move_command)
+                except subprocess.CalledProcessError:
+                    print "Renamed raw files are already present in specified output directory..."
+
 
 def qc_and_normalize(rawdata_out,GLDS):
     R_script = os.path.join(config.R_dir,'affyNormQC.R')
