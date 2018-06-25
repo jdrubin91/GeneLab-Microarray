@@ -174,7 +174,7 @@ biocLite("oligo")
 An example run with all of the options explicitly set to the default or example options:
 
 ```
-Rscript --vanilla affyNormQC.R -n rma -o expValues --outType=txt --outputData=TRUE --arrayInfoOnly=FALSE --QCoutput=TRUE --NUSEplot=FALSE --GLDS=21
+Rscript --vanilla affyNormQC.R -i path/to/input/files -n rma -o expValues --outType=txt --outputData=TRUE --arrayInfoOnly=FALSE --QCoutput=TRUE --NUSEplot=FALSE --GLDS=21
 ```
 
 This script can also be used to detect the Affymetrix array information only, outputting a text file containing the manufacturer and the array version and quitting before normalizing the data or performing QC. This option can be accessed by setting `--arrayInfoOnly=TRUE`. However, the array information txt file will be output in the standard mode as well.
