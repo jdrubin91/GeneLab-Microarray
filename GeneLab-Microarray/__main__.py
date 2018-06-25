@@ -29,7 +29,7 @@ def run():
     #Get full paths to locations within this package
     srcdir = os.path.dirname(os.path.realpath(__file__))
     tempdir = os.path.join(os.path.dirname(srcdir),'temp')
-    R_dir = os.path.join(os.path.dirname(srcdir),'R_scripts')
+    R_dir = os.path.join(os.path.dirname(srcdir),'GeneLab-Microarray','R_scripts')
 
 
     #Write full paths to locations to a config.py file to be used by other scripts in this package
