@@ -70,21 +70,16 @@ def rename(GLDS_path):
             if key in filename:
                 extension = filename.split('.')[-1]
                 move_command = ["mv", "'" + os.path.join(rawdata_out,filename) + "'", os.path.join(rawdata_out,GLDS+'_microarray_'+key+'.'+extension)]
+                print move_command
                 subprocess.call(move_command)
 
 def qc_and_normalize(rawdata_out,GLDS):
-    try:
-        os.chdir(rawdata_out)
-        R_script = os.path.join(config.R_dir,'affyNormQC.R')
-        R_command = ["Rscript", R_script, "--normalization", "rma", "-o", GLDS+"_microarray_normalized", "--outType=txt", "--outputData=TRUE" ,"--QCoutput=TRUE", "--NUSEplot=FALSE", "--GLDS="+GLDS.split('-')[1]]
-        subprocess.call(R_command)
-        if not GLDS+'_microarray_normalized.txt' in os.listdir(rawdata_out):
-            print "Warning: Normalized expression file missing, some processing steps may have failed"
-        os.chdir(config.srcdir)
-    except OSError:
-        print "Error: Microarray raw data directory missing. Exiting..."
-        sys.exit(1)
-
+    R_script = os.path.join(config.R_dir,'affyNormQC.R')
+    R_command = ["Rscript", R_script, "--normalization", "rma", "-o", GLDS+"_microarray_normalized", "-i", rawdata_out,"--outType=txt", "--outputData=TRUE" ,"--QCoutput=TRUE", "--NUSEplot=FALSE", "--GLDS="+GLDS.split('-')[1]]
+    subprocess.call(R_command)
+    if not GLDS+'_microarray_normalized.txt' in os.listdir(rawdata_out):
+        print "Warning: Normalized expression file missing, some processing steps may have failed"
+    
 def limma_differential(rawdata_out,metadata_out,GLDS):
     condition1,condition2,pval_cut = config.visualize.split(',')
     limma_script = "'"+os.path.join(config.R_dir,'limmaDiffExp.R')+"'"
