@@ -71,9 +71,10 @@ def rename(GLDS_path):
                 extension = filename.split('.')[-1]
                 move_command = ["mv", os.path.join(rawdata_out,filename), os.path.join(rawdata_out,GLDS+'_microarray_'+key+'.'+extension)]
                 try:
-                    subprocess.check_call(move_command)
+                    with open(os.devnull,'w') as FNULL:
+                        subprocess.check_call(move_command,stdout=FNULL, stderr=subprocess.STDOUT)
                 except subprocess.CalledProcessError:
-                    print "Renamed raw files are already present in specified output directory..."
+                    pass
 
 
 def qc_and_normalize(rawdata_out,GLDS):
