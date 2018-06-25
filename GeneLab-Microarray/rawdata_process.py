@@ -69,7 +69,7 @@ def rename(GLDS_path):
         for filename in os.listdir(rawdata_out):
             if key in filename:
                 extension = filename.split('.')[-1]
-                move_command = ["mv", "'" + os.path.join(rawdata_out,filename) + "'", os.path.join(rawdata_out,GLDS+'_microarray_'+key+'.'+extension)]
+                move_command = ["mv", os.path.join(rawdata_out,filename), os.path.join(rawdata_out,GLDS+'_microarray_'+key+'.'+extension)]
                 print move_command
                 subprocess.call(move_command)
 
