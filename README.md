@@ -77,7 +77,13 @@ biocLite("scales")
 biocLite("lazyeval")
 biocLite("rlang")
 biocLite("tibble")
+biocLite("graph")
+biocViews("biocViews")
 
+biocLite("mzR") # I think this requires manual installation of ncdf first?
+biocLite("MSnbase")
+
+biocLite("RBGL")
 
 biocLite("Risa")
 ```
