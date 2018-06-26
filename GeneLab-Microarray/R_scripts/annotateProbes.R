@@ -72,10 +72,12 @@ tryCatch({
     packObjs = ls(paste("package:",as.character(annotPack),sep="")) # Stores a list of all the objects in the selected package
     if(any(grepl(pattern = "REFSEQ",x = packObjs, ignore.case = T))){
       annotEnv = packObjs[grepl(pattern = "REFSEQ",x = packObjs, ignore.case = T)] # Select the enivornment from the package to map probes to RefSeq IDs
-    }else{
+    }else if(annotPack == "ath1121501.db"){
       annotEnv = packObjs[grepl(pattern = "ACCNUM",x = packObjs, ignore.case = T)] # Select the enivornment from the package to map probes to RefSeq IDs
+    }else if(annotPack == "yeast2.db"){
+      annotEnv = packObjs[grepl(pattern = "ORF",x = packObjs, ignore.case = T)] # Select the enivornment from the package to map probes to RefSeq IDs
     }
-        cat("Annotating with R package",annotPack,"using object:",annotEnv,"\n")
+    cat("Annotating with R package",annotPack,"using object:",annotEnv,"\n")
   }, error=function(e){
     stop("Array version wasn't not recognized or the annotation package was unable to load.\n
          Check that the appropriate packages are installed and the array version is contained in the list of known arrays\n", call. = F)
@@ -86,12 +88,8 @@ tryCatch({
 inFH = opt$input
 tryCatch({
   eset = read.delim(inFH,header=T,sep = "\t",stringsAsFactors = F)
-  
-  
-  rownames(eset) = eset[,1]
-  eset[,1] = NULL
-  
-  
+  # rownames(eset) = eset[,1]
+  # eset[,1] = NULL
   neset = new("ExpressionSet",exprs = as.matrix(eset))
   neset@annotation = annotPack
 }, error=function(e){
@@ -99,15 +97,9 @@ tryCatch({
 })
 
 cat("Filtering out unannotated probes...\n")
-filt = nsFilter(neset, var.filter = F,require.entrez = T,remove.dupEntrez = T)
+filt = nsFilter(neset, var.filter = F,require.entrez = T, remove.dupEntrez = T)
 nDups = filt[[2]]$numDupsRemoved # Number of probes removed that map to non-unique gene IDs
-
-
-
-filt[[2]]
-
-
-
+# filt[[2]]
 
 # Mapping probe IDs to RefSeq names from the imported library
 mapFun = function(id, environ){ # Function to match the primary RefSeq ID for a given probe ID and return NA in all other cases
