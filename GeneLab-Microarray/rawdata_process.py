@@ -86,17 +86,17 @@ def qc_and_normalize(rawdata_out,GLDS):
     
 def limma_differential(rawdata_out,metadata_out,GLDS):
     condition1,condition2,pval_cut = config.visualize.split(',')
-    limma_script = "'"+os.path.join(config.R_dir,'limmaDiffExp.R')+"'"
+    limma_script = os.path.join(config.R_dir,'limmaDiffExp.R')
     if GLDS + "_microarray_normalized_annotated.txt" in os.listdir(rawdata_out):
-        d_path = "'" + os.path.join(rawdata_out,GLDS + "_microarray_normalized_annotated.txt") + "'"
+        d_path = os.path.join(rawdata_out,GLDS + "_microarray_normalized_annotated.txt")
     elif GLDS + "_microarray_normalized.txt" in os.listdir(rawdata_out):
         print "Warning: No annotated expression file detected, using unannotated file instead - Labelling will be done with probe IDs and will need to be converted to gene names manually."
-        d_path = "'" + os.path.join(rawdata_out,GLDS + "_microarray_normalized.txt") + "'"
+        d_path = os.path.join(rawdata_out,GLDS + "_microarray_normalized.txt")
     else:
         print "Error: No expression count file detected, exiting..."
         sys.exit(1)
-    group1_option = "--group1='" + condition1 + "'"
-    group2_option = "--group2='" + condition2 + "'"
+    group1_option = "--group1=" + condition1
+    group2_option = "--group2=" + condition2
     limma_differential_command = ["Rscript", "--vanilla", limma_script, "-d", d_path, "-i", metadata_out, group1_option, group2_option, "-o", os.path.join(rawdata_out,GLDS + "_microarray_DGE.txt")]
     subprocess.call(limma_differential_command)
 

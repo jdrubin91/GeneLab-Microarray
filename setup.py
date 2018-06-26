@@ -2,8 +2,10 @@ from setuptools import setup
 import setuptools
 
 
-setup(name='GeneLab-Microarray',version='0.4', 
+setup(name='GeneLab-Microarray',
+    version='0.4.2', 
     description='Standardized processing pipeline for microarray data on GeneLab.', 
+    long_description='Standardized processing pipeline for microarray data on GeneLab.',
     url='https://github.com/jdrubin91/GeneLab-Microarray', 
     author='Jonathan Rubin & Daniel Mattox', 
     author_email='jonathan.d.rubin@nasa.gov', 
