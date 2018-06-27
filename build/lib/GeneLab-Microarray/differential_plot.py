@@ -5,6 +5,7 @@ matplotlib.use('Agg')
 import os, config, math, mpld3, warnings
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
+from matplotlib.controllers import Controller
 import numpy as np
 from scipy.stats import gaussian_kde
 
@@ -255,7 +256,7 @@ def differential_visualize(rawdata_out,GLDS):
 
         #Here we save both a png version of the plot (non-interactive) and the interactive html version of the plot
         plt.savefig(os.path.join(rawdata_out,GLDS+'_visualization_results.png'))
-        mpld3.save_html(F,os.path.join(rawdata_out,GLDS+'_visualization_results.html'))
+        mpld3.save_html(Controller.to_json(F),os.path.join(rawdata_out,GLDS+'_visualization_results.html'))
         plt.close(F)
 
     #This section of the code creates an html table of significant genes

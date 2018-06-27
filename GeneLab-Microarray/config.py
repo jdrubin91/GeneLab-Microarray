@@ -1,7 +1,9 @@
 indir = "False"
 outdir = "../demo_out/GLDS-21/"
 srcdir = "/Users/jonathanrubin/Google_Drive/NASA/home/GeneLab-Microarray/GeneLab-Microarray"
+wrkdir = "/Users/jonathanrubin/Google_Drive/NASA/home/GeneLab-Microarray"
 tempdir = "/Users/jonathanrubin/Google_Drive/NASA/home/GeneLab-Microarray/temp"
 R_dir = "/Users/jonathanrubin/Google_Drive/NASA/home/GeneLab-Microarray/GeneLab-Microarray/R_scripts"
+md5sum = {"original": [], "new": []}
 batch = "False"
 visualize = "spaceflight,no treatment,0.0000001"

@@ -29,6 +29,7 @@ def run():
     #Get full paths to locations within this package
     srcdir = os.path.dirname(os.path.realpath(__file__))
     wrkdir = os.getcwd()
+    print wrkdir
     tempdir = os.path.join(os.path.dirname(srcdir),'temp')
     R_dir = os.path.join(os.path.dirname(srcdir),'GeneLab-Microarray','R_scripts')
 
@@ -56,6 +57,7 @@ def run():
             import metadata_process, rawdata_process
             print "Processing " + indir + "\nWriting output to: " + outdir
             GLDS = os.path.basename(indir)
+            print GLDS
             rawdata_out = os.path.join(outdir,GLDS,'microarray')
             metadata_out = os.path.join(outdir,GLDS,'metadata')
             metadata_in = os.path.join(indir,'metadata')
@@ -86,7 +88,7 @@ def run():
         differential_plot.differential_visualize(rawdata_out,GLDS)
         print "done. Output in: " + rawdata_out
     else:
-        print "Error: Neither process mode nor visualize mode specified. See help for information on how to run GeneLab-Microarray exiting..."
+        print "Error: Neither process mode nor visualize mode specified. See help for information on how to run GeneLab-Microarray. Exiting..."
         sys.exit(1)
 
 

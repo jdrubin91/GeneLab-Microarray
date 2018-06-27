@@ -60,21 +60,39 @@ def detect_array(GLDS_path):
         print "Error: Microarray raw data directory missing. Exiting..."
         sys.exit(1)
 
+#This function renames all raw data files in a specified GLDS_path
 def rename(GLDS_path):
+    #First get all the proper paths according to specifications
     metadata_out = os.path.join(GLDS_path,'metadata')
     rawdata_out = os.path.join(GLDS_path,'microarray')
     assay_dict = metadata_process.read_assay(metadata_out)
     GLDS = os.path.basename(GLDS_path)
-    for key in assay_dict:
-        for filename in os.listdir(rawdata_out):
+
+    #Loop through the raw data files 
+    for filename in os.listdir(rawdata_out):
+        
+        #Boolean to detect whether the first column corresponds well to the filenames
+        sample_in_first_column = False
+        extension = filename.split('.')[-1]
+        for key in assay_dict:
+
+            #If the first column does correspond well, then assume the first column is the sample name and rename accordingly
             if key in filename:
-                extension = filename.split('.')[-1]
-                move_command = ["mv", os.path.join(rawdata_out,filename), os.path.join(rawdata_out,GLDS+key+'_microarray_'+'.'+extension)]
-                try:
-                    with open(os.devnull,'w') as FNULL:
-                        subprocess.check_call(move_command,stdout=FNULL, stderr=subprocess.STDOUT)
-                except subprocess.CalledProcessError:
-                    pass
+                sample_in_first_column = True
+                move_command = ["mv", os.path.join(rawdata_out,filename), os.path.join(rawdata_out,GLDS+'_'+key+'_microarray_raw'+'.'+extension)]
+
+        #If the first column does not correspond to any filenames, simply remove '_', '(', and ')' characters from filename and append appropriate naming conventions
+        if not sample_in_first_column:
+            new_filename = filename.replace('_','-').replace('(','-').replace(')','-')
+            move_command = ["mv", os.path.join(rawdata_out,filename), os.path.join(rawdata_out,GLDS+'_'+new_filename+'_microarray_raw'+'.'+extension)]
+
+        #Execute the command - catch whether the file already exists and don't output an error
+        try:
+            with open(os.devnull,'w') as FNULL:
+                subprocess.check_call(move_command,stdout=FNULL, stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError:
+            pass
+
 
 
 def qc_and_normalize(rawdata_out,GLDS):
