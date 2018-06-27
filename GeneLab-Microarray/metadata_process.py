@@ -32,14 +32,13 @@ def clean(metadata_directory):
 
             #Check md5sum of original zip file
             md5sum_command = ["md5sum",metadata_zip]
-            original_md5sum = subprocess.check_output(md5sum_command).split(' ')[0]
+            original_md5sum = subprocess.check_output(md5sum_command).split(' ')[0].encode("utf-8")
             config.md5sum["original"].append((zip_filename,original_md5sum))
 
             #Copy the last modified metadata
             cp_command = ["cp","-r",metadata_zip,metadata_out]
-            print ' '.join(cp_command)
             #Unzip it into the metadata_out directory
-            unzip_command = ["unzip", "-o",os.path.join(metadata_out,zip_filename),"-d",metadata_out]
+            unzip_command = ["unzip", "-o", os.path.join(metadata_out,zip_filename), "-d", metadata_out]
             print ' '.join(unzip_command)
             #Remove the .zip compressed file to avoid confusion and save space
             remove_zip_command = ["rm",os.path.join(metadata_out,zip_filename)]
@@ -49,12 +48,14 @@ def clean(metadata_directory):
 
             #Verify md5sum for 'new' file
             md5sum_command = ["md5sum",os.path.join(metadata_out,zip_filename)]
-            new_md5sum = subprocess.check_output(md5sum_command).split(' ')[0]
+            new_md5sum = subprocess.check_output(md5sum_command).split(' ')[0].encode("utf-8")
             config.md5sum["new"].append((zip_filename,new_md5sum))
             print config.md5sum
 
             #Execute unzipping and zip removal commands
+
             subprocess.call(unzip_command)
+            print unzip_command
             # subprocess.call(remove_zip_command)
 
             i += 1
