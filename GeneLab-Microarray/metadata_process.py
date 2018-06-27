@@ -30,10 +30,10 @@ def clean(metadata_directory):
             metadata_zip = os.path.join(metadata_directory,os.path.basename(path))
             zip_filename = os.path.basename(metadata_zip)
 
-            #Check md5sum of original zip file
-            md5sum_command = ["md5sum",metadata_zip]
-            original_md5sum = subprocess.check_output(md5sum_command).split(' ')[0].encode("utf-8")
-            config.md5sum["original"].append((zip_filename,original_md5sum))
+            # #Check md5sum of original zip file
+            # md5sum_command = ["md5sum",metadata_zip]
+            # original_md5sum = subprocess.check_output(md5sum_command).split(' ')[0].encode("utf-8")
+            # config.md5sum["original"].append((zip_filename,original_md5sum))
 
             #Copy the last modified metadata
             cp_command = ["cp","-r",metadata_zip,metadata_out]
@@ -46,10 +46,10 @@ def clean(metadata_directory):
             subprocess.call(cp_command)
             subprocess.call(unzip_command)
 
-            #Verify md5sum for 'new' file
-            md5sum_command = ["md5sum",os.path.join(metadata_out,zip_filename)]
-            new_md5sum = subprocess.check_output(md5sum_command).split(' ')[0].encode("utf-8")
-            config.md5sum["new"].append((zip_filename,new_md5sum))
+            # #Verify md5sum for 'new' file
+            # md5sum_command = ["md5sum",os.path.join(metadata_out,zip_filename)]
+            # new_md5sum = subprocess.check_output(md5sum_command).split(' ')[0].encode("utf-8")
+            # config.md5sum["new"].append((zip_filename,new_md5sum))
 
             #Execute unzipping and zip removal commands
             subprocess.call(remove_zip_command)
