@@ -44,6 +44,7 @@ def clean(metadata_directory):
 
             #Execute copy command
             subprocess.call(cp_command)
+            subprocess.call(unzip_command)
 
             #Verify md5sum for 'new' file
             md5sum_command = ["md5sum",os.path.join(metadata_out,zip_filename)]
@@ -51,8 +52,6 @@ def clean(metadata_directory):
             config.md5sum["new"].append((zip_filename,new_md5sum))
 
             #Execute unzipping and zip removal commands
-
-            subprocess.call(unzip_command)
             subprocess.call(remove_zip_command)
 
             i += 1
