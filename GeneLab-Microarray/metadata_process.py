@@ -39,7 +39,7 @@ def clean(metadata_directory):
             cp_command = ["cp","-r",metadata_zip,metadata_out]
             print ' '.join(cp_command)
             #Unzip it into the metadata_out directory
-            unzip_command = ["unzip", "-o", "-qq",os.path.join(metadata_out,zip_filename),"-d",metadata_out]
+            unzip_command = ["unzip", "-o",os.path.join(metadata_out,zip_filename),"-d",metadata_out]
             print ' '.join(unzip_command)
             #Remove the .zip compressed file to avoid confusion and save space
             remove_zip_command = ["rm",os.path.join(metadata_out,zip_filename)]
