@@ -61,9 +61,10 @@ suppressPackageStartupMessages(require(affy))
 
 # setwd("~/Documents/genelab/rot1/GLDS4/microarray/")
 celFiles <- list.celfiles(full.names=TRUE)
-sampNames = gsub(".*_microarray_","",celFiles)
+sampNames = gsub("_microarray_.*","",celFiles)
 sampNames = gsub(".CEL","",sampNames)
-sampNames = gsub("./","",sampNames) # Extract sample naems form the list of .CEL files
+sampNames = gsub("./","",sampNames)
+sampNames = gsub("GLDS-\\d*_","",sampNames)# Extract sample names form the list of .CEL files
 
 tryCatch({raw = ReadAffy()}, error=function(e){
   stop("No .CEL files detected in the current directory", call. = F)
