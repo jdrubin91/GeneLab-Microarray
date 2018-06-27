@@ -20,11 +20,16 @@ GeneLab-Microarray writes to itself so to ensure you can easily run it, it is re
 pip install --user GeneLab-Microarray
 ```
 
-GeneLab-Microarray should install mpld3 and scipy automatically however matplotlib will need to be installed manually if it is not installed. To do this, run the following pip command:
+GeneLab-Microarray uses md5sum to check files that are copied/renamed. If you do not have this installed, run the following command (assuming you have homebrew installed):
+```
+brew install md5sha1sum
+```
 
+Alternatively, if you're on MacOSX, the md5 -r option should be identical output to md5sum so within your ~/.bashrc or ~/.profile add the following:
 ```
-pip install --user matplotlib
+alias md5sum='md5 -r'
 ```
+
 
 And to finish installation, open an R session and run the following commands:
 ```
@@ -32,12 +37,12 @@ install.packages("optparse")
 source("http://bioconductor.org/biocLite.R")
 biocLite("zlibbioc")
 biocLite("Biobase")
-biocLite("affy")
+biocLite("affy")**
 biocLite("S4Vectors")
 biocLite("IRanges")
 biocLite("XVector")
 biocLite("Biostrings")
-biocLite("affyPLM")
+biocLite("affyPLM")**
 biocLite("bit")
 biocLite("ff")
 biocLite("bitops")
@@ -48,7 +53,7 @@ biocLite("Rcpp")
 biocLite("bit64")
 biocLite("digest")
 biocLite("RSQLite")
-biocLite("oligo")
+biocLite("oligo")**
 biocLite("XML")
 biocLite("genefilter")
 biocLite("mogene10sttranscriptcluster.db")
@@ -59,7 +64,7 @@ biocLite("ath1121501.db")
 biocLite("yeast2.db")
 biocLite("hugene10sttranscriptcluster.db")
 biocLite("rat2302.db")
-biocLite("limma")
+biocLite("limma")**
 biocLite("colorspace")
 biocLite("plyr")
 biocLite("scales")
@@ -76,6 +81,8 @@ biocLite("RBGL")
 
 biocLite("Risa")
 ```
+**Note - These packages should be the only commands needed to run to install all packages, the rest of the biocLite() commands are dependencies for these packages and in some cases may need to be installed individually
+
 
 Once the above steps are completed without error, you should be able to call GeneLab-Microarray from any directory. Try:
 
