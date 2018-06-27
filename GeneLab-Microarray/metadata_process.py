@@ -37,6 +37,7 @@ def clean(metadata_directory):
 
             #Copy the last modified metadata
             cp_command = ["cp","-r",metadata_zip,metadata_out]
+            print cp_command
             #Unzip it into the metadata_out directory
             unzip_command = ["unzip", "-o", "-qq",os.path.join(metadata_out,zip_filename),"-d",metadata_out]
             print unzip_command
@@ -50,6 +51,7 @@ def clean(metadata_directory):
             md5sum_command = ["md5sum",os.path.join(metadata_out,zip_filename)]
             new_md5sum = subprocess.check_output(md5sum_command).decode("utf-8")
             config.md5sum["new"].append((zip_filename,new_md5sum))
+            print config.md5sum
 
             #Execute unzipping and zip removal commands
             subprocess.call(unzip_command)
