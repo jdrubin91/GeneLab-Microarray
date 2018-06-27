@@ -53,7 +53,7 @@ def run():
         else:
             import metadata_process, rawdata_process
             print "Processing " + indir + "\nWriting output to: " + outdir
-            GLDS = os.path.basename(os.path.dirname(indir))
+            GLDS = os.path.basename(indir)
             rawdata_out = os.path.join(outdir,GLDS,'microarray')
             metadata_out = os.path.join(outdir,GLDS,'metadata')
             metadata_in = os.path.join(indir,'metadata')
