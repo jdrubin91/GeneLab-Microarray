@@ -69,7 +69,7 @@ def rename(GLDS_path):
         for filename in os.listdir(rawdata_out):
             if key in filename:
                 extension = filename.split('.')[-1]
-                move_command = ["mv", os.path.join(rawdata_out,filename), os.path.join(rawdata_out,GLDS+'_microarray_'+key+'.'+extension)]
+                move_command = ["mv", os.path.join(rawdata_out,filename), os.path.join(rawdata_out,GLDS+key+'_microarray_'+'.'+extension)]
                 try:
                     with open(os.devnull,'w') as FNULL:
                         subprocess.check_call(move_command,stdout=FNULL, stderr=subprocess.STDOUT)
@@ -95,8 +95,8 @@ def limma_differential(rawdata_out,metadata_out,GLDS):
     else:
         print "Error: No expression count file detected, exiting..."
         sys.exit(1)
-    group1_option = "--group1='" + condition1 + "'"
-    group2_option = "--group2='" + condition2 + "'"
+    group1_option = "--group1=" + condition1
+    group2_option = "--group2=" + condition2
     limma_differential_command = ["Rscript", "--vanilla", limma_script, "-d", d_path, "-i", metadata_out, group1_option, group2_option, "-o", os.path.join(rawdata_out,GLDS + "_microarray_DGE.txt")]
     subprocess.call(limma_differential_command)
 

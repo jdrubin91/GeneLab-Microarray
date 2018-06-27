@@ -39,6 +39,7 @@ def run():
         outfile.write('srcdir = "' + srcdir + '"\n')
         outfile.write('tempdir = "' + tempdir + '"\n')
         outfile.write('R_dir = "' + R_dir + '"\n')
+        outfile.write('md5sum = {"original": [], "new": []}\n')
         outfile.write('batch = "' + str(batch) + '"\n')
         outfile.write('visualize = "' + str(visualize) + '"\n')
 
