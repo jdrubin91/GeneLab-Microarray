@@ -20,6 +20,8 @@ GeneLab-Microarray writes to itself so to ensure you can easily run it, it is re
 pip install --user GeneLab-Microarray
 ```
 
+**Note - GeneLab-Microarray requires matplotlib version 1.3.1 this is due to a bug with the mpld3 package that does not recognize matplotlib figures generated with version 2.2.2 to be json serializable. 
+
 GeneLab-Microarray uses md5sum to check files that are copied/renamed. If you do not have this installed, run the following command (assuming you have homebrew installed):
 ```
 brew install md5sha1sum
