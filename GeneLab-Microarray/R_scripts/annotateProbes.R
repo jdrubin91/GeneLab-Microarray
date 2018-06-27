@@ -132,6 +132,9 @@ if(opt$QCoutput == T){
   toMatch = c(8,183,31,45,51,100,101,118,128,139,147,183,254,421,467,477,
               483,493,498,503,508,535,552,575,635,655)
   color = grDevices::colors()[rep(toMatch,3)] # Create a library of colors for plotting
+  qcDir = opt$QCDir
+  if(!file.exists(qcDir)) dir.create(qcDir)
+  
   sampNames = colnames(normVals)
   sampNames = gsub(".CEL","",sampNames)
   if (is.null(opt$GLDS)){ # Include GLDS accession number in plot titles if provided
@@ -141,12 +144,11 @@ if(opt$QCoutput == T){
   }else{
     glAn = paste('GLDS-',opt$GLDS,sep='')
   }
-  if(!file.exists(paste('./',glAn,'_QC_reporting/',sep=''))) dir.create(paste('./',glAn,'_QC_reporting/',sep=''))
   # Post-normalization QC
   cat("Post annotation/filtering QC...\n")
   
   # Density distributions
-  png(paste("./",glAn,"_QC_reporting/",glAn,"_microarray_filtDensityDistributions.png",sep=""),width=800,height=800)
+  png(paste(qcDir,glAn,"_microarray_filtDensityDistributions.png",sep=""),width=800,height=800)
   ylims = c(0,.8)
   xlims = c(0,16)
   for(i in 1:ncol(normVals)){
@@ -166,7 +168,7 @@ if(opt$QCoutput == T){
   
   # PCA plot
   filtPCA = prcomp(normVals)
-  png(paste("./",glAn,"_QC_reporting/",glAn,"_microarray_filtPCA.png",sep=""),width=800,height = 800)
+  png(paste(qcDir,glAn,"_microarray_filtPCA.png",sep=""),width=800,height = 800)
   plot(filtPCA$rotation[,1],filtPCA$rotation[,2],col=color[1:length(sampNames)],pch=16,
        xlab = paste("PC1, ",round(summary(filtPCA)$importance["Proportion of Variance",1]*100,digits = 1),"% of variance",sep=""),
        ylab = paste("PC2, ",round(summary(filtPCA)$importance["Proportion of Variance",2]*100,digits = 1),"% of variance",sep=""),
