@@ -27,7 +27,7 @@ def run():
 
 
     #Get full paths to locations within this package
-    srcdir = os.path.dirname(os.path.realpath(__file__))
+    srcdir = os.getcwd()
     tempdir = os.path.join(os.path.dirname(srcdir),'temp')
     R_dir = os.path.join(os.path.dirname(srcdir),'GeneLab-Microarray','R_scripts')
 

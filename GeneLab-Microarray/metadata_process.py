@@ -32,7 +32,7 @@ def clean(metadata_directory):
 
             #Check md5sum of original zip file
             md5sum_command = ["md5sum",metadata_zip]
-            original_md5sum = subprocess.check_output(md5sum_command)[0].decode("utf-8")
+            original_md5sum = subprocess.check_output(md5sum_command).split(' ')[0].decode("utf-8")
             config.md5sum["original"].append((zip_filename,original_md5sum))
 
             #Copy the last modified metadata
@@ -49,7 +49,7 @@ def clean(metadata_directory):
 
             #Verify md5sum for 'new' file
             md5sum_command = ["md5sum",os.path.join(metadata_out,zip_filename)]
-            new_md5sum = subprocess.check_output(md5sum_command)[0].decode("utf-8")
+            new_md5sum = subprocess.check_output(md5sum_command).split(' ')[0].decode("utf-8")
             config.md5sum["new"].append((zip_filename,new_md5sum))
             print config.md5sum
 
