@@ -54,8 +54,8 @@ def clean(metadata_directory):
             print config.md5sum
 
             #Execute unzipping and zip removal commands
-            subprocess.call(unzip_command)
-            subprocess.call(remove_zip_command)
+            # subprocess.call(unzip_command)
+            # subprocess.call(remove_zip_command)
 
             i += 1
 

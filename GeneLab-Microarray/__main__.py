@@ -27,7 +27,8 @@ def run():
 
 
     #Get full paths to locations within this package
-    srcdir = os.getcwd()
+    srcdir = os.path.dirname(os.path.realpath(__file__))
+    wrkdir = os.getcwd()
     tempdir = os.path.join(os.path.dirname(srcdir),'temp')
     R_dir = os.path.join(os.path.dirname(srcdir),'GeneLab-Microarray','R_scripts')
 
@@ -37,6 +38,7 @@ def run():
         outfile.write('indir = "' + str(indir) + '"\n')
         outfile.write('outdir = "' + outdir + '"\n')
         outfile.write('srcdir = "' + srcdir + '"\n')
+        outfile.write('wrkdir = "' + wrkdir + '"\n')
         outfile.write('tempdir = "' + tempdir + '"\n')
         outfile.write('R_dir = "' + R_dir + '"\n')
         outfile.write('md5sum = {"original": [], "new": []}\n')
