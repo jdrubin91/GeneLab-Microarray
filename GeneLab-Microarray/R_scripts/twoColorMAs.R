@@ -32,6 +32,8 @@ if (is.null(opt$GLDS)){ # Include GLDS accession number in outputs if provided
   glAn = paste('GLDS-',opt$GLDS,sep='')
 }
 
+relDir = getwd() # Save the path to the original directory (for relative path handling)
+
 if (is.null(opt$input)){ # Include GLDS accession number in outputs if provided
   print_help(opt_parser)
   stop("No path to input directory provided. Please look over the available options", call. = F)
@@ -42,3 +44,6 @@ if (is.null(opt$input)){ # Include GLDS accession number in outputs if provided
 
 suppressPackageStartupMessages(library("limma"))
 
+# setwd("~/Documents/genelab/rot1/GLDS-28/microarray/")
+inFs = dir()
+infs

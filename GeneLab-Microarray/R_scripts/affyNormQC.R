@@ -46,7 +46,7 @@ if (is.null(opt$input)){ # Include GLDS accession number in outputs if provided
   stop("No path to input directory provided. Please look over the available options", call. = F)
 }else{
   inPath = opt$input
-  setwd(inPath) # Change the working directory to the direcotry containing the raw files
+  setwd(inPath) # Change the working directory to the directory containing the raw files
 }
 
 detach_package = function(pkg, character.only = FALSE){
@@ -97,7 +97,7 @@ if(substr(x = qcDir,start = nchar(qcDir), stop = nchar(qcDir)) != "/"){
 if(!file.exists(qcDir)) dir.create(qcDir)
 
 # Output array information to a separate file
-write.table(arrInfo,file = paste(qcDir,"arrayInfo.txt",sep=""),quote = F,
+write.table(arrInfo,file = paste(qcDir,glAn,"arrayInfo.txt",sep=""),quote = F,
             col.names = F, row.names = F)
 
 # Exit script if arrayInfoOnly mode is True
