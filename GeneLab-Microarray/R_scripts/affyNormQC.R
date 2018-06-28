@@ -91,7 +91,9 @@ if (grepl("-st-",raw@cdfName,ignore.case = T)){
 setwd(relDir) # Return the working directory to direcotry script was called from to enable use of relative paths
 # Create QC output directory
 qcDir = opt$QCDir
-
+if(substr(x = qcDir,start = nchar(qcDir), stop = nchar(qcDir)) != "/"){
+  qcDir = paste(qcDir,"/",sep="")
+}
 if(!file.exists(qcDir)) dir.create(qcDir)
 
 # Output array information to a separate file
@@ -241,6 +243,9 @@ if(opt$outputData == TRUE){
   }
   
   outDir = opt$outDir
+  if(substr(x = outDir,start = nchar(outDir), stop = nchar(outDir)) != "/"){
+    outDir = paste(outDir,"/",sep="")
+  }
   if(opt$outType == "both"){
     save(eset,file=paste(outDir,outFH,".rda",sep=""))
     write.table(exprs(eset),file=paste(outDir,outFH,".txt",sep=""),sep="\t",quote = F)
