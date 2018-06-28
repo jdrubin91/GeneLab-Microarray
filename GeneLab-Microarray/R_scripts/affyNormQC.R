@@ -240,6 +240,7 @@ if(opt$outputData == TRUE){
     stop("Normalization did not occur, please examine script inputs and default values",call. = F)
   }
   
+  outDir = opt$outDir
   if(opt$outType == "both"){
     save(eset,file=paste(outDir,outFH,".rda",sep=""))
     write.table(exprs(eset),file=paste(outDir,outFH,".txt",sep=""),sep="\t",quote = F)
