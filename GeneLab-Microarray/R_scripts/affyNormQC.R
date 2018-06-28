@@ -8,6 +8,8 @@
 
 suppressPackageStartupMessages(library("optparse"))
 
+relDir = getwd()
+
 # Read options
 option_list=list(
   make_option(c("-i","--input"),type="character",help="Path to directory containing input .CEL files"),
@@ -38,18 +40,13 @@ if (is.null(opt$GLDS)){ # Include GLDS accession number in outputs if provided
   glAn = paste('GLDS-',opt$GLDS,sep='')
 }
 
-# Create QC output directory
-qcDir = opt$QCDir
-
-if(!file.exists(qcDir)) dir.create(qcDir)
-
 
 if (is.null(opt$input)){ # Include GLDS accession number in outputs if provided
   print_help(opt_parser)
   stop("No path to input directory provided. Please look over the available options", call. = F)
 }else{
   inPath = opt$input
-  setwd(inPath)
+  setwd(inPath) # Change the working directory to the direcotry containing the raw files
 }
 
 detach_package = function(pkg, character.only = FALSE){
@@ -78,15 +75,6 @@ tryCatch({raw = ReadAffy()}, error=function(e){
   stop("No .CEL files detected in the current directory", call. = F)
   })
 
-
-
-# Output array information to a separate file
-write.table(c("Affymetrix",as.character(raw@cdfName)),file = paste(qcDir,"arrayInfo.txt",sep=""),quote = F,
-            col.names = F, row.names = F)
-
-# Exit script if arrayInfoOnly mode is True
-if(opt$arrayInfoOnly == TRUE) stop("Detect-affy-array-only mode is on, exiting...", call. = F)
-
 if (grepl("-st-",raw@cdfName,ignore.case = T)){
   detach_package(affy)
   rm(raw)
@@ -97,6 +85,19 @@ if (grepl("-st-",raw@cdfName,ignore.case = T)){
   suppressPackageStartupMessages(require(affyPLM))
   st = F
 }
+
+setwd(relDir) # Return the working directory to direcotry script was called from to enable use of relative paths
+# Create QC output directory
+qcDir = opt$QCDir
+
+if(!file.exists(qcDir)) dir.create(qcDir)
+
+# Output array information to a separate file
+write.table(c("Affymetrix",as.character(raw@cdfName)),file = paste(qcDir,"arrayInfo.txt",sep=""),quote = F,
+            col.names = F, row.names = F)
+
+# Exit script if arrayInfoOnly mode is True
+if(opt$arrayInfoOnly == TRUE) stop("Detect-affy-array-only mode is on, exiting...", call. = F)
 
 ## Raw QC
 if(QCout == T){
