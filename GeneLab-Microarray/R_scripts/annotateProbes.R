@@ -133,6 +133,9 @@ if(opt$QCoutput == T){
               483,493,498,503,508,535,552,575,635,655)
   color = grDevices::colors()[rep(toMatch,3)] # Create a library of colors for plotting
   qcDir = opt$QCDir
+  if(substr(x = qcDir,start = nchar(qcDir), stop = nchar(qcDir)) != "/"){
+    qcDir = paste(qcDir,"/",sep="")
+  }
   if(!file.exists(qcDir)) dir.create(qcDir)
   
   sampNames = colnames(normVals)

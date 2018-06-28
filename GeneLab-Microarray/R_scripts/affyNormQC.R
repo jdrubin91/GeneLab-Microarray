@@ -166,7 +166,7 @@ if(QCout == T){
   png(paste(qcDir,glAn,'_rawBoxplot.png',sep=''),width=800,height = 400)
   par(mar=c(7,5,1,1))
   if(st == T){
-    invisible(capture.output(
+    invisible(capture.output( # Silence oligo::rma printing statement
       boxplot(oligo::rma(raw, background=FALSE, normalize=FALSE, subset=NULL, target="core"), las=2,
               names = sampNames, main=paste(glAn," Raw intensities",sep=""),col=color[1:length(celFiles)])
     ))
