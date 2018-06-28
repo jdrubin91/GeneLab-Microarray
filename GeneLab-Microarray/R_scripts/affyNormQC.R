@@ -38,6 +38,12 @@ if (is.null(opt$GLDS)){ # Include GLDS accession number in outputs if provided
   glAn = paste('GLDS-',opt$GLDS,sep='')
 }
 
+# Create QC output directory
+qcDir = opt$QCDir
+
+if(!file.exists(qcDir)) dir.create(qcDir)
+
+
 if (is.null(opt$input)){ # Include GLDS accession number in outputs if provided
   print_help(opt_parser)
   stop("No path to input directory provided. Please look over the available options", call. = F)
@@ -72,9 +78,7 @@ tryCatch({raw = ReadAffy()}, error=function(e){
   stop("No .CEL files detected in the current directory", call. = F)
   })
 
-# Create QC output directory
-qcDir = opt$QCDir
-if(!file.exists(qcDir)) dir.create(qcDir)
+
 
 # Output array information to a separate file
 write.table(c("Affymetrix",as.character(raw@cdfName)),file = paste(qcDir,"arrayInfo.txt",sep=""),quote = F,
