@@ -75,6 +75,8 @@ tryCatch({raw = ReadAffy()}, error=function(e){
   stop("No .CEL files detected in the current directory", call. = F)
   })
 
+arrInfo = c("Affymetrix",as.character(raw@cdfName))
+
 if (grepl("-st-",raw@cdfName,ignore.case = T)){
   detach_package(affy)
   rm(raw)
@@ -93,7 +95,7 @@ qcDir = opt$QCDir
 if(!file.exists(qcDir)) dir.create(qcDir)
 
 # Output array information to a separate file
-write.table(c("Affymetrix",as.character(raw@cdfName)),file = paste(qcDir,"arrayInfo.txt",sep=""),quote = F,
+write.table(arrInfo,file = paste(qcDir,"arrayInfo.txt",sep=""),quote = F,
             col.names = F, row.names = F)
 
 # Exit script if arrayInfoOnly mode is True
