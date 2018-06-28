@@ -71,7 +71,7 @@ sampNames = gsub(".CEL","",sampNames)
 sampNames = gsub(".*/","",sampNames)
 sampNames = gsub("GLDS-\\d*_","",sampNames)# Extract sample names form the list of .CEL files
 
-tryCatch({raw = ReadAffy()}, error=function(e){
+tryCatch({suppressWarnings(expr = {raw = ReadAffy()})}, error=function(e){
   stop("No .CEL files detected in the current directory", call. = F)
   })
 
@@ -166,8 +166,10 @@ if(QCout == T){
   png(paste(qcDir,glAn,'_rawBoxplot.png',sep=''),width=800,height = 400)
   par(mar=c(7,5,1,1))
   if(st == T){
-    boxplot(oligo::rma(raw, background=FALSE, normalize=FALSE, subset=NULL, target="core"), las=2,
-            names = sampNames, main=paste(glAn," Raw intensities",sep=""),col=color[1:length(celFiles)]);
+    invisible(capture.output(
+      boxplot(oligo::rma(raw, background=FALSE, normalize=FALSE, subset=NULL, target="core"), las=2,
+              names = sampNames, main=paste(glAn," Raw intensities",sep=""),col=color[1:length(celFiles)])
+    ))
   }else{
     boxplot(raw,las=2,outline=FALSE,col=color[1:length(celFiles)],main = paste(glAn," Raw intensities",sep=""),names=sampNames)
   }
