@@ -97,7 +97,7 @@ if(substr(x = qcDir,start = nchar(qcDir), stop = nchar(qcDir)) != "/"){
 if(!file.exists(qcDir)) dir.create(qcDir)
 
 # Output array information to a separate file
-write.table(arrInfo,file = paste(qcDir,glAn,"arrayInfo.txt",sep=""),quote = F,
+write.table(arrInfo,file = paste(qcDir,glAn,"_arrayInfo.txt",sep=""),quote = F,
             col.names = F, row.names = F)
 
 # Exit script if arrayInfoOnly mode is True
