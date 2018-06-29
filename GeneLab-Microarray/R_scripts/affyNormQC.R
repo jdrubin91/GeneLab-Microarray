@@ -33,7 +33,6 @@ QCout = opt$QCoutput
 NUSEplot = opt$NUSEplot
 
 if (is.null(opt$GLDS)){ # Include GLDS accession number in outputs if provided
-  print_help(opt_parser)
   glAn = ''
   cat("Warning: No GLDS accession number provided")
 }else{
