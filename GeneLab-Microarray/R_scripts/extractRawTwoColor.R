@@ -24,7 +24,7 @@ if (is.null(opt$output)){ # Check and set output file handle
   stop("No path to out file provided. Please look over the available options\n", call. = F)
 }else outFH = opt$output
 
-cat("Reading in file...\n")
+cat("Reading in file:",inFH,"\n")
 test = read.delim(inFH, stringsAsFactors = F, header = F) # Read in processed file
 
 cat("Extracting raw values...\n")
@@ -37,15 +37,13 @@ cat("-")
 Rb = test[,grep("rBGMedianSignal",test)]
 cat("-")
 startInd = grep("gMedianSignal",G) + 1 # Indentify starting row index of raw values
-cat("-")
 G = G[startInd:length(G)] # Extract raw values
 R = R[startInd:length(R)]
 Gb = Gb[startInd:length(Gb)]
 Rb = Rb[startInd:length(Rb)]
 raw = cbind(R,G,Rb,Gb) # Bind raw value vectors into dataframe
-cat("-")
 row.names(raw) = test[startInd:nrow(test),grep("FeatureNum", test)] # Add unique feature numbers for mapping to genes
 cat("-\n")
 
 write.table(raw,file = outFH,sep="\t",quote = F)
-cat("Success! Raw values saved to:",outFH,"\n")
+cat("Success! Raw values saved to:",outFH,"\n\n")
