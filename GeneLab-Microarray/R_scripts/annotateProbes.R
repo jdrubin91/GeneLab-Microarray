@@ -141,7 +141,6 @@ if(opt$QCoutput == T){
   sampNames = colnames(normVals)
   sampNames = gsub(".CEL","",sampNames)
   if (is.null(opt$GLDS)){ # Include GLDS accession number in plot titles if provided
-    print_help(opt_parser)
     glAn = ''
     cat("Warning: Generating plots without accession number")
   }else{

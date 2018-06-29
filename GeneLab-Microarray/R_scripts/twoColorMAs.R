@@ -50,6 +50,7 @@ inFiles = inFIles[grepl("_.raw.txt$",inFiles)]
 
 read.maimages(files = inFiles, source = "agilent.median", path = inPath)
 
-test = read.delim("GLDS-28_microarray_GSM911187.txt", stringsAsFactors = F)
 
-## Need to come with a ~*~potentially~*~ generalizable script to extract the raw data from this horrible processed file format
+
+
+## Need to come with a ~*~potentially~*~ generalizable script to extract the raw data from this horrible processed-file format
