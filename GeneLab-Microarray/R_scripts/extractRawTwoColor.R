@@ -50,7 +50,7 @@ Gb = Gb[startInd:length(Gb)]
 Rb = Rb[startInd:length(Rb)]
 raw = cbind(R, G, Rb, Gb) # Bind raw value vectors into dataframe
 row.names(raw) = test[startInd:nrow(test), grep("FeatureNum", test)] # Add unique feature numbers for mapping to genes
-cat("|-----|\n")
+cat("|-----|\r\n\n")
 
 write.table(raw, file = outFH, sep = "\t", quote = F)
 
