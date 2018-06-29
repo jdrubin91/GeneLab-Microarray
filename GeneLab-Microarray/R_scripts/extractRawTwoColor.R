@@ -44,12 +44,12 @@ cat("\tRed background\n")
 Rb = test[, grep("rBGMedianSignal", test)]
 cat("\tProbe IDs\n")
 startInd = grep("gMedianSignal", G) + 1 # Indentify starting row index of raw values
+FeatureNum = test[startInd:nrow(test), grep("FeatureNum", test)] # Add unique feature numbers for mapping to genes
 G = G[startInd:length(G)] # Extract raw values
 R = R[startInd:length(R)]
 Gb = Gb[startInd:length(Gb)]
 Rb = Rb[startInd:length(Rb)]
-raw = cbind(R, G, Rb, Gb) # Bind raw value vectors into dataframe
-row.names(raw) = test[startInd:nrow(test), grep("FeatureNum", test)] # Add unique feature numbers for mapping to genes
+raw = cbind(FeatureNum,R, G, Rb, Gb) # Bind raw value vectors into dataframe
 
 cat("Saving... ")
 write.table(raw, file = outFH, sep = "\t", quote = F)
