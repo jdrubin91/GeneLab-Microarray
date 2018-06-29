@@ -32,18 +32,24 @@ if (is.null(opt$GLDS)){ # Include GLDS accession number in outputs if provided
   glAn = paste('GLDS-',opt$GLDS,sep='')
 }
 
-relDir = getwd() # Save the path to the original directory (for relative path handling)
+#relDir = getwd() # Save the path to the original directory (for relative path handling)
 
 if (is.null(opt$input)){ # Include GLDS accession number in outputs if provided
   print_help(opt_parser)
   stop("No path to input directory provided. Please look over the available options", call. = F)
 }else{
   inPath = opt$input
-  setwd(inPath)
+  #setwd(inPath)
 }
 
 suppressPackageStartupMessages(library("limma"))
 
 # setwd("~/Documents/genelab/rot1/GLDS-28/microarray/")
-inFs = dir()
-infs
+inFiles = dir(inPath)
+inFiles = inFIles[grepl("_.raw.txt$",inFiles)]
+
+read.maimages(files = inFiles, source = "agilent.median", path = inPath)
+
+test = read.delim("GLDS-28_microarray_GSM911187.txt", stringsAsFactors = F)
+
+## Need to come with a ~*~potentially~*~ generalizable script to extract the raw data from this horrible processed file format
