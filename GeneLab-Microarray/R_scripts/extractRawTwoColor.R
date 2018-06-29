@@ -34,11 +34,11 @@ cat("\nReading in file:", inFH, "\n")
 test = read.delim(inFH, stringsAsFactors = F, header = F) # Read in processed file
 
 cat("Extracting raw values...\n")
-cat("|      |\r")
+cat("|        |\r")
 G = test[, grep("gMedianSignal", test)] # Idenitfy median foreground intensity columns
-cat("|-     |\r")
+cat("|-      |\r")
 R = test[, grep("rMedianSignal", test)]
-cat("|--    |\r")
+cat("|--     |\r")
 Gb = test[, grep("gBGMedianSignal", test)] # Idenitfy median background intensities columns
 cat("|---  |\r")
 Rb = test[, grep("rBGMedianSignal", test)]
@@ -50,7 +50,7 @@ Gb = Gb[startInd:length(Gb)]
 Rb = Rb[startInd:length(Rb)]
 raw = cbind(R, G, Rb, Gb) # Bind raw value vectors into dataframe
 row.names(raw) = test[startInd:nrow(test), grep("FeatureNum", test)] # Add unique feature numbers for mapping to genes
-cat("|-----|\r\n\n")
+cat("|-----|\r\n")
 
 write.table(raw, file = outFH, sep = "\t", quote = F)
 
