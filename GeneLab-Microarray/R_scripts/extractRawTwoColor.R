@@ -34,13 +34,13 @@ cat("\nReading in file:", inFH, "\n")
 test = read.delim(inFH, stringsAsFactors = F, header = F) # Read in processed file
 
 cat("Extracting raw values...\n")
-cat("|        |\r")
+cat("|     |\r")
 G = test[, grep("gMedianSignal", test)] # Idenitfy median foreground intensity columns
 cat("|-      |\r")
 R = test[, grep("rMedianSignal", test)]
 cat("|--     |\r")
 Gb = test[, grep("gBGMedianSignal", test)] # Idenitfy median background intensities columns
-cat("|---  |\r")
+cat("|---   |\r")
 Rb = test[, grep("rBGMedianSignal", test)]
 cat("|---- |\r")
 startInd = grep("gMedianSignal", G) + 1 # Indentify starting row index of raw values
