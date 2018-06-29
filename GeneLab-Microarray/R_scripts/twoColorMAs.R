@@ -46,9 +46,24 @@ suppressPackageStartupMessages(library("limma"))
 
 # setwd("~/Documents/genelab/rot1/GLDS-28/microarray/")
 inFiles = dir(inPath)
-inFiles = inFIles[grepl("_.raw.txt$",inFiles)]
+inFiles = inFiles[grepl("_raw.txt$",inFiles)]
 
-read.maimages(files = inFiles, source = "agilent.median", path = inPath)
+targets = readTargets(path = inPath)
+row.names(targets) = gsub(".*_microarray_","",row.names(targets))
+row.names(targets) = gsub("_raw","",row.names(targets))
+
+read.maimages(
+  files = inFiles,
+  source = "agilent.median",
+  path = inPath,
+  columns = list(
+    G = "gMedianSignal",
+    Gb = "gBGMedianSignal",
+    R = "rMedianSignal",
+    Rb = "rBGMedianSignal"
+  ),
+  annotation = "FeatureNum"
+)
 
 
 

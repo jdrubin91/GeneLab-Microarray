@@ -35,21 +35,21 @@ test = read.delim(inFH, stringsAsFactors = F, header = F) # Read in processed fi
 
 cat("Extracting raw values...\n")
 cat("\tGreen foreground\n")
-G = test[, grep("gMedianSignal", test)] # Idenitfy median foreground intensity columns
+gMedianSignal = test[, grep("gMedianSignal", test)] # Idenitfy median foreground intensity columns
 cat("\tRed foreground\n")
-R = test[, grep("rMedianSignal", test)]
+rMedianSignal = test[, grep("rMedianSignal", test)]
 cat("\tGreen background\n")
-Gb = test[, grep("gBGMedianSignal", test)] # Idenitfy median background intensities columns
+gBGMedianSignal = test[, grep("gBGMedianSignal", test)] # Idenitfy median background intensities columns
 cat("\tRed background\n")
-Rb = test[, grep("rBGMedianSignal", test)]
+rBGMedianSignal = test[, grep("rBGMedianSignal", test)]
 cat("\tProbe IDs\n")
-startInd = grep("gMedianSignal", G) + 1 # Indentify starting row index of raw values
+startInd = grep("gMedianSignal", gMedianSignal) + 1 # Indentify starting row index of raw values
 FeatureNum = test[startInd:nrow(test), grep("FeatureNum", test)] # Add unique feature numbers for mapping to genes
-G = G[startInd:length(G)] # Extract raw values
-R = R[startInd:length(R)]
-Gb = Gb[startInd:length(Gb)]
-Rb = Rb[startInd:length(Rb)]
-raw = cbind(FeatureNum,R, G, Rb, Gb) # Bind raw value vectors into dataframe
+gMedianSignal = gMedianSignal[startInd:length(gMedianSignal)] # Extract raw values
+rMedianSignal = rMedianSignal[startInd:length(rMedianSignal)]
+gBGMedianSignal = gBGMedianSignal[startInd:length(gBGMedianSignal)]
+rBGMedianSignal = rBGMedianSignal[startInd:length(rBGMedianSignal)]
+raw = cbind(FeatureNum, rMedianSignal, gMedianSignal, rBGMedianSignal, gBGMedianSignal) # Bind raw value vectors into dataframe
 
 cat("Saving... ")
 write.table(raw, file = outFH, sep = "\t", quote = F)
