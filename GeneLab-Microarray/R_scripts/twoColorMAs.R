@@ -19,7 +19,13 @@ opt = parse_args(opt_parser)
 
 norm = opt$normalization
 
-
+addSlash = function(string){
+  # Adds a trailing forward slash to the end of a string (ex path to a driectory) if it is not present
+  if(substr(x = string,start = nchar(string), stop = nchar(string)) != "/"){
+    string = paste(string,"/",sep="")
+  }
+  return(string)
+}
 
 if (is.null(opt$GLDS)){ # Include GLDS accession number in outputs if provided
   glAn = ''
@@ -51,9 +57,7 @@ if (is.null(opt$ISApath)){ # Include GLDS accession number in outputs if provide
   stop("No path to metadata directory provided. Please look over the available options", call. = F)
 }else{
   isaPath = opt$ISApath
-  if(substr(x = isaPath,start = nchar(isaPath), stop = nchar(isaPath)) != "/"){
-    isaPath = paste(isaPath,"/",sep="")
-  }
+  isaPath = addSlash(isaPath)
   tryCatch({
     isaFiles = dir(isaPath)
     sFile = isaFiles[grep("^s_*",isaFiles)]

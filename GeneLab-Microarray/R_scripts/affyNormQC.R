@@ -28,6 +28,14 @@ option_list=list(
 opt_parser = OptionParser(option_list=option_list)
 opt = parse_args(opt_parser)
 
+addSlash = function(string){
+  # Adds a trailing forward slash to the end of a string (ex path to a driectory) if it is not present
+  if(substr(x = string,start = nchar(string), stop = nchar(string)) != "/"){
+    string = paste(string,"/",sep="")
+  }
+  return(string)
+}
+
 norm = opt$normalization
 QCout = opt$QCoutput
 NUSEplot = opt$NUSEplot
@@ -44,7 +52,7 @@ if (is.null(opt$input)){ # Include GLDS accession number in outputs if provided
   print_help(opt_parser)
   stop("No path to input directory provided. Please look over the available options", call. = F)
 }else{
-  inPath = opt$input
+  inPath = addSlash(opt$input)
   setwd(inPath) # Change the working directory to the directory containing the raw files
 }
 
@@ -89,10 +97,7 @@ if (grepl("-st-",raw@cdfName,ignore.case = T)){
 
 setwd(relDir) # Return the working directory to direcotry script was called from to enable use of relative paths
 # Create QC output directory
-qcDir = opt$QCDir
-if(substr(x = qcDir,start = nchar(qcDir), stop = nchar(qcDir)) != "/"){
-  qcDir = paste(qcDir,"/",sep="")
-}
+qcDir = addSlash(opt$QCDir)
 if(!file.exists(qcDir)) dir.create(qcDir)
 
 # Output array information to a separate file
@@ -226,7 +231,7 @@ if(QCout == T){
   }
 }
 
-outFH = opt$outFile
+outFH = addSlash(opt$outFile)
 if(opt$outputData == TRUE){
   
   ## Normalize

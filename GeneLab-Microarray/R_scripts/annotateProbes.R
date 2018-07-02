@@ -27,6 +27,14 @@ option_list=list(
 opt_parser = OptionParser(option_list=option_list)
 opt = parse_args(opt_parser)
 
+addSlash = function(string){
+  # Adds a trailing forward slash to the end of a string (ex path to a driectory) if it is not present
+  if(substr(x = string,start = nchar(string), stop = nchar(string)) != "/"){
+    string = paste(string,"/",sep="")
+  }
+  return(string)
+}
+
 if (is.null(opt$input)){
   print_help(opt_parser)
   stop("At least one argument must be supplied (input file)", call.=FALSE)
@@ -132,10 +140,7 @@ if(opt$QCoutput == T){
   toMatch = c(8,183,31,45,51,100,101,118,128,139,147,183,254,421,467,477,
               483,493,498,503,508,535,552,575,635,655)
   color = grDevices::colors()[rep(toMatch,3)] # Create a library of colors for plotting
-  qcDir = opt$QCDir
-  if(substr(x = qcDir,start = nchar(qcDir), stop = nchar(qcDir)) != "/"){
-    qcDir = paste(qcDir,"/",sep="")
-  }
+  qcDir = addSlash(opt$QCDir)
   if(!file.exists(qcDir)) dir.create(qcDir)
   
   sampNames = colnames(normVals)

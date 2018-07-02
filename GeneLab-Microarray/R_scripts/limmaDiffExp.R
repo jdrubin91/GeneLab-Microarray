@@ -19,6 +19,14 @@ option_list=list(
 opt_parser = OptionParser(option_list=option_list)
 opt = parse_args(opt_parser)
 
+addSlash = function(string){
+  # Adds a trailing forward slash to the end of a string (ex path to a driectory) if it is not present
+  if(substr(x = string,start = nchar(string), stop = nchar(string)) != "/"){
+    string = paste(string,"/",sep="")
+  }
+  return(string)
+}
+
 if (is.null(opt$exprData)){
   print_help(opt_parser)
   stop("No expression data provided", call.=FALSE)
@@ -28,10 +36,7 @@ if (is.null(opt$ISApath)){
   print_help(opt_parser)
   stop("No ISA directory provided", call.=FALSE)
 } else {
-  isaFH = opt$ISApath
-  if(substr(x = isaFH,start = nchar(isaFH), stop = nchar(isaFH)) != "/"){
-    isaFH = paste(isaFH,"/",sep="")
-  }
+  isaFH = addSlash(opt$ISApath)
 }
 
 tryCatch({
