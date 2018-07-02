@@ -68,4 +68,3 @@ read.maimages(
 
 
 
-## Need to come with a ~*~potentially~*~ generalizable script to extract the raw data from this horrible processed-file format

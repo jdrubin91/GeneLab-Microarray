@@ -1,6 +1,10 @@
 #!/usr/bin/env Rscript
 
+## A ~*~potentially~*~ generalizable script to extract the raw data from horrible processed-file formats
+# Initially built for GLDS-28
+
 # install.packages("optparse")
+
 suppressPackageStartupMessages(library("optparse"))
 
 # Read options
@@ -52,6 +56,6 @@ rBGMedianSignal = rBGMedianSignal[startInd:length(rBGMedianSignal)]
 raw = cbind(FeatureNum, rMedianSignal, gMedianSignal, rBGMedianSignal, gBGMedianSignal) # Bind raw value vectors into dataframe
 
 cat("Saving... ")
-write.table(raw, file = outFH, sep = "\t", quote = F)
+write.table(raw, file = outFH, sep = "\t", quote = F, row.names = FALSE)
 
 cat("Success! Raw values saved to:", outFH, "\n\n")
