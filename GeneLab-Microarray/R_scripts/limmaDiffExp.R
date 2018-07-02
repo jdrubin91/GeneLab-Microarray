@@ -27,7 +27,12 @@ if (is.null(opt$exprData)){
 if (is.null(opt$ISApath)){
   print_help(opt_parser)
   stop("No ISA directory provided", call.=FALSE)
-} else isaFH = opt$ISApath
+} else {
+  isaFH = opt$ISApath
+  if(substr(x = isaFH,start = nchar(isaFH), stop = nchar(isaFH)) != "/"){
+    isaFH = paste(isaFH,"/",sep="")
+  }
+}
 
 tryCatch({
   suppressPackageStartupMessages(library("Risa"))

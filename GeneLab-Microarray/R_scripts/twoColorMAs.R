@@ -11,12 +11,7 @@ option_list=list(
   make_option(c("-i","--input"),type="character",help="Path to directory containing input raw array files"),
   make_option(c("-n","--normalization"),type="character",default="rma",help="Normalization method [rma (default, full rma), quantile (no background correction), background (no quant. normalization), log2 (no quant. norm. or background correction)"),
   make_option(c("-o","--outFile"),type="character",default="expValues",help="Name of the output file [without extension!] (default: expValues)"),
-  make_option(c("-t","--outType"),type="character",default="txt",help="Format of output data: R (Rdata eset object), txt (default, tab delimited file with identifiers and sample names), both"),
-  make_option("--outputData",type="logical",default=TRUE,help="Output data at all (default TRUE)"),
-  make_option(c("-a","--arrayInfoOnly"),type="logical",default=FALSE,help="Detect-affy-array-only mode. If true, script will exit after outputting the arrayInfo file. (Default: FALSE)"),
-  make_option("--QCoutput",type="logical",default=TRUE,help="Output QC_reporting directory of QC plots (default = TRUE)"),
-  make_option("--NUSEplot",type="logical",default=FALSE,help="Include a NUSE plot in the QC output, adds significantly to runtime (default = FALSE)"),
-  make_option("--GLDS",type="character",help="GLDS accession number for plot outputs (ie '21' for GLDS-21)")
+  make_option(c("-i","--ISApath"),type="character",help="Path to the directory containing the dataset metadata")
 )
 
 opt_parser = OptionParser(option_list=option_list)
@@ -24,8 +19,9 @@ opt = parse_args(opt_parser)
 
 norm = opt$normalization
 
+
+
 if (is.null(opt$GLDS)){ # Include GLDS accession number in outputs if provided
-  print_help(opt_parser)
   glAn = ''
   cat("Warning: No GLDS accession number provided")
 }else{
@@ -42,17 +38,44 @@ if (is.null(opt$input)){ # Include GLDS accession number in outputs if provided
   #setwd(inPath)
 }
 
+
+if (is.null(opt$ISApath)){
+  print_help(opt_parser)
+  stop("No ISA directory provided", call.=FALSE)
+} else {
+
+}
+
+if (is.null(opt$ISApath)){ # Include GLDS accession number in outputs if provided
+  print_help(opt_parser)
+  stop("No path to metadata directory provided. Please look over the available options", call. = F)
+}else{
+  isaPath = opt$ISApath
+  if(substr(x = isaPath,start = nchar(isaPath), stop = nchar(isaPath)) != "/"){
+    isaPath = paste(isaPath,"/",sep="")
+  }
+  tryCatch({
+    isaFiles = dir(isaPath)
+    sFile = isaFiles[grep("^s_*",isaFiles)]
+    aFile = isaFiles[grep("^a_*",isaFiles)]
+    sampFactors = read.delim(paste(isaPath,sFile,sep=""),header=T, sep="",stringsAsFactors = F)
+  }, error=function(e){
+    stop("ISA files could not be read by parsing the tab-delimited files", call. = F)
+  })
+}
+
 suppressPackageStartupMessages(library("limma"))
 
 # setwd("~/Documents/genelab/rot1/GLDS-28/microarray/")
 inFiles = dir(inPath)
 inFiles = inFiles[grepl("_raw.txt$",inFiles)]
 
-targets = readTargets(path = inPath)
-row.names(targets) = gsub(".*_microarray_","",row.names(targets))
-row.names(targets) = gsub("_raw","",row.names(targets))
+#targets = data.frame()
+#targets = readTargets(path = inPath)
+#row.names(targets) = gsub(".*_microarray_","",row.names(targets))
+#row.names(targets) = gsub("_raw","",row.names(targets))
 
-read.maimages(
+RG = read.maimages(
   files = inFiles,
   source = "agilent.median",
   path = inPath,
