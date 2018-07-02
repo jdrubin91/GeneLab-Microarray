@@ -63,6 +63,7 @@ if (is.null(opt$ISApath)){ # Include GLDS accession number in outputs if provide
     sFile = isaFiles[grep("^s_*",isaFiles)]
     aFile = isaFiles[grep("^a_*",isaFiles)]
     sampFactors = read.delim(paste(isaPath,sFile,sep=""),header=T, sep="",stringsAsFactors = F)
+    arrFactors = read.delim(paste(isaPath,aFile,sep=""),header=T, sep="",stringsAsFactors = F)
   }, error=function(e){
     stop("ISA files could not be read by parsing the tab-delimited files", call. = F)
   })
@@ -74,10 +75,10 @@ suppressPackageStartupMessages(library("limma"))
 inFiles = dir(inPath)
 inFiles = inFiles[grepl("_raw.txt$",inFiles)]
 
-#targets = data.frame()
-#targets = readTargets(path = inPath)
-#row.names(targets) = gsub(".*_microarray_","",row.names(targets))
-#row.names(targets) = gsub("_raw","",row.names(targets))
+targets = data.frame(FileName = inFiles)
+row.names(targets) = gsub(".*_microarray_","",targets$FileName)
+row.names(targets) = gsub("_raw.*","",row.names(targets))
+# Cy3 = need to link file names to sample names in metadata
 
 RG = read.maimages(
   files = inFiles,
