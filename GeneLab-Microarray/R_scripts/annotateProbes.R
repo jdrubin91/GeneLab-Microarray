@@ -19,7 +19,7 @@ option_list=list(
   make_option(c("-i","--input"),type="character",help="Name of (or path to) the input file (\\t delimited .txt file)"),
   make_option(c("-a","--arrayInfo"),type="character",default="./QC_output/arrayInfo.txt",help="Name of (or path to) a file containing the array information [Line 1: Manufacturer, line 2: Array version]"),
   make_option(c("-o","--output"),type="character",default="annotExpValues.txt",help="Name of (or path to) file to write results to (default: annotExpValues.txt)"),
-  make_option(c("-d","--dupProbes"),type="character",default="topvar",help="Method for handling multiple probes [average (default), topvar (highest variance with nsFilter function)"),
+  make_option(c("-d","--dupProbes"),type="character",default="topvar",help="Method for handling multiple probes [max (default, probe with the highest mean expression), average (mean of all probes for a gene), topvar (highest variance with nsFilter function)"),
   make_option(c("-q","--QCoutput"),type="logical",default=TRUE,help="Output QC_reporting directory of QC plots (default = TRUE)"),
   make_option("--QCDir",type="character",default="./QC_reporting/",help="Path to directory for storing QC output, including a terminal forward slash. Will be created if it does not exist yet (default = './QC_reporting/')"),
   make_option("--GLDS",type="character",help="GLDS accession number for plot outputs (ie '21' for GLDS-21)")
@@ -108,7 +108,7 @@ mapFun = function(id, environ){ # Function to match the primary RefSeq ID for a 
   return(tryCatch(get(id, env=environ)[1], error=function(e) NA))
 }
 
-if(opt$dupProbes == "average"){
+if(opt$dupProbes == "max"){
   #do averaging stuff here
 }else if(opt$dupProbes == "topvar"){
   suppressPackageStartupMessages(library("genefilter"))
@@ -130,6 +130,8 @@ if(opt$dupProbes == "average"){
   normVals = exprs(filt[[1]])
   normVals = normVals[!is.na(filtRefSeq),]
   rownames(normVals) = filtRefSeq[!is.na(filtRefSeq)]
+}else{
+  stop("Method for dealing with probes mapped to the same gene IDs not recognized\n", call. = F)
 }
 
 # Save filtered expression values to working directory
