@@ -3,6 +3,7 @@
 # install.packages("optparse")
 # source("http://bioconductor.org/biocLite.R")
 # biocLite("limma")
+# biocLite("arrayQualityMetrics")
 
 suppressPackageStartupMessages(library("optparse"))
 
@@ -93,6 +94,17 @@ RG = read.maimages(
   annotation = "FeatureNum"
 )
 
+# Potential QC
+library(arrayQualityMetrics)
+arrayQualityMetrics(expressionset = RG,
+                    outdir = "test_report",
+                    force = T)
 
+# Normalization
+RGb <- backgroundCorrect(RG, method="normexp", offset=50)
+MA <- normalizeWithinArrays(RG, method="loess") # Agilent specific global loess normalization method
 
-
+# Potential QC
+arrayQualityMetrics(expressionset = MA,
+                    outdir = "MA_test_report",
+                    force = T)
