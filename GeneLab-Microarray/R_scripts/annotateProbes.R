@@ -91,7 +91,7 @@ tryCatch({
   }
 )
 
-# inFH = "exprsValues.txt"
+# inFH = "expValues.txt"
 inFH = opt$input
 tryCatch({
   eset = read.delim(inFH,header=T,sep = "\t",stringsAsFactors = F)
@@ -108,16 +108,15 @@ mapFun = function(id, environ){ # Function to match the primary RefSeq ID for a 
   return(tryCatch(get(id, env=environ)[1], error=function(e) NA))
 }
 
-if(opt$dupProbes == "max"){
-  #do averaging stuff here
-}else if(opt$dupProbes == "topvar"){
+if(opt$dupProbes == "topvar"){
+  # Collapse multiple probes per gene ID by selecting a representative with the most variance in expression across all samples
   suppressPackageStartupMessages(library("genefilter"))
   cat("Filtering out unannotated probes...\n")
   filt = nsFilter(neset, var.filter = F,require.entrez = T, remove.dupEntrez = T)
   nDups = filt[[2]]$numDupsRemoved # Number of probes removed that map to non-unique gene IDs
   filtID = featureNames(filt[[1]]) # Pulls out the probe IDs
   cat("Mapping probes IDs to RefSeq IDs...\n")
-  filtRefSeq = lapply(filtID,FUN = mapFun, environ= eval(parse(text=annotEnv))) # Applying mapFun to all probe IDs
+  filtRefSeq = lapply(filtID,FUN = mapFun, environ= eval(parse(text=annotEnv))) # Applying mapFun to all non-filtered probe IDs
   
   cat("\tDuplicated probes removed:",nDups,"\n")
   cat("\tUnampped probes removed:",nrow(eset)-sum(!is.na(filtRefSeq))-nDups,"\n")
@@ -130,6 +129,22 @@ if(opt$dupProbes == "max"){
   normVals = exprs(filt[[1]])
   normVals = normVals[!is.na(filtRefSeq),]
   rownames(normVals) = filtRefSeq[!is.na(filtRefSeq)]
+  
+  
+}else if(any(opt$dupProbes %in% c("average","max"))){
+  cat("Mapping probes IDs to RefSeq IDs...\n")
+  RefSeq = lapply(rownames(eset),FUN = mapFun, environ= eval(parse(text=annotEnv))) # Applying mapFun to all probe IDs
+  noIDCnt = sum(is.na(RefSeq))
+  eset = eset[!is.na(RefSeq),]
+  RefSeq = RefSeq[!is.na(RefSeq)]
+  
+  if(opt$dupProbes == "average"){
+  # Collapse multiple probes per gene ID by averaging expression values across all samples
+  
+  }else if(opt$dupProbes == "max"){
+  # Collapse multiple probes per gene ID by selecting a representative with the highest mean expression across all samples
+
+  }
 }else{
   stop("Method for dealing with probes mapped to the same gene IDs not recognized\n", call. = F)
 }
