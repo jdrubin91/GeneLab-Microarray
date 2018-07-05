@@ -75,16 +75,20 @@ arrPackages = c("mogene10sttranscriptcluster.db",
 # Call the appropriate annotation package
 tryCatch({
   annotPack = arrPackages[grep(pattern = arrVer,x = arrayNames,ignore.case = T)] # Pick out appropriate package by the array version
-  suppressPackageStartupMessages(library(annotPack,character.only = T)) # Load selected package
-  packObjs = ls(paste("package:",as.character(annotPack),sep="")) # Stores a list of all the objects in the selected package
-  if(any(grepl(pattern = "REFSEQ",x = packObjs, ignore.case = T))){
-    annotEnv = packObjs[grepl(pattern = "REFSEQ",x = packObjs, ignore.case = T)] # Select the enivornment from the package to map probes to RefSeq IDs
-  }else if(annotPack == "ath1121501.db"){
-    annotEnv = packObjs[grepl(pattern = "ACCNUM",x = packObjs, ignore.case = T)] # Select the enivornment from the package to map probes to RefSeq IDs
-  }else if(annotPack == "yeast2.db"){
-    annotEnv = packObjs[grepl(pattern = "ORF",x = packObjs, ignore.case = T)] # Select the enivornment from the package to map probes to RefSeq IDs
+  if(annotPack){
+    suppressPackageStartupMessages(library(annotPack,character.only = T)) # Load selected package
+    packObjs = ls(paste("package:",as.character(annotPack),sep="")) # Stores a list of all the objects in the selected package
+    if(any(grepl(pattern = "REFSEQ",x = packObjs, ignore.case = T))){
+      annotEnv = packObjs[grepl(pattern = "REFSEQ",x = packObjs, ignore.case = T)] # Select the enivornment from the package to map probes to RefSeq IDs
+    }else if(annotPack == "ath1121501.db"){
+      annotEnv = packObjs[grepl(pattern = "ACCNUM",x = packObjs, ignore.case = T)] # Select the enivornment from the package to map probes to RefSeq IDs
+    }else if(annotPack == "yeast2.db"){
+      annotEnv = packObjs[grepl(pattern = "ORF",x = packObjs, ignore.case = T)] # Select the enivornment from the package to map probes to RefSeq IDs
+    }
+    cat("Annotating with R package",annotPack,"using object:",annotEnv,"\n")
+  }else{
+    # Get to guessing
   }
-  cat("Annotating with R package",annotPack,"using object:",annotEnv,"\n")
 }, error=function(e){
   stop("Array version wasn't not recognized or the annotation package was unable to load.\n
        Check that the appropriate packages are installed and the array version is contained in the list of known arrays\n", call. = F)
