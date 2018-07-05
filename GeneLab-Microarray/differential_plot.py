@@ -5,10 +5,11 @@ matplotlib.use('Agg')
 import os, config, math, mpld3, warnings
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
-from matplotlib.controllers import Controller
 import numpy as np
 from scipy.stats import gaussian_kde
 
+#This is a mpld3 plugin class to add a slider bar. Not currently in use (6/27/18) but potentially useful for a padj cutoff slider bar. Would need to
+#make a web-app though and this might be out of scope for this project.
 class SliderView(mpld3.plugins.PluginBase):
     """ Add slider and JavaScript / Python interaction. """
 
@@ -76,11 +77,14 @@ class SliderView(mpld3.plugins.PluginBase):
                       "idline": mpld3.utils.get_id(line),
                       "callback_func": callback_func}
 
+#This is in relation to the above class. Not exactly sure how it's supposed to be implemented but I found this online.
 def updateSlider(pval_cut):
     return pval_cut
 
-#This function is the one currently in use (JDR 6/20/18) and uses the python package mpld3 to plot interactive MA and volcano plots.
-#I found this one to be the most versatile and least laggy.
+#This function is the one currently in use (JDR 6/20/18,6/26/18) and uses the python package mpld3 to plot interactive MA and volcano plots.
+#I found this one to be the most versatile and least laggy. One issue with this is that it REQUIRES matplotlib 1.3.1 (or at least does not work with
+#matplotlib 2.2.2). The reason is that there is some issue with matplotlib 2.2.2 figures not being json serializable. This is really an mpld3 bug but
+#if you just use matplotlib 1.3.1, it works fine.
 def differential_visualize(rawdata_out,GLDS):
     #In this section of the code, the style of labels is defined. In this case, we are using a table with non_sig hits being blue and sig hits being red
     css = """
@@ -220,7 +224,7 @@ def differential_visualize(rawdata_out,GLDS):
         ax0.tick_params(axis='y', which='both', left='on', right='off', labelleft='on')
         ax0.tick_params(axis='x', which='both', bottom='off', top='off', labelbottom='on')
         ax0.set_title("Microarray MA Plot", size=25)
-        ax0.set_ylabel("Log Fold Change ("+condition1+" - "+condition2+")", size=18)
+        ax0.set_ylabel("Log2 Fold Change ("+condition1+" - "+condition2+")", size=18)
         ax0.set_xlabel("Average Expression", size=18)
 
         #Here we create the Volcano plot
@@ -237,7 +241,7 @@ def differential_visualize(rawdata_out,GLDS):
         ax1.tick_params(axis='x', which='both', bottom='off', top='off', labelbottom='on')
         ax1.set_title("Microarray Volcano Plot", size=25)
         ax1.set_ylabel("-Log10 P-value", size=18)
-        ax1.set_xlabel("Log Fold Change ("+condition1+" - "+condition2+")", size=18)
+        ax1.set_xlabel("Log2 Fold Change ("+condition1+" - "+condition2+")", size=18)
         ax1.grid(color='black', linestyle='dashed')
         ax1.set_ylim(bottom=0)
 
@@ -256,7 +260,7 @@ def differential_visualize(rawdata_out,GLDS):
 
         #Here we save both a png version of the plot (non-interactive) and the interactive html version of the plot
         plt.savefig(os.path.join(rawdata_out,GLDS+'_visualization_results.png'))
-        mpld3.save_html(Controller.to_json(F),os.path.join(rawdata_out,GLDS+'_visualization_results.html'))
+        mpld3.save_html(F,os.path.join(rawdata_out,GLDS+'_visualization_results.html'))
         plt.close(F)
 
     #This section of the code creates an html table of significant genes
@@ -316,7 +320,7 @@ def differential_visualize(rawdata_out,GLDS):
         html_file.write('<b>There were <a style="font-size: 20" href="'+GLDS+'_significant_genes_'+str(pval_cut)+'.html">'+str(len(scattersigx))+' significant genes</a> called with p-adj < '+str(pval_cut)+'</b>')
 
 
-
+#This is not currently in use (6/26/18: JDR) it is a function to create a plotly figure which looks fairly nice but is pretty laggy
 def MA_plotly(diffExp_file):
     import plotly.plotly as py
     import plotly
@@ -387,6 +391,7 @@ def MA_plotly(diffExp_file):
     plotly.offline.plot(fig_comp, filename='/Users/jonathanrubin/Google Drive/NASA/home/batch_out/GLDS-4/microarray/MA-Plot.html',
         auto_open=False)
 
+#This is not currently in use (6/26/18: JDR) - it is a function to create pygal interactive figures but it's also kind of laggy and not great looking.
 def MA_pygal(diffExp_file):
     import pygal
     from pygal import config
@@ -411,10 +416,4 @@ def MA_pygal(diffExp_file):
     xy_chart.add('Sig',[{'value':(x,y),'label':g} for g,x,y,p in zip(geneName,averageExpression,foldChange,adjustedPvalue) if p < pval_cut])
     xy_chart.add('Non-Sig',[{'value':(x,y),'label':g} for g,x,y,p in zip(geneName,averageExpression,foldChange,adjustedPvalue) if p >= pval_cut])
     xy_chart.render_to_file('/Users/jonathanrubin/Google Drive/NASA/home/batch_out/GLDS-4/microarray/MA-Plot_pygal.svg')
-
-if __name__ == "__main__":
-    diffExp_file = '/Users/jonathanrubin/Google Drive/NASA/home/batch_out/GLDS-4/microarray/diffExpression.txt'
-    # MA_plotly(diffExp_file)
-    MA_mpld3(diffExp_file)
-    # MA_pygal(diffExp_file)
 

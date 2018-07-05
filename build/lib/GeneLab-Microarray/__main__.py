@@ -55,7 +55,7 @@ def run():
             batch_process.run(indir)
         else:
             import metadata_process, rawdata_process
-            print "Processing " + indir + "\nWriting output to: " + outdir
+            print "Processing: " + indir + "\nWriting output to: " + outdir
             GLDS = os.path.basename(indir)
             print GLDS
             rawdata_out = os.path.join(outdir,GLDS,'microarray')

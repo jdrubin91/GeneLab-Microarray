@@ -1,5 +1,6 @@
-#Directory=/opt/genelab-genomespace-dev_mount_point/
-GLDS#   Copied  Normalize/QC
-GLDS-7	False	False
-GLDS-62	False	False
-GLDS-63	False	False
+#Directory=/Users/jonathanrubin/Google_Drive/NASA/home/genelab-genomespace-dev_mount_point-local/
+GLDS#   Copied	Array	Normalize/QC	Annotated
+GLDS-4	True	Affymetrix	True	True
+GLDS-21	True	False	False	False
+GLDS-25	False	False	False	False
+GLDS-174	False	False	False	False
