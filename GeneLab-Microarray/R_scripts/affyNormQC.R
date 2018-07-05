@@ -47,7 +47,7 @@ NUSEplot = opt$NUSEplot
 
 if (is.null(opt$GLDS)){ # Include GLDS accession number in outputs if provided
   glAn = ''
-  cat("Warning: No GLDS accession number provided")
+  cat("Warning: No GLDS accession number provided\n")
 }else{
   glAn = paste('GLDS-',opt$GLDS,sep='')
 }
@@ -112,7 +112,8 @@ cat("Array type detected.\n")
 
 # Exit script if arrayInfoOnly mode is True
 if(opt$arrayInfoOnly == TRUE){
-  stopQuiet()
+  cat("Detect-array-type-only mode on, exiting.\n")
+  quit(save = "no", status = 0, runLast = FALSE)
 }
 
 ## Raw QC
