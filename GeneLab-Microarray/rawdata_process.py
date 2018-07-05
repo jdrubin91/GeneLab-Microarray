@@ -87,7 +87,7 @@ def rename(GLDS_path):
                 if key in filename:
                     # print filename
                     sample_in_first_column = True
-                    sample_name = key.replace(' ','-').replace('_','-').replace('(','-').replace(')','-')
+                    sample_name = key.replace(' ','-').replace('_','-').replace('(','-').replace(')','-').strip('-')
                     move_command = ["mv", os.path.join(rawdata_out,filename), os.path.join(final_rawdata_out,GLDS+'_'+sample_name+'_microarray_raw'+'.'+extension)]
                     config.get_md5sum(os.path.join(rawdata_out,filename),'original',action='rename')
                     new_md5sum_file = os.path.join(final_rawdata_out,GLDS+'_'+sample_name+'_microarray_raw'+'.'+extension)
@@ -98,7 +98,7 @@ def rename(GLDS_path):
                     for item in assay_dict[key]:
                         if item in filename and item != '':
                             sample_in_other_column = True
-                            new_filename = filename.split('.')[0].replace('_','-').replace('(','-').replace(')','-').replace(' ','-')
+                            new_filename = filename.split('.')[0].replace('_','-').replace('(','-').replace(')','-').replace(' ','-').strip('-')
                             move_command = ["mv", os.path.join(rawdata_out,filename), os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_raw'+'.'+extension)]
                             config.get_md5sum(os.path.join(rawdata_out,filename),'original',action='rename')
                             new_md5sum_file = os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_raw'+'.'+extension)

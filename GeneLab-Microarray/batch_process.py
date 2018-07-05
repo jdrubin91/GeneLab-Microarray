@@ -21,7 +21,7 @@ def run(batch_file):
             GLDS, copy, array, norm_qc, annotate = batch_list[i]
             GLDS_path = os.path.join(config.outdir,GLDS)
             rawdata_out = os.path.join(config.outdir,GLDS,'microarray')
-            metadata_out = rawdata_out = os.path.join(config.outdir,GLDS,'metadata')
+            metadata_out = os.path.join(config.outdir,GLDS,'metadata')
 
             #Copy module, copies and unzips both metadata and raw data. If precise directories are not found,
             #that GLDS is skipped.
