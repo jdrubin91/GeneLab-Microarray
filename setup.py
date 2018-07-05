@@ -3,7 +3,7 @@ import setuptools
 
 
 setup(name='GeneLab-Microarray',
-    version='0.4.8', 
+    version='0.4.9', 
     description='Standardized processing pipeline for microarray data on GeneLab.', 
     long_description='Standardized processing pipeline for microarray data on GeneLab.',
     url='https://github.com/jdrubin91/GeneLab-Microarray', 

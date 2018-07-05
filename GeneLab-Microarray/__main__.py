@@ -91,11 +91,11 @@ def run():
     elif visualize != False:
         import rawdata_process
         condition1,condition2,pval_cut = visualize.split(',')
-        print "Visualization mode specified.\nComparing: " + condition1 + " vs. " + condition2 + "\nAdjusted p-value cutoff set at: " + pval_cut
+        print "Visualization mode specified.\nInput GLDS directory: "+outdir+"\nComparing: " + condition1 + " vs. " + condition2 + "\nAdjusted p-value cutoff set at: " + pval_cut
         import differential_plot
         rawdata_out = os.path.join(outdir,'microarray')
         metadata_out = os.path.join(outdir,'metadata')
-        GLDS = os.path.basename(os.path.dirname(outdir))
+        GLDS = os.path.basename(outdir)
         rawdata_process.limma_differential(rawdata_out,metadata_out,GLDS)
         differential_plot.differential_visualize(rawdata_out,GLDS)
         print "done. Output in: " + rawdata_out
