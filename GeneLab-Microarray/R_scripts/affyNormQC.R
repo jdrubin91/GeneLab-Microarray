@@ -36,6 +36,11 @@ addSlash = function(string){
   return(string)
 }
 
+stopQuiet = function(...) {
+  blankMsg = sprintf("\r%s\r", paste(rep(" ", getOption("width")-1L), collapse=" "))
+  stop(simpleError(blankMsg))
+}
+
 norm = opt$normalization
 QCout = opt$QCoutput
 NUSEplot = opt$NUSEplot
@@ -103,9 +108,12 @@ if(!file.exists(qcDir)) dir.create(qcDir)
 # Output array information to a separate file
 write.table(arrInfo,file = paste(qcDir,glAn,"_arrayInfo.txt",sep=""),quote = F,
             col.names = F, row.names = F)
+cat("Array type detected.\n")
 
 # Exit script if arrayInfoOnly mode is True
-if(opt$arrayInfoOnly == TRUE) stop("Detect-affy-array-only mode is on, exiting...", call. = F)
+if(opt$arrayInfoOnly == TRUE){
+  stopQuiet()
+}
 
 ## Raw QC
 if(QCout == T){
