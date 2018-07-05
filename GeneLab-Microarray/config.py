@@ -1,11 +1,11 @@
-indir = "./genelab-genomespace-dev_mount_point-local/GLDS-4/"
-outdir = "batch_test"
+indir = "./batch/test_batch.txt"
+outdir = "../batch_test"
 srcdir = "/Users/jonathanrubin/Google_Drive/NASA/home/GeneLab-Microarray/GeneLab-Microarray"
-wrkdir = "/Users/jonathanrubin/Google_Drive/NASA/home"
+wrkdir = "/Users/jonathanrubin/Google_Drive/NASA/home/GeneLab-Microarray"
 tempdir = "/Users/jonathanrubin/Google_Drive/NASA/home/GeneLab-Microarray/temp"
 R_dir = "/Users/jonathanrubin/Google_Drive/NASA/home/GeneLab-Microarray/GeneLab-Microarray/R_scripts"
 md5sum = {"original": [], "new": []}
-batch = "False"
+batch = "True"
 visualize = "False"
 def get_md5sum(filepath,key,action=False):
     import os, subprocess

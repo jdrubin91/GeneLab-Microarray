@@ -131,8 +131,9 @@ def detect_array(GLDS_path):
                     "--GLDS="+GLDS.split('-')[1]]
     subprocess.call(R_command)
 
-    if GLDS+'_arrayInfo.txt' in os.listdir(os.path.join(rawdata_out,'QC_reporting')):
-        with open(os.path.join(rawdata_out,'QC_reporting',GLDS+'_arrayInfo.txt')) as F:
+    array_info = os.path.join(rawdata_out,'QC_reporting',GLDS+'_arrayInfo.txt')
+    if os.path.exists(array_info):
+        with open(array_info) as F:
             array = F.readline().strip('\n')
     else:
         print "Warning: Array detection failed for " + GLDS + " - arrayInfo.txt file missing. Skipping..."
