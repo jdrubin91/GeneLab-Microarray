@@ -148,15 +148,15 @@ def differential_visualize(rawdata_out,GLDS):
         </tr>
         <tr>
             <td style="background-color: #000000;">x</td>
-            <td style="background-color: #0000ff;">{x}</td>
+            <td style="background-color: #4B0082;">{x}</td>
         </tr>
         <tr>
             <td style="background-color: #000000;">y</td>
-            <td style="background-color: #0000ff;">{y}</td>
+            <td style="background-color: #4B0082;">{y}</td>
         </tr>
         <tr>
             <td style="background-color: #000000;">p</td>
-            <td style="background-color: #0000ff;">{pval}</td>
+            <td style="background-color: #4B0082;">{pval}</td>
         </tr>
         </table>"""
 
@@ -220,7 +220,7 @@ def differential_visualize(rawdata_out,GLDS):
     #In this section the matplotlib figure is initialized and the MA-plot is created
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        F = plt.figure(figsize=(18,8))
+        F = plt.figure(figsize=(14,6))
         gs = gridspec.GridSpec(1, 2, width_ratios=[2, 1])
         ax0 = F.add_subplot(gs[0])
         ax0.grid(color='black', linestyle='dashed')
