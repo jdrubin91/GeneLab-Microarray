@@ -3,7 +3,7 @@ import setuptools
 
 
 setup(name='GeneLab-Microarray',
-    version='0.4.7', 
+    version='0.4.8', 
     description='Standardized processing pipeline for microarray data on GeneLab.', 
     long_description='Standardized processing pipeline for microarray data on GeneLab.',
     url='https://github.com/jdrubin91/GeneLab-Microarray', 
@@ -13,6 +13,6 @@ setup(name='GeneLab-Microarray',
     packages=setuptools.find_packages(), 
     include_package_data=True,
     package_data={'': ['R_scripts/*']},
-    install_requires=['scipy', 'mpld3','jinja2','matplotlib<=1.3.1'],
+    install_requires=['scipy', 'mpld3','jinja2','matplotlib'],
     zip_safe=False,
     scripts=['bin/GeneLab-Microarray'])

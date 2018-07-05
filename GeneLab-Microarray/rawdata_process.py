@@ -85,12 +85,11 @@ def rename(GLDS_path):
 
                 #If the first column does correspond well, then assume the first column is the sample name and rename accordingly
                 if key in filename:
-                    # print filename
                     sample_in_first_column = True
                     sample_name = key.replace(' ','-').replace('_','-').replace('(','-').replace(')','-').strip('-')
-                    move_command = ["mv", os.path.join(rawdata_out,filename), os.path.join(final_rawdata_out,GLDS+'_'+sample_name+'_microarray_raw'+'.'+extension)]
-                    config.get_md5sum(os.path.join(rawdata_out,filename),'original',action='rename')
-                    new_md5sum_file = os.path.join(final_rawdata_out,GLDS+'_'+sample_name+'_microarray_raw'+'.'+extension)
+                    move_command = ["mv", os.path.join(rawdata_out,filename), os.path.join(final_rawdata_out,GLDS+'_'+sample_name+'_microarray_raw.'+extension)]
+                    # config.get_md5sum(os.path.join(rawdata_out,filename),'original',action='rename')
+                    new_md5sum_file = os.path.join(final_rawdata_out,GLDS+'_'+sample_name+'_microarray_raw.'+extension)
 
             #If the first column does not correspond to any filenames, simply remove '_', '(', and ')' characters from filename and append appropriate naming conventions
             if not sample_in_first_column:
@@ -99,13 +98,14 @@ def rename(GLDS_path):
                         if item in filename and item != '':
                             sample_in_other_column = True
                             new_filename = filename.split('.')[0].replace('_','-').replace('(','-').replace(')','-').replace(' ','-').strip('-')
-                            move_command = ["mv", os.path.join(rawdata_out,filename), os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_raw'+'.'+extension)]
-                            config.get_md5sum(os.path.join(rawdata_out,filename),'original',action='rename')
-                            new_md5sum_file = os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_raw'+'.'+extension)
+                            move_command = ["mv", os.path.join(rawdata_out,filename), os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_raw.'+extension)]
+                            # config.get_md5sum(os.path.join(rawdata_out,filename),'original',action='rename')
+                            new_md5sum_file = os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_raw.'+extension)
 
             #Execute the command if the file was in metadata - catch whether the file already exists and don't output an error
             if sample_in_first_column or sample_in_other_column:
                 try:
+                    config.get_md5sum(move_command[1],'original',action='rename')
                     with open(os.devnull,'w') as FNULL:
                         subprocess.check_call(move_command,stdout=FNULL, stderr=subprocess.STDOUT)
                     config.get_md5sum(new_md5sum_file,'new')

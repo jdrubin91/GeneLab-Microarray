@@ -9,7 +9,7 @@ def run(batch_file):
         parent_dir = F.readline().strip('\n').split('=')[1]
         header = F.readline()
         for line in F:
-            linelist = line.strip('\n').split('\t')
+            linelist = line.strip('\n').split()
             if len(linelist) != 5:
                 print "Error, batch file line not formatted properly: " + line + " skipping..."
             else:
@@ -27,6 +27,7 @@ def run(batch_file):
             #that GLDS is skipped.
             if copy == 'False':
                 print "Copying files for " + GLDS + "..."
+                config.md5sum = {"original": [], "new": []}
                 #Process metadata
                 metadata_in = os.path.join(parent_dir,GLDS,'metadata')
                 if os.path.isdir(metadata_in):

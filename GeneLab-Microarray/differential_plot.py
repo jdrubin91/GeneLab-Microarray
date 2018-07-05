@@ -8,6 +8,17 @@ from matplotlib import gridspec
 import numpy as np
 from scipy.stats import gaussian_kde
 
+#mpld3 hack to make it run with matplotlib v2.2.2
+class NumpyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        import numpy as np
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return json.JSONEncoder.default(self, obj)
+
+from mpld3 import _display
+_display.NumpyEncoder = NumpyEncoder
+
 #This is a mpld3 plugin class to add a slider bar. Not currently in use (6/27/18) but potentially useful for a padj cutoff slider bar. Would need to
 #make a web-app though and this might be out of scope for this project.
 class SliderView(mpld3.plugins.PluginBase):
