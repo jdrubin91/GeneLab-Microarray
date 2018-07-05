@@ -19,7 +19,7 @@ option_list=list(
   make_option(c("-i","--input"),type="character",help="Name of (or path to) the input file (\\t delimited .txt file)"),
   make_option(c("-a","--arrayInfo"),type="character",default="./QC_output/arrayInfo.txt",help="Name of (or path to) a file containing the array information [Line 1: Manufacturer, line 2: Array version]"),
   make_option(c("-o","--output"),type="character",default="annotExpValues.txt",help="Name of (or path to) file to write results to (default: annotExpValues.txt)"),
-  make_option(c("-d","--dupProbes"),type="character",default="topvar",help="Method for handling multiple probes [max (default, probe with the highest mean expression), average (mean of all probes for a gene), topvar (highest variance with nsFilter function)"),
+  make_option(c("-d","--dupProbes"),type="character",default="max",help="Method for handling multiple probes [max (default, probe with the highest mean expression), average (mean of all probes for a gene), topvar (highest variance with nsFilter function)"),
   make_option(c("-q","--QCoutput"),type="logical",default=TRUE,help="Output QC_reporting directory of QC plots (default = TRUE)"),
   make_option("--QCDir",type="character",default="./QC_reporting/",help="Path to directory for storing QC output, including a terminal forward slash. Will be created if it does not exist yet (default = './QC_reporting/')"),
   make_option("--GLDS",type="character",help="GLDS accession number for plot outputs (ie '21' for GLDS-21)")
@@ -141,7 +141,24 @@ if(opt$dupProbes == "topvar"){
   
   if(opt$dupProbes == "average"){
   # Collapse multiple probes per gene ID by averaging expression values across all samples
-    cat("not added yet, sry :/ \n")
+    rmRowTag = rep(TRUE,nrow(eset)) # Tag rows to drop (set single or averaged probes to FALSE below)
+    for (i in 1:nrow(eset)){
+      if(sum(RefSeq == RefSeq[i][[1]]) > 1){
+        inds = grep(RefSeq[i][[1]], RefSeq) # List of indices at which a probe for a given gene ID occur
+        eset[inds[1],] = apply(X = eset[inds,], FUN = mean, MARGIN = 2) # Changes the values of the first occurence of a probe to the sample-specific average of the values from all the probes for that gene ID
+        rmRowTag[inds[1]] = FALSE
+      }else rmRowTag[i] = FALSE
+    }
+    nDups = sum(rmRowTag)
+    normVals = eset[!rmRowTag,]
+    row.names(normVals) = RefSeq[!rmRowTag]
+    
+    cat("\tDuplicated probes removed:",nDups,"\n")
+    cat("\tUnampped probes removed:",noIDCnt,"\n")
+    cat("Annotated probes remaining:",nrow(normVals),"\n")
+    if( nrow(normVals) > length(unique(RefSeq[!rmRowTag])) ){
+      cat("\n\tWarning: non-unique probe to RefSeq mappings remain \n")
+    }
   
   }else if(opt$dupProbes == "max"){
   # Collapse multiple probes per gene ID by selecting a representative with the highest mean expression across all samples
