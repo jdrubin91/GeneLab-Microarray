@@ -94,6 +94,7 @@ def run(batch_file):
                 update_batch(parent_dir,header,batch_file,batch_list)
                 print "done"
 
+    print "done."
 
 #This function updates the batch file
 def update_batch(parent_dir,header,batch_file,batch_list):

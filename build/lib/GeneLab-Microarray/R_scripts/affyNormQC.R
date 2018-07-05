@@ -8,15 +8,19 @@
 
 suppressPackageStartupMessages(library("optparse"))
 
+relDir = getwd()
+
 # Read options
 option_list=list(
   make_option(c("-i","--input"),type="character",help="Path to directory containing input .CEL files"),
   make_option(c("-n","--normalization"),type="character",default="rma",help="Normalization method [rma (default, full rma), quantile (no background correction), background (no quant. normalization), log2 (no quant. norm. or background correction)"),
   make_option(c("-o","--outFile"),type="character",default="expValues",help="Name of the output file [without extension!] (default: expValues)"),
+  make_option("--outDir",type="character",default="./",help="Path to an output directory, including a terminal forward slash (default: directory this script is called from)"),
   make_option(c("-t","--outType"),type="character",default="txt",help="Format of output data: R (Rdata eset object), txt (default, tab delimited file with identifiers and sample names), both"),
   make_option("--outputData",type="logical",default=TRUE,help="Output data at all (default TRUE)"),
   make_option(c("-a","--arrayInfoOnly"),type="logical",default=FALSE,help="Detect-affy-array-only mode. If true, script will exit after outputting the arrayInfo file. (Default: FALSE)"),
   make_option("--QCoutput",type="logical",default=TRUE,help="Output QC_reporting directory of QC plots (default = TRUE)"),
+  make_option("--QCDir",type="character",default="./QC_reporting/",help="Path to directory for storing QC output, including a terminal forward slash. Will be created if it does not exist yet (default = './QC_reporting/')"),
   make_option("--NUSEplot",type="logical",default=FALSE,help="Include a NUSE plot in the QC output, adds significantly to runtime (default = FALSE)"),
   make_option("--GLDS",type="character",help="GLDS accession number for plot outputs (ie '21' for GLDS-21)")
 )
@@ -24,24 +28,37 @@ option_list=list(
 opt_parser = OptionParser(option_list=option_list)
 opt = parse_args(opt_parser)
 
+addSlash = function(string){
+  # Adds a trailing forward slash to the end of a string (ex path to a driectory) if it is not present
+  if(substr(x = string,start = nchar(string), stop = nchar(string)) != "/"){
+    string = paste(string,"/",sep="")
+  }
+  return(string)
+}
+
+stopQuiet = function(...) {
+  blankMsg = sprintf("\r%s\r", paste(rep(" ", getOption("width")-1L), collapse=" "))
+  stop(simpleError(blankMsg))
+}
+
 norm = opt$normalization
 QCout = opt$QCoutput
 NUSEplot = opt$NUSEplot
 
 if (is.null(opt$GLDS)){ # Include GLDS accession number in outputs if provided
-  print_help(opt_parser)
   glAn = ''
-  cat("Warning: No GLDS accession number provided")
+  cat("Warning: No GLDS accession number provided\n")
 }else{
   glAn = paste('GLDS-',opt$GLDS,sep='')
 }
+
 
 if (is.null(opt$input)){ # Include GLDS accession number in outputs if provided
   print_help(opt_parser)
   stop("No path to input directory provided. Please look over the available options", call. = F)
 }else{
-  inPath = opt$input
-  setwd(inPath)
+  inPath = addSlash(opt$input)
+  setwd(inPath) # Change the working directory to the directory containing the raw files
 }
 
 detach_package = function(pkg, character.only = FALSE){
@@ -59,22 +76,18 @@ detach_package = function(pkg, character.only = FALSE){
 # Load initial libraries
 suppressPackageStartupMessages(require(affy))
 
-# setwd("~/Documents/genelab/rot1/GLDS4/microarray/")
+# setwd("~/Documents/genelab/rot1/GLDS-4/microarray/")
 celFiles <- list.celfiles(full.names=TRUE)
-sampNames = gsub(".*_microarray_","",celFiles)
+sampNames = gsub("_microarray_.*","",celFiles)
 sampNames = gsub(".CEL","",sampNames)
-sampNames = gsub("./","",sampNames) # Extract sample naems form the list of .CEL files
+sampNames = gsub(".*/","",sampNames)
+sampNames = gsub("GLDS-\\d*_","",sampNames)# Extract sample names form the list of .CEL files
 
-tryCatch({raw = ReadAffy()}, error=function(e){
+tryCatch({suppressWarnings(expr = {raw = ReadAffy()})}, error=function(e){
   stop("No .CEL files detected in the current directory", call. = F)
   })
 
-# Output array information to a separate file
-write.table(c("Affymetrix",as.character(raw@cdfName)),file = paste(glAn,"_arrayInfo.txt",sep=""),quote = F,
-            col.names = F, row.names = F)
-
-# Exit script if arrayInfoOnly mode is True
-if(opt$arrayInfoOnly == TRUE) stop("Detect-affy-array-only mode is on, exiting...", call. = F)
+arrInfo = c("Affymetrix",as.character(raw@cdfName))
 
 if (grepl("-st-",raw@cdfName,ignore.case = T)){
   detach_package(affy)
@@ -87,27 +100,42 @@ if (grepl("-st-",raw@cdfName,ignore.case = T)){
   st = F
 }
 
+setwd(relDir) # Return the working directory to direcotry script was called from to enable use of relative paths
+# Create QC output directory
+qcDir = addSlash(opt$QCDir)
+if(!file.exists(qcDir)) dir.create(qcDir)
+
+# Output array information to a separate file
+write.table(arrInfo,file = paste(qcDir,glAn,"_arrayInfo.txt",sep=""),quote = F,
+            col.names = F, row.names = F)
+cat("Array type detected.\n")
+
+# Exit script if arrayInfoOnly mode is True
+if(opt$arrayInfoOnly == TRUE){
+  cat("Detect-array-type-only mode on, exiting.\n")
+  quit(save = "no", status = 0, runLast = FALSE)
+}
+
 ## Raw QC
 if(QCout == T){
   cat("Performing intial QC\n")
   # Prepare plotting options
   toMatch = c(8,183,31,45,51,100,101,118,128,139,147,183,254,421,467,477,
               483,493,498,503,508,535,552,575,635,655)
-  color = grDevices::colors()[rep(toMatch,3)] # Create a library of colors for plotting
-  if(!file.exists(paste('./',glAn,'_QC_reporting/',sep=''))) dir.create(paste('./',glAn,'_QC_reporting/',sep=''))
+  color = grDevices::colors()[rep(toMatch,10)] # Create a library of colors for plotting
   
   #Images
   cat("\tGenerating raw images")
   if(st == T){
     for(i in 1:length(celFiles)){
-      png(paste('./',glAn,'_QC_reporting/',glAn,'_',sampNames[i],'_image.png',sep=''),width=800, height = 800)
+      png(paste(qcDir,glAn,'_',sampNames[i],'_image.png',sep=''),width=800, height = 800)
       image(raw, which = i)
       garbage <- dev.off()
       cat(".")
     }
   }else{
     nblines=length(celFiles)%/%4 + as.numeric((length(celFiles)%%4)!=0)
-    png(paste('./',glAn,'_QC_reporting/',glAn,'_images.png',sep=''),width=800,height = 200*nblines)
+    png(paste(qcDir,glAn,'_images.png',sep=''),width=800,height = 200*nblines)
     par(mfrow=c(nblines,4))
     image(raw)
     garbage <- dev.off()
@@ -117,7 +145,7 @@ if(QCout == T){
   #MA plot
   cat("\tGenerating raw data MA plots...\n")
   nblines=length(celFiles)%/%3 + as.numeric((length(celFiles)%%3)!=0)
-  png(paste('./',glAn,'_QC_reporting/',glAn,'_rawPlotMA.png',sep=''),width=800, height = 300*nblines )
+  png(paste(qcDir,glAn,'_rawPlotMA.png',sep=''),width=800, height = 300*nblines )
   par(mfrow=c(nblines,3))
   if(st == T){
     MAplot(raw)
@@ -129,7 +157,7 @@ if(QCout == T){
   # Intensity distributions of the pm probes from each microarray on the same graph
   cat("\tGenerating initial distribution plots")
   mypms = pm(raw)
-  png(paste('./',glAn,'_QC_reporting/',glAn,'_rawDensityDistributions.png',sep=''),width=800,height=800 )
+  png(paste(qcDir,glAn,'_rawDensityDistributions.png',sep=''),width=800,height=800 )
   ylims = c(0,.8)
   xlims = c(0,16)
   for(i in 1:ncol(mypms)){
@@ -148,11 +176,13 @@ if(QCout == T){
   cat("\n")
   
   # Boxplots
-  png(paste('./',glAn,'_QC_reporting/',glAn,'_rawBoxplot.png',sep=''),width=800,height = 400)
+  png(paste(qcDir,glAn,'_rawBoxplot.png',sep=''),width=800,height = 400)
   par(mar=c(7,5,1,1))
   if(st == T){
-    boxplot(oligo::rma(raw, background=FALSE, normalize=FALSE, subset=NULL, target="core"), las=2,
-            names = sampNames, main=paste(glAn," Raw intensities",sep=""),col=color[1:length(celFiles)]);
+    invisible(capture.output( # Silence oligo::rma printing statement
+      boxplot(oligo::rma(raw, background=FALSE, normalize=FALSE, subset=NULL, target="core"), las=2,
+              names = sampNames, main=paste(glAn," Raw intensities",sep=""),col=color[1:length(celFiles)])
+    ))
   }else{
     boxplot(raw,las=2,outline=FALSE,col=color[1:length(celFiles)],main = paste(glAn," Raw intensities",sep=""),names=sampNames)
   }
@@ -162,7 +192,7 @@ if(QCout == T){
   # PCA
   cat("\tPerforming PCA of raw data...\n")
   rawPCA = prcomp(mypms)
-  png(paste('./',glAn,'_QC_reporting/',glAn,'_rawPCA.png',sep=''),width=800,height = 800)
+  png(paste(qcDir,glAn,'_rawPCA.png',sep=''),width=800,height = 800)
   plot(rawPCA$rotation[,1],rawPCA$rotation[,2],col=color[1:length(celFiles)],pch=16,
        xlab = paste("PC1, ",round(summary(rawPCA)$importance["Proportion of Variance",1]*100,digits = 1),"% of variance",sep=""),
        ylab = paste("PC2, ",round(summary(rawPCA)$importance["Proportion of Variance",2]*100,digits = 1),"% of variance",sep=""),
@@ -177,14 +207,14 @@ if(QCout == T){
     if(st == T){
       Pset = fitProbeLevelModel(raw)
       # RLE plot
-      png(paste('./',glAn,'_QC_reporting/',glAn,'_RLE.png',sep=''),width=800,height = 600)
+      png(paste(qcDir,glAn,'_RLE.png',sep=''),width=800,height = 600)
       par(mar=c(7,5,1,1))
       RLE(Pset, col = color[1:length(sampNames)],
           names = sampNames, las=2, main=paste(glAn," Relative Log Expression (RLE) plot",sep=""))
       abline(h=0,lty=1,col="red")
       garbage <- dev.off()
       # NUSE plot
-      png(paste('./',glAn,'_QC_reporting/',glAn,'_NUSE.png',sep=''),width=800,height = 600)
+      png(paste(qcDir,glAn,'_NUSE.png',sep=''),width=800,height = 600)
       par(mar=c(7,5,1,1))
       NUSE(Pset, col = color[1:length(sampNames)], las=2)
       title(main=paste(glAn," NUSE plot of microarray experiments",sep=""))
@@ -193,14 +223,14 @@ if(QCout == T){
     }else{
       Pset=fitPLM(raw)
       # RLE plot
-      png(paste('./',glAn,'_QC_reporting/',glAn,'_RLE.png',sep=''),width=800,height = 600)
+      png(paste(qcDir,glAn,'_RLE.png',sep=''),width=800,height = 600)
       par(mar=c(7,5,1,1))
       RLE(Pset, col = color[1:length(sampNames)],
           names = sampNames, las=2, main="Relative Log Expression (RLE) plot")
       abline(h=0,lty=1,col="red")
       garbage <- dev.off()
       # NUSE plot
-      png(paste('./',glAn,'_QC_reporting/',glAn,'_NUSE.png',sep=''),width=800,height = 600)
+      png(paste(qcDir,glAn,'_NUSE.png',sep=''),width=800,height = 600)
       par(mar=c(7,5,1,1))
       NUSE(Pset,col = color[1:length(sampNames)], las=2)
       title(main=paste(glAn," NUSE plot of microarray experiments",sep=""))
@@ -227,13 +257,14 @@ if(opt$outputData == TRUE){
     stop("Normalization did not occur, please examine script inputs and default values",call. = F)
   }
   
+  outDir = addSlash(opt$outDir)
   if(opt$outType == "both"){
-    save(eset,file=paste(outFH,".rda",sep=""))
-    write.table(exprs(eset),file=paste(outFH,".txt",sep=""),sep="\t",quote = F)
+    save(eset,file=paste(outDir,outFH,".rda",sep=""))
+    write.table(exprs(eset),file=paste(outDir,outFH,".txt",sep=""),sep="\t",quote = F)
   }else if(opt$outType == "R"){
-    save(eset,file=paste(outFH,".rda",sep=""))
+    save(eset,file=paste(outDir,outFH,".rda",sep=""))
   }else if(opt$outType == "txt"){
-    write.table(exprs(eset),file=paste(outFH,".txt",sep=""),sep="\t",quote = F)
+    write.table(exprs(eset),file=paste(outDir,outFH,".txt",sep=""),sep="\t",quote = F)
   }else{
     print_help(opt_parser)
     stop("Help, I don't know how to save this data!",call. = F)
@@ -243,7 +274,7 @@ if(opt$outputData == TRUE){
 if(QCout == T){
   cat("Post normalization QC steps...\n")
   # Post-normalization QC
-  png(paste('./',glAn,'_QC_reporting/',glAn,'_normDensityDistributions.png',sep=''),width=800,height=800 )
+  png(paste(qcDir,glAn,'_normDensityDistributions.png',sep=''),width=800,height=800 )
   ylims = c(0,.8)
   xlims = c(0,16)
   normVals = exprs(eset)
@@ -261,7 +292,7 @@ if(QCout == T){
   garbage <- dev.off()
   
   # Boxplots
-  png(paste('./',glAn,'_QC_reporting/',glAn,'_normBoxplot.png',sep=''),width=800,height = 400)
+  png(paste(qcDir,glAn,'_normBoxplot.png',sep=''),width=800,height = 400)
   par(mar=c(7,5,1,1))
   if(st == T){
     boxplot(normVals,las=2,outline=FALSE,col=color[1:length(celFiles)],main=paste(glAn," Normalized intensities",sep=""),transfo='identity',names=sampNames)
@@ -275,7 +306,7 @@ if(QCout == T){
   #MA plot
   cat("\tGenerating MA plots from the normalized data...\n")
   nblines=length(celFiles)%/%3 + as.numeric((length(celFiles)%%3)!=0)
-  png(paste('./',glAn,'_QC_reporting/',glAn,'_normPlotMA.png',sep=''),width=800, height = 300*nblines )
+  png(paste(qcDir,glAn,'_normPlotMA.png',sep=''),width=800, height = 300*nblines )
   par(mfrow=c(nblines,3))
   MAplot(eset)
   garbage <- dev.off()
@@ -283,7 +314,7 @@ if(QCout == T){
   # PCA
   cat("\tPerforming PCA of normalized data...\n")
   normPCA = prcomp(normVals)
-  png(paste('./',glAn,'_QC_reporting/',glAn,'_normPCA.png',sep=''),width=800,height = 800)
+  png(paste(qcDir,glAn,'_normPCA.png',sep=''),width=800,height = 800)
   plot(normPCA$rotation[,1],normPCA$rotation[,2],col=color[1:length(celFiles)],pch=16,
        xlab = paste("PC1, ",round(summary(normPCA)$importance["Proportion of Variance",1]*100,digits = 1),"% of variance",sep=""),
        ylab = paste("PC2, ",round(summary(normPCA)$importance["Proportion of Variance",2]*100,digits = 1),"% of variance",sep=""),

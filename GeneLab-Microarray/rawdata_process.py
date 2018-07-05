@@ -1,7 +1,13 @@
 __author__ = 'Jonathan Rubin'
 
 import os, sys, subprocess, config, metadata_process
+from difflib import SequenceMatcher
 
+#Finds similarity between two strings a, b. Not currently used but here in case it's needed (JDR 7/5/18)
+def similar(a, b):
+    return SequenceMatcher(None, a, b).ratio()
+
+#Copies most recent metadata and all raw data and then unzips, and removes compressed files
 def copy(rawdata_directory):
     #Find name of GLDS number
     GLDS = os.path.basename(os.path.dirname(rawdata_directory))

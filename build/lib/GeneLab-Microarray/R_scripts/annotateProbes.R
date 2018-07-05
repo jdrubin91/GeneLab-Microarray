@@ -8,7 +8,6 @@
 # biocLite("drosophila2.db")
 # biocLite("hgu133plus2.db")
 # biocLite("ath1121501.db")
-
 # biocLite("yeast2.db")
 # biocLite("hugene10sttranscriptcluster.db")
 # biocLite("rat2302.db")
@@ -18,21 +17,29 @@ suppressPackageStartupMessages(library("optparse"))
 # Read options
 option_list=list(
   make_option(c("-i","--input"),type="character",help="Name of (or path to) the input file (\\t delimited .txt file)"),
-  make_option(c("-a","--arrayInfo"),type="character",default="arrayInfo.txt",help="Name of (or path to) a file containing the array information [Line 1: Manufacturer, line 2: Array version]"),
+  make_option(c("-a","--arrayInfo"),type="character",default="./QC_output/arrayInfo.txt",help="Name of (or path to) a file containing the array information [Line 1: Manufacturer, line 2: Array version]"),
   make_option(c("-o","--output"),type="character",default="annotExpValues.txt",help="Name of (or path to) file to write results to (default: annotExpValues.txt)"),
+  make_option(c("-d","--dupProbes"),type="character",default="topvar",help="Method for handling multiple probes [max (default, probe with the highest mean expression), average (mean of all probes for a gene), topvar (highest variance with nsFilter function)"),
   make_option(c("-q","--QCoutput"),type="logical",default=TRUE,help="Output QC_reporting directory of QC plots (default = TRUE)"),
+  make_option("--QCDir",type="character",default="./QC_reporting/",help="Path to directory for storing QC output, including a terminal forward slash. Will be created if it does not exist yet (default = './QC_reporting/')"),
   make_option("--GLDS",type="character",help="GLDS accession number for plot outputs (ie '21' for GLDS-21)")
 )
 
 opt_parser = OptionParser(option_list=option_list)
 opt = parse_args(opt_parser)
 
+addSlash = function(string){
+  # Adds a trailing forward slash to the end of a string (ex path to a driectory) if it is not present
+  if(substr(x = string,start = nchar(string), stop = nchar(string)) != "/"){
+    string = paste(string,"/",sep="")
+  }
+  return(string)
+}
+
 if (is.null(opt$input)){
   print_help(opt_parser)
   stop("At least one argument must be supplied (input file)", call.=FALSE)
 }
-
-suppressPackageStartupMessages(library("genefilter"))
 
 # aiFH = "arrayInfo.txt"
 aiFH = opt$arrayInfo
@@ -84,7 +91,7 @@ tryCatch({
   }
 )
 
-# inFH = "exprsValues.txt"
+# inFH = "expValues.txt"
 inFH = opt$input
 tryCatch({
   eset = read.delim(inFH,header=T,sep = "\t",stringsAsFactors = F)
@@ -96,32 +103,51 @@ tryCatch({
   stop("Input file was not recognized", call. = F)
 })
 
-cat("Filtering out unannotated probes...\n")
-filt = nsFilter(neset, var.filter = F,require.entrez = T, remove.dupEntrez = T)
-nDups = filt[[2]]$numDupsRemoved # Number of probes removed that map to non-unique gene IDs
-# filt[[2]]
-
 # Mapping probe IDs to RefSeq names from the imported library
 mapFun = function(id, environ){ # Function to match the primary RefSeq ID for a given probe ID and return NA in all other cases
   return(tryCatch(get(id, env=environ)[1], error=function(e) NA))
 }
 
-filtID = featureNames(filt[[1]]) # Pulls out the probe IDs
+if(opt$dupProbes == "topvar"){
+  # Collapse multiple probes per gene ID by selecting a representative with the most variance in expression across all samples
+  suppressPackageStartupMessages(library("genefilter"))
+  cat("Filtering out unannotated probes...\n")
+  filt = nsFilter(neset, var.filter = F,require.entrez = T, remove.dupEntrez = T)
+  nDups = filt[[2]]$numDupsRemoved # Number of probes removed that map to non-unique gene IDs
+  filtID = featureNames(filt[[1]]) # Pulls out the probe IDs
+  cat("Mapping probes IDs to RefSeq IDs...\n")
+  filtRefSeq = lapply(filtID,FUN = mapFun, environ= eval(parse(text=annotEnv))) # Applying mapFun to all non-filtered probe IDs
+  
+  cat("\tDuplicated probes removed:",nDups,"\n")
+  cat("\tUnampped probes removed:",nrow(eset)-sum(!is.na(filtRefSeq))-nDups,"\n")
+  cat("Annotated probes remaining:",sum(!is.na(filtRefSeq)),"\n")
+  if(sum(!is.na(filtRefSeq)) > length(unique(filtRefSeq[!is.na(filtRefSeq)]))){
+    cat("\n\tWarning: non-unique probe to RefSeq mappings encountered \n")
+  }
+  
+  # Replace AffyIDs with RefSeq IDs, drop probes w/o RefSeq IDs
+  normVals = exprs(filt[[1]])
+  normVals = normVals[!is.na(filtRefSeq),]
+  rownames(normVals) = filtRefSeq[!is.na(filtRefSeq)]
+  
+  
+}else if(any(opt$dupProbes %in% c("average","max"))){
+  cat("Mapping probes IDs to RefSeq IDs...\n")
+  RefSeq = lapply(rownames(eset),FUN = mapFun, environ= eval(parse(text=annotEnv))) # Applying mapFun to all probe IDs
+  noIDCnt = sum(is.na(RefSeq)) # Count unmapped probes
+  eset = eset[!is.na(RefSeq),] # Remove data from unmapped probes
+  RefSeq = RefSeq[!is.na(RefSeq)] # Remove NAs so gene IDs correspond to eset rows
+  
+  if(opt$dupProbes == "average"){
+  # Collapse multiple probes per gene ID by averaging expression values across all samples
+  
+  }else if(opt$dupProbes == "max"){
+  # Collapse multiple probes per gene ID by selecting a representative with the highest mean expression across all samples
 
-cat("Mapping probes IDs to RefSeq IDs...\n")
-filtRefSeq = lapply(filtID,FUN = mapFun, environ= eval(parse(text=annotEnv))) # Applying mapFun to all probe IDs
-
-cat("\tDuplicated probes removed:",nDups,"\n")
-cat("\tUnampped probes removed:",nrow(eset)-sum(!is.na(filtRefSeq))-nDups,"\n")
-cat("Annotated probes remaining:",sum(!is.na(filtRefSeq)),"\n")
-if(sum(!is.na(filtRefSeq)) > length(unique(filtRefSeq[!is.na(filtRefSeq)]))){
-  cat("\n\tWarning: non-unique probe to RefSeq mappings encountered \n")
+  }
+}else{
+  stop("Method for dealing with probes mapped to the same gene IDs not recognized\n", call. = F)
 }
-
-# Replace AffyIDs with RefSeq IDs, drop probes w/o RefSeq IDs
-normVals = exprs(filt[[1]])
-normVals = normVals[!is.na(filtRefSeq),]
-rownames(normVals) = filtRefSeq[!is.na(filtRefSeq)]
 
 # Save filtered expression values to working directory
 outFH = opt$output
@@ -132,21 +158,22 @@ if(opt$QCoutput == T){
   toMatch = c(8,183,31,45,51,100,101,118,128,139,147,183,254,421,467,477,
               483,493,498,503,508,535,552,575,635,655)
   color = grDevices::colors()[rep(toMatch,3)] # Create a library of colors for plotting
+  qcDir = addSlash(opt$QCDir)
+  if(!file.exists(qcDir)) dir.create(qcDir)
+  
   sampNames = colnames(normVals)
   sampNames = gsub(".CEL","",sampNames)
   if (is.null(opt$GLDS)){ # Include GLDS accession number in plot titles if provided
-    print_help(opt_parser)
     glAn = ''
     cat("Warning: Generating plots without accession number")
   }else{
     glAn = paste('GLDS-',opt$GLDS,sep='')
   }
-  if(!file.exists(paste('./',glAn,'_QC_reporting/',sep=''))) dir.create(paste('./',glAn,'_QC_reporting/',sep=''))
   # Post-normalization QC
   cat("Post annotation/filtering QC...\n")
   
   # Density distributions
-  png(paste("./",glAn,"_QC_reporting/",glAn,"_microarray_filtDensityDistributions.png",sep=""),width=800,height=800)
+  png(paste(qcDir,glAn,"_microarray_filtDensityDistributions.png",sep=""),width=800,height=800)
   ylims = c(0,.8)
   xlims = c(0,16)
   for(i in 1:ncol(normVals)){
@@ -166,7 +193,7 @@ if(opt$QCoutput == T){
   
   # PCA plot
   filtPCA = prcomp(normVals)
-  png(paste("./",glAn,"_QC_reporting/",glAn,"_microarray_filtPCA.png",sep=""),width=800,height = 800)
+  png(paste(qcDir,glAn,"_microarray_filtPCA.png",sep=""),width=800,height = 800)
   plot(filtPCA$rotation[,1],filtPCA$rotation[,2],col=color[1:length(sampNames)],pch=16,
        xlab = paste("PC1, ",round(summary(filtPCA)$importance["Proportion of Variance",1]*100,digits = 1),"% of variance",sep=""),
        ylab = paste("PC2, ",round(summary(filtPCA)$importance["Proportion of Variance",2]*100,digits = 1),"% of variance",sep=""),

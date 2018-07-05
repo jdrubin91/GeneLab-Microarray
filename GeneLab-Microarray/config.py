@@ -1,7 +1,7 @@
-indir = "./batch/test_batch.txt"
-outdir = "../batch_test"
+indir = "./test_batch.txt"
+outdir = "batch_test"
 srcdir = "/Users/jonathanrubin/Google_Drive/NASA/home/GeneLab-Microarray/GeneLab-Microarray"
-wrkdir = "/Users/jonathanrubin/Google_Drive/NASA/home/GeneLab-Microarray"
+wrkdir = "/Users/jonathanrubin/Google_Drive/NASA/home"
 tempdir = "/Users/jonathanrubin/Google_Drive/NASA/home/GeneLab-Microarray/temp"
 R_dir = "/Users/jonathanrubin/Google_Drive/NASA/home/GeneLab-Microarray/GeneLab-Microarray/R_scripts"
 md5sum = {"original": [], "new": []}

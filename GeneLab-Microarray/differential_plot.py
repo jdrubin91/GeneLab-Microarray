@@ -2,7 +2,7 @@ __author__ = 'Jonathan Rubin'
   
 import matplotlib
 matplotlib.use('Agg')
-import os, config, math, mpld3, warnings
+import os, config, math, mpld3, warnings, json
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
 import numpy as np

@@ -22,14 +22,14 @@ def run():
     args = parser.parse_args()
     batch = args.batch
     indir = args.process
-    outdir = args.Output
+    outdir = os.path.normpath(args.Output)
     visualize = args.visualize
 
 
     #Get full paths to locations within this package
     srcdir = os.path.dirname(os.path.realpath(__file__))
     wrkdir = os.getcwd()
-    print wrkdir
+    print "Working Directory: ", wrkdir
     tempdir = os.path.join(os.path.dirname(srcdir),'temp')
     R_dir = os.path.join(os.path.dirname(srcdir),'GeneLab-Microarray','R_scripts')
 
@@ -45,10 +45,21 @@ def run():
         outfile.write('md5sum = {"original": [], "new": []}\n')
         outfile.write('batch = "' + str(batch) + '"\n')
         outfile.write('visualize = "' + str(visualize) + '"\n')
+        outfile.write("""def get_md5sum(filepath,key,action=False):
+    import os, subprocess
+    if not action:
+        md5sum_command = ["md5sum",filepath]
+        md5sum_character = subprocess.check_output(md5sum_command).split(' ')[0].encode("utf-8")
+        md5sum[key].append((os.path.basename(os.path.normpath(filepath)),md5sum_character))
+    else:
+        md5sum_command = ["md5sum",filepath]
+        md5sum_character = subprocess.check_output(md5sum_command).split(' ')[0].encode("utf-8")
+        md5sum[key].append((action,os.path.basename(os.path.normpath(filepath)),md5sum_character))\n""")
 
 
     #Either run batch module or just run the processing steps on a single dataset
     if indir != False:
+        indir = os.path.normpath(indir)
         if batch:
             print "Batch option specified.\nUsing batch file: " + indir + "\nWriting output to: " + outdir
             import batch_process
@@ -57,7 +68,6 @@ def run():
             import metadata_process, rawdata_process
             print "Processing: " + indir + "\nWriting output to: " + outdir
             GLDS = os.path.basename(indir)
-            print GLDS
             rawdata_out = os.path.join(outdir,GLDS,'microarray')
             metadata_out = os.path.join(outdir,GLDS,'metadata')
             metadata_in = os.path.join(indir,'metadata')
@@ -71,7 +81,9 @@ def run():
             if os.path.isdir(rawdata_in):
                 rawdata_process.copy(rawdata_in)
                 rawdata_process.rename(os.path.join(outdir,GLDS))
+                metadata_process.create_md5sum_out(rawdata_out,GLDS)
                 rawdata_process.qc_and_normalize(rawdata_out,GLDS)
+                rawdata_process.annotate(rawdata_out,GLDS)
             else:
                 raise IOError('microarray directory within input not found. See README for expected directory structure.')
 
