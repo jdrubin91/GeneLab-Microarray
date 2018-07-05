@@ -134,9 +134,9 @@ if(opt$dupProbes == "topvar"){
 }else if(any(opt$dupProbes %in% c("average","max"))){
   cat("Mapping probes IDs to RefSeq IDs...\n")
   RefSeq = lapply(rownames(eset),FUN = mapFun, environ= eval(parse(text=annotEnv))) # Applying mapFun to all probe IDs
-  noIDCnt = sum(is.na(RefSeq))
-  eset = eset[!is.na(RefSeq),]
-  RefSeq = RefSeq[!is.na(RefSeq)]
+  noIDCnt = sum(is.na(RefSeq)) # Count unmapped probes
+  eset = eset[!is.na(RefSeq),] # Remove data from unmapped probes
+  RefSeq = RefSeq[!is.na(RefSeq)] # Remove NAs so gene IDs correspond to eset rows
   
   if(opt$dupProbes == "average"){
   # Collapse multiple probes per gene ID by averaging expression values across all samples

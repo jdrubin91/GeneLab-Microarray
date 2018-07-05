@@ -36,13 +36,18 @@ addSlash = function(string){
   return(string)
 }
 
+stopQuiet = function(...) {
+  blankMsg = sprintf("\r%s\r", paste(rep(" ", getOption("width")-1L), collapse=" "))
+  stop(simpleError(blankMsg))
+}
+
 norm = opt$normalization
 QCout = opt$QCoutput
 NUSEplot = opt$NUSEplot
 
 if (is.null(opt$GLDS)){ # Include GLDS accession number in outputs if provided
   glAn = ''
-  cat("Warning: No GLDS accession number provided")
+  cat("Warning: No GLDS accession number provided\n")
 }else{
   glAn = paste('GLDS-',opt$GLDS,sep='')
 }
@@ -103,9 +108,13 @@ if(!file.exists(qcDir)) dir.create(qcDir)
 # Output array information to a separate file
 write.table(arrInfo,file = paste(qcDir,glAn,"_arrayInfo.txt",sep=""),quote = F,
             col.names = F, row.names = F)
+cat("Array type detected.\n")
 
 # Exit script if arrayInfoOnly mode is True
-if(opt$arrayInfoOnly == TRUE) stop("Detect-affy-array-only mode is on, exiting...", call. = F)
+if(opt$arrayInfoOnly == TRUE){
+  cat("Detect-array-type-only mode on, exiting.\n")
+  quit(save = "no", status = 0, runLast = FALSE)
+}
 
 ## Raw QC
 if(QCout == T){
