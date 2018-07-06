@@ -211,9 +211,12 @@ if(opt$QCoutput == T){
   
   sampNames = colnames(normVals)
   sampNames = gsub(".CEL","",sampNames)
-  if (is.null(opt$GLDS)){ # Include GLDS accession number in plot titles if provided
+  if (is.null(opt$GLDS)){ # Include GLDS accession number in outputs if provided
     glAn = ''
-    cat("Warning: Generating plots without accession number")
+    cat("Warning: No GLDS accession number provided\n")
+    if(grepl("GLDS-[0-9]",inFH)){
+      glAn = regmatches(inFH, regexpr("GLDS-[0-9]*",inPath)) # Attempt to extract the GLDS accession number from the input path
+    }
   }else{
     glAn = paste('GLDS-',opt$GLDS,sep='')
   }
