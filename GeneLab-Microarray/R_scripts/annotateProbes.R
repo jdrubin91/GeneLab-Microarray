@@ -75,8 +75,22 @@ arrPackages = c("mogene10sttranscriptcluster.db",
 # Call the appropriate annotation package
 tryCatch({
   annotPack = arrPackages[grep(pattern = arrVer,x = arrayNames,ignore.case = T)] # Pick out appropriate package by the array version
-  if(annotPack){
-    suppressPackageStartupMessages(library(annotPack,character.only = T)) # Load selected package
+  if(length(annotPack) != 0){
+    tryCatch(
+      {
+        suppressPackageStartupMessages(library(annotPack,character.only = T)) # Load selected package
+      }
+    ,error=function(e){
+      cat("Package recognized but was not found installed in this environment. Attempting to install now\n")
+      tryCatch(
+        {
+          source("http://bioconductor.org/biocLite.R")
+          biocLite(annotPack)
+        }, error=function(e){
+          cat("Package failed to install. Consider manually installing the annotation packages listed at the top of the script\n")
+        }
+      )
+    })
     packObjs = ls(paste("package:",as.character(annotPack),sep="")) # Stores a list of all the objects in the selected package
     if(any(grepl(pattern = "REFSEQ",x = packObjs, ignore.case = T))){
       annotEnv = packObjs[grepl(pattern = "REFSEQ",x = packObjs, ignore.case = T)] # Select the enivornment from the package to map probes to RefSeq IDs
@@ -87,13 +101,48 @@ tryCatch({
     }
     cat("Annotating with R package",annotPack,"using object:",annotEnv,"\n")
   }else{
-    # Get to guessing
+    if(grepl("-st-",arrVer,ignore.case = T)){affyST = TRUE} else{affyST = FALSE}
+    annotPack = tolower(arrVer)
+    annotPack = gsub("[[:punct:]]","",annotPack)
+    if(affyST ==TRUE){
+      annotPack=gsub("v[0-9]*$","transcriptcluster.db",annotPack)
+    }else{
+      annotPack = paste(annotPack,".db",sep="")
+    }
+    cat("For Affymetrix array type:",arrVer,"guessing the annotation package:",annotPack,"\n\tAttempting to load package now...\n")
+    tryCatch(
+      {
+        suppressPackageStartupMessages(library(annotPack,character.only = T)) # Load selected package
+      }
+      ,error=function(e){
+        cat("Package recognized but was not found installed in this environment. Attempting to install now\n")
+        tryCatch(
+          {
+            source("http://bioconductor.org/biocLite.R")
+            biocLite(annotPack)
+          }, error=function(e){
+            cat("Package failed to install. Consider manually installing the annotation packages listed at the top of the script\n")
+          }
+        )
+      })
   }
 }, error=function(e){
   stop("Array version wasn't not recognized or the annotation package was unable to load.\n
        Check that the appropriate packages are installed and the array version is contained in the list of known arrays\n", call. = F)
 }
 )
+
+for(i in 1:length(arrayNames)){
+  if(grepl("-st-",arrayNames[i],ignore.case = T)){affyST = TRUE} else{affyST = FALSE}
+  pack = tolower(arrayNames[i])
+  pack =  gsub("[[:punct:]]","",pack)
+  if(affyST == TRUE){
+    pack=gsub("v[0-9]*$","transcriptcluster.db",pack)
+  }else{
+    pack = paste(pack,".db",sep="")
+  }
+  cat(pack,"\t\t\t\t",arrPackages[i],"\n",pack == arrPackages[i],"\n\n")
+}
 
 # inFH = "expValues.txt"
 inFH = opt$input
@@ -214,8 +263,8 @@ if(opt$QCoutput == T){
   if (is.null(opt$GLDS)){ # Include GLDS accession number in outputs if provided
     glAn = ''
     cat("Warning: No GLDS accession number provided\n")
-    if(grepl("GLDS-[0-9]",inFH)){
-      glAn = regmatches(inFH, regexpr("GLDS-[0-9]*",inPath)) # Attempt to extract the GLDS accession number from the input path
+    if(grepl("GLDS-[0-9]+",inFH)){
+      glAn = regmatches(inFH, regexpr("GLDS-[0-9]+",inPath)) # Attempt to extract the GLDS accession number from the input path
     }
   }else{
     glAn = paste('GLDS-',opt$GLDS,sep='')
