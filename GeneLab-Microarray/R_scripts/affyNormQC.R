@@ -45,20 +45,22 @@ norm = opt$normalization
 QCout = opt$QCoutput
 NUSEplot = opt$NUSEplot
 
-if (is.null(opt$GLDS)){ # Include GLDS accession number in outputs if provided
-  glAn = ''
-  cat("Warning: No GLDS accession number provided\n")
-}else{
-  glAn = paste('GLDS-',opt$GLDS,sep='')
-}
-
-
-if (is.null(opt$input)){ # Include GLDS accession number in outputs if provided
+if (is.null(opt$input)){ # Check for provided input directory
   print_help(opt_parser)
   stop("No path to input directory provided. Please look over the available options", call. = F)
 }else{
   inPath = addSlash(opt$input)
   setwd(inPath) # Change the working directory to the directory containing the raw files
+}
+
+if (is.null(opt$GLDS)){ # Include GLDS accession number in outputs if provided
+  glAn = ''
+  cat("Warning: No GLDS accession number provided\n")
+  if(grepl("GLDS-[0-9]",inPath)){
+    glAn = regmatches(inPath, regexpr("GLDS-[0-9]*",inPath)) # Attempt to extract the GLDS accession number from the input path
+  }
+}else{
+  glAn = paste('GLDS-',opt$GLDS,sep='')
 }
 
 detach_package = function(pkg, character.only = FALSE){
