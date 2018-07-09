@@ -98,10 +98,14 @@ tryCatch({
 
 # Read in an expression value txt file
 # inFH = "annotExpValues.txt"
-eset <- read.delim(inFH, header = TRUE, stringsAsFactors = F)
-#Modify matrix so that the first column becomes the row names
-#rownames(eset) <- eset[,1]
-#eset <- eset[,-1]
+if(grepl(".txt$",x = inFH) == TRUE){
+  eset = read.delim(inFH,header=T,sep = "\t",stringsAsFactors = F)
+  # rownames(eset) = eset[,1]
+  # eset[,1] = NULL
+}else{
+  load(inFH)
+}
+
 if(nrow(factorValues) != ncol(eset)){
   cat("\nWarning: Number of samples in the expression set not equal to the number of samples in the metadata\n")
 }
