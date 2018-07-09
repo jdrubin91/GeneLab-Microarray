@@ -1,0 +1,58 @@
+<tool id="GeneLab-Visualize" name="Visualize comparisons from processed GeneLab data" version="0.1.0">
+    <requirements>
+        <requirement type="package">GeneLab-Microarray</requirement>
+    </requirements>
+    <command detect_errors="exit_code"><![CDATA[
+        GeneLab-Microarray --galaxy -gt GLDS-21_microarray_normalized.txt -gm s_GLDS-21_microarray_metadata.txt -gp 0.0000001 -gc1 spaceflight -gc2 notreatment
+    ]]></command>
+    <inputs>
+    </inputs>
+    <outputs>
+    </outputs>
+    <help><![CDATA[
+        usage: GeneLab-Microarray [options] Output
+
+Standardized processing pipeline for microarray data on GeneLab.
+
+positional arguments:
+  Output                The full path to the desired output directory.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -p , --process        Specify for process mode. If specified, give a
+                        directory to a GLDS directory to be processed.
+  -b, --batch           Specify for batch processing submode (must also
+                        specify process). If specified, input the full
+                        directory to a batch.txt file (see README for format
+                        guidelines) to the process flag.
+  -v , --visualize      Specify for visualization mode. If selected, must
+                        input a comma-separated list of factor values and an
+                        adjusted p-value cutoff (ex. --visualize
+                        flight,ground,0.1) to compare.
+  -g, --galaxy          For use with Galaxy only. Same outputs as
+                        visualization mode simply formatted in a way thats
+                        compatible with Galaxy tools.
+  -gt , --galaxy_table 
+                        For use with Galaxy input a counts table.
+  -gm , --galaxy_meta   For use with Galaxy input the assay file from metadata
+                        (starts with "a_").
+  -gqc , --galaxy_qc    For use with Galaxy input the qc report.
+  -gp , --galaxy_padj   For use with Galaxy input a p-adjusted cutoff value.
+  -gc1 , --galaxy_condition1 
+                        For use with Galaxy input condition1.
+  -gc2 , --galaxy_condition2 
+                        For use with Galaxy input condition2.
+
+    ]]></help>
+    <citations>
+        <citation type="bibtex">
+@misc{githubGeneLab-Microarray,
+  author = {Rubin, Jonathan},
+  year = {2018},
+  title = {GeneLab-Microarray},
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  url = {https://github.com/jdrubin91/GeneLab-Microarray},
+}</citation>
+    </citations>
+</tool>

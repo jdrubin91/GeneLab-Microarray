@@ -10,16 +10,21 @@ def run():
      ,default=False,action='store_const',const=True,metavar='')
     parser.add_argument('-v','--visualize',help='Specify for visualization mode. If selected, must input a comma-separated list of factor values and an adjusted p-value cutoff (ex. --visualize flight,ground,0.1) to compare.',
         default=False,metavar='')
-    parser.add_argument('-g','--galaxy',help='For use with Galaxy input a counts table. Same outputs as visualization mode simply formatted in a way thats compatible with Galaxy tools.',
+    parser.add_argument('-g','--galaxy',help='For use with Galaxy only. Same outputs as visualization mode simply formatted in a way thats compatible with Galaxy tools.',
         default=False,action='store_const',const=True,metavar='')
-    parser.add_argument('-gt','--galaxy_table',help='For use with Galaxy input a counts table. Same outputs as visualization mode simply formatted in a way thats compatible with Galaxy tools.',
+    parser.add_argument('-gt','--galaxy_table',help='For use with Galaxy input a counts table.',
         metavar='')
-    parser.add_argument('-gm','--galaxy_meta',help='For use with Galaxy input the assay file from metadata (starts with "a_"). Same outputs as visualization mode simply formatted in a way thats compatible with Galaxy tools.',
+    parser.add_argument('-gm','--galaxy_meta',help='For use with Galaxy input the assay file from metadata (starts with "a_").',
         metavar='')
-    parser.add_argument('-gqc','--galaxy_qc',help='For use with Galaxy input the assay file from metadata (starts with "a_"). Same outputs as visualization mode simply formatted in a way thats compatible with Galaxy tools.',
+    parser.add_argument('-gqc','--galaxy_qc',help='For use with Galaxy input the qc report.',
         metavar='')
-    parser.add_argument('-gp','--galaxy_pval',help='For use with Galaxy input the assay file from metadata (starts with "a_"). Same outputs as visualization mode simply formatted in a way thats compatible with Galaxy tools.',
+    parser.add_argument('-gp','--galaxy_padj',help='For use with Galaxy input a p-adjusted cutoff value.',
         metavar='')
+    parser.add_argument('-gc1','--galaxy_condition1',help='For use with Galaxy input condition1.',
+        metavar='')
+    parser.add_argument('-gc2','--galaxy_condition2',help='For use with Galaxy input condition2.',
+        metavar='')
+
 
 
     #If user does not provide any arguments, simply display help message
@@ -38,7 +43,9 @@ def run():
     galaxy_table = args.galaxy_table
     galaxy_meta = args.galasy_meta
     galaxy_qc = args.galaxy_qc
-    galaxy_pval = args.galaxy_pval
+    galaxy_padj = args.galaxy_padj
+    galaxy_condition1 = args.galaxy_condition1
+    galaxy_condition2 = args.galaxy_condition2
 
 
     #Get full paths to locations within this package
@@ -116,9 +123,9 @@ def run():
         rawdata_process.limma_differential(rawdata_out,metadata_out,GLDS)
         differential_plot.differential_visualize(rawdata_out,GLDS)
         print "done. Output in: " + rawdata_out
-    elif galaxy != False:
-        import galaxy
-        galaxy.run(galaxy_table,galaxy_meta,condition1,condition2,galaxy_pval)
+    elif galaxy:
+        import galaxy_mode
+        galaxy_mode.run(galaxy_table,galaxy_meta,galaxy_condition1,galaxy_condition2,galaxy_padj)
     else:
         print "Error: Neither process mode nor visualize mode specified. See help for information on how to run GeneLab-Microarray. Exiting..."
         sys.exit(1)

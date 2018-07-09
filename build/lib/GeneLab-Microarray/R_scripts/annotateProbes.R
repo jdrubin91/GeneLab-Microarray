@@ -16,9 +16,10 @@ suppressPackageStartupMessages(library("optparse"))
 
 # Read options
 option_list=list(
-  make_option(c("-i","--input"),type="character",help="Name of (or path to) the input file (\\t delimited .txt file)"),
+  make_option(c("-i","--input"),type="character",help="Name of (or path to) the input file (tab delimited .txt file or binary Rdata object)"),
   make_option(c("-a","--arrayInfo"),type="character",default="./QC_output/arrayInfo.txt",help="Name of (or path to) a file containing the array information [Line 1: Manufacturer, line 2: Array version]"),
-  make_option(c("-o","--output"),type="character",default="annotExpValues.txt",help="Name of (or path to) file to write results to (default: annotExpValues.txt)"),
+  make_option(c("-o","--output"),type="character",default="annotExpValues",help="Name of (or path to) file to write results to, WITHOUT file extension (default: annotExpValues)"),
+  make_option(c("-t","--outType"),type="character",default="both",help="Format of output data: R (Rdata object), txt (tab delimited file with identifiers and sample names), both (default)"),
   make_option(c("-d","--dupProbes"),type="character",default="max",help="Method for handling multiple probes [max (default, probe with the highest mean expression), average (mean of all probes for a gene), topvar (highest variance with nsFilter function)"),
   make_option(c("-q","--QCoutput"),type="logical",default=TRUE,help="Output QC_reporting directory of QC plots (default = TRUE)"),
   make_option("--QCDir",type="character",default="./QC_reporting/",help="Path to directory for storing QC output, including a terminal forward slash. Will be created if it does not exist yet (default = './QC_reporting/')"),
@@ -55,28 +56,42 @@ tryCatch({
 
 # Set-up array version:annotation database pseudo-dictionary
 arrayNames = c("MoGene-1_0-st-v1",
-             "MOE430A",
-             "Drosophila_2",
-             "HG-U133_Plus_2",
-             "ATH1-121501",
-             "HuGene-1_0-st-v1",
-             "Yeast_2",
-             "Rat230_2")
+               "MOE430A",
+               "Drosophila_2",
+               "HG-U133_Plus_2",
+               "ATH1-121501",
+               "HuGene-1_0-st-v1",
+               "Yeast_2",
+               "Rat230_2")
 
 arrPackages = c("mogene10sttranscriptcluster.db",
-              "moe430a.db",
-              "drosophila2.db",
-              "hgu133plus2.db",
-              "ath1121501.db",
-              "hugene10sttranscriptcluster.db",
-              "yeast2.db",
-              "rat2302.db")
+                "moe430a.db",
+                "drosophila2.db",
+                "hgu133plus2.db",
+                "ath1121501.db",
+                "hugene10sttranscriptcluster.db",
+                "yeast2.db",
+                "rat2302.db")
 
 # Call the appropriate annotation package
 tryCatch({
   annotPack = arrPackages[grep(pattern = arrVer,x = arrayNames,ignore.case = T)] # Pick out appropriate package by the array version
-  if(annotPack){
-    suppressPackageStartupMessages(library(annotPack,character.only = T)) # Load selected package
+  if(length(annotPack) != 0){
+    tryCatch(
+      {
+        suppressPackageStartupMessages(library(annotPack,character.only = T)) # Load selected package
+      }
+      ,error=function(e){
+        cat("Package recognized but was not found installed in this environment. Attempting to install now\n")
+        tryCatch(
+          {
+            source("http://bioconductor.org/biocLite.R")
+            biocLite(annotPack)
+          }, error=function(e){
+            cat("Package failed to install. Consider manually installing the annotation packages listed at the top of the script\n")
+          }
+        )
+      })
     packObjs = ls(paste("package:",as.character(annotPack),sep="")) # Stores a list of all the objects in the selected package
     if(any(grepl(pattern = "REFSEQ",x = packObjs, ignore.case = T))){
       annotEnv = packObjs[grepl(pattern = "REFSEQ",x = packObjs, ignore.case = T)] # Select the enivornment from the package to map probes to RefSeq IDs
@@ -87,20 +102,58 @@ tryCatch({
     }
     cat("Annotating with R package",annotPack,"using object:",annotEnv,"\n")
   }else{
-    # Get to guessing
+    if(grepl("-st-",arrVer,ignore.case = T)){affyST = TRUE} else{affyST = FALSE}
+    annotPack = tolower(arrVer)
+    annotPack = gsub("[[:punct:]]","",annotPack)
+    if(affyST ==TRUE){
+      annotPack=gsub("v[0-9]*$","transcriptcluster.db",annotPack)
+    }else{
+      annotPack = paste(annotPack,".db",sep="")
+    }
+    cat("For Affymetrix array type:",arrVer,"guessing the annotation package:",annotPack,"\n\tAttempting to load package now...\n")
+    tryCatch(
+      {
+        suppressPackageStartupMessages(library(annotPack,character.only = T)) # Load selected package
+      }
+      ,error=function(e){
+        cat("Package recognized but was not found installed in this environment. Attempting to install now\n")
+        tryCatch(
+          {
+            source("http://bioconductor.org/biocLite.R")
+            biocLite(annotPack)
+          }, error=function(e){
+            cat("Package failed to install. Consider manually installing the annotation packages listed at the top of the script\n")
+          }
+        )
+      })
   }
 }, error=function(e){
   stop("Array version wasn't not recognized or the annotation package was unable to load.\n
        Check that the appropriate packages are installed and the array version is contained in the list of known arrays\n", call. = F)
+})
+
+for(i in 1:length(arrayNames)){
+  if(grepl("-st-",arrayNames[i],ignore.case = T)){affyST = TRUE} else{affyST = FALSE}
+  pack = tolower(arrayNames[i])
+  pack =  gsub("[[:punct:]]","",pack)
+  if(affyST == TRUE){
+    pack=gsub("v[0-9]*$","transcriptcluster.db",pack)
+  }else{
+    pack = paste(pack,".db",sep="")
+  }
+  cat(pack,"\t\t\t\t",arrPackages[i],"\n",pack == arrPackages[i],"\n\n")
 }
-)
 
 # inFH = "expValues.txt"
 inFH = opt$input
 tryCatch({
-  eset = read.delim(inFH,header=T,sep = "\t",stringsAsFactors = F)
-  # rownames(eset) = eset[,1]
-  # eset[,1] = NULL
+  if(grepl(".txt$",x = inFH) == TRUE){
+    eset = read.delim(inFH,header=T,sep = "\t",stringsAsFactors = F)
+    # rownames(eset) = eset[,1]
+    # eset[,1] = NULL
+  }else{
+    load(inFH)
+  }
   neset = new("ExpressionSet",exprs = as.matrix(eset))
   neset@annotation = annotPack
 }, error=function(e){
@@ -144,7 +197,7 @@ if(opt$dupProbes == "topvar"){
   cat("Filtering out unannotated probes...\n\n")
   
   if(opt$dupProbes == "average"){
-  # Collapse multiple probes per gene ID by averaging expression values across all samples
+    # Collapse multiple probes per gene ID by averaging expression values across all samples
     rmRowTag = rep(TRUE,nrow(eset)) # Tag rows to drop (set single or averaged probes to FALSE below)
     for (i in 1:nrow(eset)){
       if(sum(RefSeq == RefSeq[i][[1]]) > 1){
@@ -163,9 +216,9 @@ if(opt$dupProbes == "topvar"){
     if( nrow(normVals) > length(unique(RefSeq[!rmRowTag])) ){
       cat("\n\tWarning: non-unique probe to RefSeq mappings remain \n")
     }
-  
+    
   }else if(opt$dupProbes == "max"){
-  # Collapse multiple probes per gene ID by selecting a representative with the highest mean expression across all samples
+    # Collapse multiple probes per gene ID by selecting a representative with the highest mean expression across all samples
     rmRowTag = rep(TRUE,nrow(eset)) # Tag rows to drop (set single or highest expressing probes to FALSE below)
     for (i in 1:nrow(eset)){
       if(sum(RefSeq == RefSeq[i][[1]]) > 1){
@@ -199,7 +252,19 @@ if(opt$dupProbes == "topvar"){
 
 # Save filtered expression values to working directory
 outFH = opt$output
-write.table(normVals,file=outFH,sep="\t",quote = F)
+eset = normVals # Standardizing variable naming convention between scripts
+if(opt$outType == "both"){
+  save(eset,file=paste(outFH,".rda",sep=""))
+  write.table(eset,file=paste(outFH,".txt",sep=""),sep="\t",quote = F)
+}else if(opt$outType == "R"){
+  save(eset,file=paste(outFH,".rda",sep=""))
+}else if(opt$outType == "txt"){
+  write.table(eset,file=paste(outFH,".txt",sep=""),sep="\t",quote = F)
+}else{
+  print_help(opt_parser)
+  stop("Help, I don't know how to save this data!",call. = F)
+}
+
 
 if(opt$QCoutput == T){
   # Prepare plotting options
@@ -211,9 +276,12 @@ if(opt$QCoutput == T){
   
   sampNames = colnames(normVals)
   sampNames = gsub(".CEL","",sampNames)
-  if (is.null(opt$GLDS)){ # Include GLDS accession number in plot titles if provided
+  if (is.null(opt$GLDS)){ # Include GLDS accession number in outputs if provided
     glAn = ''
-    cat("Warning: Generating plots without accession number")
+    cat("Warning: No GLDS accession number provided\n")
+    if(grepl("GLDS-[0-9]+",inFH)){
+      glAn = regmatches(inFH, regexpr("GLDS-[0-9]+",inPath)) # Attempt to extract the GLDS accession number from the input path
+    }
   }else{
     glAn = paste('GLDS-',opt$GLDS,sep='')
   }

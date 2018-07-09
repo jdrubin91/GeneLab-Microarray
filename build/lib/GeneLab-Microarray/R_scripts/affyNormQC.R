@@ -16,7 +16,7 @@ option_list=list(
   make_option(c("-n","--normalization"),type="character",default="rma",help="Normalization method [rma (default, full rma), quantile (no background correction), background (no quant. normalization), log2 (no quant. norm. or background correction)"),
   make_option(c("-o","--outFile"),type="character",default="expValues",help="Name of the output file [without extension!] (default: expValues)"),
   make_option("--outDir",type="character",default="./",help="Path to an output directory, including a terminal forward slash (default: directory this script is called from)"),
-  make_option(c("-t","--outType"),type="character",default="txt",help="Format of output data: R (Rdata eset object), txt (default, tab delimited file with identifiers and sample names), both"),
+  make_option(c("-t","--outType"),type="character",default="both",help="Format of output data: R (Rdata object), txt (tab delimited file with identifiers and sample names), both (default)"),
   make_option("--outputData",type="logical",default=TRUE,help="Output data at all (default TRUE)"),
   make_option(c("-a","--arrayInfoOnly"),type="logical",default=FALSE,help="Detect-affy-array-only mode. If true, script will exit after outputting the arrayInfo file. (Default: FALSE)"),
   make_option("--QCoutput",type="logical",default=TRUE,help="Output QC_reporting directory of QC plots (default = TRUE)"),
@@ -36,31 +36,6 @@ addSlash = function(string){
   return(string)
 }
 
-stopQuiet = function(...) {
-  blankMsg = sprintf("\r%s\r", paste(rep(" ", getOption("width")-1L), collapse=" "))
-  stop(simpleError(blankMsg))
-}
-
-norm = opt$normalization
-QCout = opt$QCoutput
-NUSEplot = opt$NUSEplot
-
-if (is.null(opt$GLDS)){ # Include GLDS accession number in outputs if provided
-  glAn = ''
-  cat("Warning: No GLDS accession number provided\n")
-}else{
-  glAn = paste('GLDS-',opt$GLDS,sep='')
-}
-
-
-if (is.null(opt$input)){ # Include GLDS accession number in outputs if provided
-  print_help(opt_parser)
-  stop("No path to input directory provided. Please look over the available options", call. = F)
-}else{
-  inPath = addSlash(opt$input)
-  setwd(inPath) # Change the working directory to the directory containing the raw files
-}
-
 detach_package = function(pkg, character.only = FALSE){
   if(!character.only)
   {
@@ -71,6 +46,28 @@ detach_package = function(pkg, character.only = FALSE){
   {
     detach(search_item, unload = TRUE, character.only = TRUE)
   }
+}
+
+norm = opt$normalization
+QCout = opt$QCoutput
+NUSEplot = opt$NUSEplot
+
+if (is.null(opt$input)){ # Check for provided input directory
+  print_help(opt_parser)
+  stop("No path to input directory provided. Please look over the available options", call. = F)
+}else{
+  inPath = addSlash(opt$input)
+  setwd(inPath) # Change the working directory to the directory containing the raw files
+}
+
+if (is.null(opt$GLDS)){ # Include GLDS accession number in outputs if provided
+  glAn = ''
+  cat("Warning: No GLDS accession number provided\n")
+  if(grepl("GLDS-[0-9]+",inPath)){
+    glAn = regmatches(inPath, regexpr("GLDS-[0-9]+",inPath)) # Attempt to extract the GLDS accession number from the input path
+  }
+}else{
+  glAn = paste('GLDS-',opt$GLDS,sep='')
 }
 
 # Load initial libraries
@@ -85,7 +82,7 @@ sampNames = gsub("GLDS-\\d*_","",sampNames)# Extract sample names form the list 
 
 tryCatch({suppressWarnings(expr = {raw = ReadAffy()})}, error=function(e){
   stop("No .CEL files detected in the current directory", call. = F)
-  })
+})
 
 arrInfo = c("Affymetrix",as.character(raw@cdfName))
 
@@ -124,6 +121,12 @@ if(QCout == T){
               483,493,498,503,508,535,552,575,635,655)
   color = grDevices::colors()[rep(toMatch,10)] # Create a library of colors for plotting
   
+  library(arrayQualityMetrics)
+  arrayQualityMetrics(expressionset = raw,
+                      outdir = paste(qcDir,"raw_report",sep=""),
+                      force = T,
+                      do.logtransform = T)
+  
   #Images
   cat("\tGenerating raw images")
   if(st == T){
@@ -141,7 +144,7 @@ if(QCout == T){
     garbage <- dev.off()
   }
   cat("\n")
-
+  
   #MA plot
   cat("\tGenerating raw data MA plots...\n")
   nblines=length(celFiles)%/%3 + as.numeric((length(celFiles)%%3)!=0)
@@ -246,25 +249,26 @@ if(opt$outputData == TRUE){
   ## Normalize
   cat("\nNormalizing with selected normalization technique...\n")
   if(norm=='rma'){
-    eset = rma(raw)
+    expset = rma(raw)
   }else if(norm=='quantile'){
-    eset = rma(raw, background = F, normalize = T)
+    expset = rma(raw, background = F, normalize = T)
   }else if(norm=='background'){
-    eset = rma(raw, background = T, normalize = F)
+    expset = rma(raw, background = T, normalize = F)
   }else if(norm=='log2'){
-    eset = rma(raw, background = F, normalize = F)
+    expset = rma(raw, background = F, normalize = F)
   }else{
     stop("Normalization did not occur, please examine script inputs and default values",call. = F)
   }
   
   outDir = addSlash(opt$outDir)
+  eset = exprs(expset)
   if(opt$outType == "both"){
     save(eset,file=paste(outDir,outFH,".rda",sep=""))
-    write.table(exprs(eset),file=paste(outDir,outFH,".txt",sep=""),sep="\t",quote = F)
+    write.table(eset,file=paste(outDir,outFH,".txt",sep=""),sep="\t",quote = F)
   }else if(opt$outType == "R"){
     save(eset,file=paste(outDir,outFH,".rda",sep=""))
   }else if(opt$outType == "txt"){
-    write.table(exprs(eset),file=paste(outDir,outFH,".txt",sep=""),sep="\t",quote = F)
+    write.table(eset,file=paste(outDir,outFH,".txt",sep=""),sep="\t",quote = F)
   }else{
     print_help(opt_parser)
     stop("Help, I don't know how to save this data!",call. = F)
@@ -274,10 +278,15 @@ if(opt$outputData == TRUE){
 if(QCout == T){
   cat("Post normalization QC steps...\n")
   # Post-normalization QC
+  
+  arrayQualityMetrics(expressionset = expset,
+                      outdir = paste(qcDir,"normalized_report",sep=""),
+                      force = T)
+  
   png(paste(qcDir,glAn,'_normDensityDistributions.png',sep=''),width=800,height=800 )
   ylims = c(0,.8)
   xlims = c(0,16)
-  normVals = exprs(eset)
+  normVals = exprs(expset)
   for(i in 1:ncol(normVals)){
     if(i == 1){
       plot(density(normVals[,i]),ylim = ylims,xlim=xlims,xlab='Normalized expression values[log2]',main=paste(glAn,' Normalized expression distributions',sep=''),col=color[i])
@@ -308,7 +317,7 @@ if(QCout == T){
   nblines=length(celFiles)%/%3 + as.numeric((length(celFiles)%%3)!=0)
   png(paste(qcDir,glAn,'_normPlotMA.png',sep=''),width=800, height = 300*nblines )
   par(mfrow=c(nblines,3))
-  MAplot(eset)
+  MAplot(expset)
   garbage <- dev.off()
   
   # PCA
