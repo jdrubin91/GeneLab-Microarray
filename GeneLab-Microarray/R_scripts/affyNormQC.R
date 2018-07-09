@@ -5,6 +5,7 @@
 # biocLite("affy")
 # biocLite("affyPLM")
 # biocLite("oligo")
+# biocLite("arrayQualityMetrics")
 
 suppressPackageStartupMessages(library("optparse"))
 

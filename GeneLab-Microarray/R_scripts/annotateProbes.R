@@ -122,7 +122,7 @@ tryCatch({
             source("http://bioconductor.org/biocLite.R")
             biocLite(annotPack)
           }, error=function(e){
-            cat("Package failed to install. Consider manually installing the annotation packages listed at the top of the script\n")
+            cat("Package failed to install. Consider manually installing the appropriate annotation package and adding it to the list of encountered packages above.\n")
           }
         )
       })
@@ -132,17 +132,18 @@ tryCatch({
        Check that the appropriate packages are installed and the array version is contained in the list of known arrays\n", call. = F)
 })
 
-for(i in 1:length(arrayNames)){
-  if(grepl("-st-",arrayNames[i],ignore.case = T)){affyST = TRUE} else{affyST = FALSE}
-  pack = tolower(arrayNames[i])
-  pack =  gsub("[[:punct:]]","",pack)
-  if(affyST == TRUE){
-    pack=gsub("v[0-9]*$","transcriptcluster.db",pack)
-  }else{
-    pack = paste(pack,".db",sep="")
-  }
-  cat(pack,"\t\t\t\t",arrPackages[i],"\n",pack == arrPackages[i],"\n\n")
-}
+# For loop to check that guess-regex matches all known array version-annotation package pairs
+# for(i in 1:length(arrayNames)){
+#   if(grepl("-st-",arrayNames[i],ignore.case = T)){affyST = TRUE} else{affyST = FALSE}
+#   pack = tolower(arrayNames[i])
+#   pack =  gsub("[[:punct:]]","",pack)
+#   if(affyST == TRUE){
+#     pack=gsub("v[0-9]*$","transcriptcluster.db",pack)
+#   }else{
+#     pack = paste(pack,".db",sep="")
+#   }
+#   cat(pack,"\t\t\t\t",arrPackages[i],"\n",pack == arrPackages[i],"\n\n")
+# }
 
 # inFH = "expValues.txt"
 inFH = opt$input
