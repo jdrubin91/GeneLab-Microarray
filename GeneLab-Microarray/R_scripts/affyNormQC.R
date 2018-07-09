@@ -6,46 +6,107 @@
 # biocLite("affyPLM")
 # biocLite("oligo")
 # biocLite("arrayQualityMetrics")
+#   biocLite("jsonlite")
+#   biocLite("openssl")
+#   biocLite("stringi")
+
+#   biocLite("reshape2")
+#   biocLite("")
+#   biocLite("")
+#   biocLite("")
+#   biocLite("")
+#   biocLite("")
+#   biocLite("")
+
 
 suppressPackageStartupMessages(library("optparse"))
 
 relDir = getwd()
 
 # Read options
-option_list=list(
-  make_option(c("-i","--input"),type="character",help="Path to directory containing input .CEL files"),
-  make_option(c("-n","--normalization"),type="character",default="rma",help="Normalization method [rma (default, full rma), quantile (no background correction), background (no quant. normalization), log2 (no quant. norm. or background correction)"),
-  make_option(c("-o","--outFile"),type="character",default="expValues",help="Name of the output file [without extension!] (default: expValues)"),
-  make_option("--outDir",type="character",default="./",help="Path to an output directory, including a terminal forward slash (default: directory this script is called from)"),
-  make_option(c("-t","--outType"),type="character",default="both",help="Format of output data: R (Rdata object), txt (tab delimited file with identifiers and sample names), both (default)"),
-  make_option("--outputData",type="logical",default=TRUE,help="Output data at all (default TRUE)"),
-  make_option(c("-a","--arrayInfoOnly"),type="logical",default=FALSE,help="Detect-affy-array-only mode. If true, script will exit after outputting the arrayInfo file. (Default: FALSE)"),
-  make_option("--QCoutput",type="logical",default=TRUE,help="Output QC_reporting directory of QC plots (default = TRUE)"),
-  make_option("--QCDir",type="character",default="./QC_reporting/",help="Path to directory for storing QC output, including a terminal forward slash. Will be created if it does not exist yet (default = './QC_reporting/')"),
-  make_option("--NUSEplot",type="logical",default=FALSE,help="Include a NUSE plot in the QC output, adds significantly to runtime (default = FALSE)"),
-  make_option("--GLDS",type="character",help="GLDS accession number for plot outputs (ie '21' for GLDS-21)")
+option_list = list(
+  make_option(c("-i", "--input"), type = "character", help = "Path to directory containing input .CEL files"),
+  make_option(
+    c("-n", "--normalization"),
+    type = "character",
+    default = "rma",
+    help = "Normalization method [rma (default, full rma), quantile (no background correction), background (no quant. normalization), log2 (no quant. norm. or background correction)"
+  ),
+  make_option(
+    c("-o", "--outFile"),
+    type = "character",
+    default = "expValues",
+    help = "Name of the output file [without extension!] (default: expValues)"
+  ),
+  make_option(
+    "--outDir",
+    type = "character",
+    default = "./",
+    help = "Path to an output directory, including a terminal forward slash (default: directory this script is called from)"
+  ),
+  make_option(
+    c("-t", "--outType"),
+    type = "character",
+    default = "both",
+    help = "Format of output data: R (Rdata object), txt (tab delimited file with identifiers and sample names), both (default)"
+  ),
+  make_option(
+    "--outputData",
+    type = "logical",
+    default = TRUE,
+    help = "Output data at all (default TRUE)"
+  ),
+  make_option(
+    c("-a", "--arrayInfoOnly"),
+    type = "logical",
+    default = FALSE,
+    help = "Detect-affy-array-only mode. If true, script will exit after outputting the arrayInfo file. (Default: FALSE)"
+  ),
+  make_option(
+    "--QCoutput",
+    type = "logical",
+    default = TRUE,
+    help = "Output QC_reporting directory of QC plots (default = TRUE)"
+  ),
+  make_option(
+    "--QCDir",
+    type = "character",
+    default = "./QC_reporting/",
+    help = "Path to directory for storing QC output, including a terminal forward slash. Will be created if it does not exist yet (default = './QC_reporting/')"
+  ),
+  make_option(
+    "--NUSEplot",
+    type = "logical",
+    default = FALSE,
+    help = "Include a NUSE plot in the QC output, adds significantly to runtime (default = FALSE)"
+  ),
+  make_option("--GLDS", type = "character", help = "GLDS accession number for plot outputs (ie '21' for GLDS-21)")
 )
 
-opt_parser = OptionParser(option_list=option_list)
+opt_parser = OptionParser(option_list = option_list)
 opt = parse_args(opt_parser)
 
-addSlash = function(string){
+addSlash = function(string) {
   # Adds a trailing forward slash to the end of a string (ex path to a driectory) if it is not present
-  if(substr(x = string,start = nchar(string), stop = nchar(string)) != "/"){
-    string = paste(string,"/",sep="")
+  if (substr(x = string,
+             start = nchar(string),
+             stop = nchar(string)) != "/") {
+    string = paste(string, "/", sep = "")
   }
   return(string)
 }
 
-detach_package = function(pkg, character.only = FALSE){
-  if(!character.only)
+detach_package = function(pkg, character.only = FALSE) {
+  if (!character.only)
   {
     pkg <- deparse(substitute(pkg))
   }
   search_item <- paste("package", pkg, sep = ":")
-  while(search_item %in% search())
+  while (search_item %in% search())
   {
-    detach(search_item, unload = TRUE, character.only = TRUE)
+    detach(search_item,
+           unload = TRUE,
+           character.only = TRUE)
   }
 }
 
@@ -53,35 +114,42 @@ norm = opt$normalization
 QCout = opt$QCoutput
 NUSEplot = opt$NUSEplot
 
-if (is.null(opt$input)){ # Check for provided input directory
+if (is.null(opt$input)) {
+  # Check for provided input directory
   print_help(opt_parser)
-  stop("No path to input directory provided. Please look over the available options", call. = F)
-}else{
+  stop("No path to input directory provided. Please look over the available options",
+       call. = F)
+} else{
   inPath = addSlash(opt$input)
   setwd(inPath) # Change the working directory to the directory containing the raw files
 }
 
-if (is.null(opt$GLDS)){ # Include GLDS accession number in outputs if provided
+if (is.null(opt$GLDS)) {
+  # Include GLDS accession number in outputs if provided
   glAn = ''
   cat("Warning: No GLDS accession number provided\n")
-  if(grepl("GLDS-[0-9]+",inPath)){
-    glAn = regmatches(inPath, regexpr("GLDS-[0-9]+",inPath)) # Attempt to extract the GLDS accession number from the input path
+  if (grepl("GLDS-[0-9]+", inPath)) {
+    glAn = regmatches(inPath, regexpr("GLDS-[0-9]+", inPath)) # Attempt to extract the GLDS accession number from the input path
   }
-}else{
-  glAn = paste('GLDS-',opt$GLDS,sep='')
+} else{
+  glAn = paste('GLDS-', opt$GLDS, sep = '')
 }
 
 # Load initial libraries
 suppressPackageStartupMessages(require(affy))
 
 # setwd("~/Documents/genelab/rot1/GLDS-4/microarray/")
-celFiles <- list.celfiles(full.names=TRUE)
-sampNames = gsub("_microarray_.*","",celFiles)
-sampNames = gsub(".CEL","",sampNames)
-sampNames = gsub(".*/","",sampNames)
-sampNames = gsub("GLDS-\\d*_","",sampNames)# Extract sample names form the list of .CEL files
+celFiles <- list.celfiles(full.names = TRUE)
+sampNames = gsub("_microarray_.*", "", celFiles)
+sampNames = gsub(".CEL", "", sampNames)
+sampNames = gsub(".*/", "", sampNames)
+sampNames = gsub("GLDS-\\d*_", "", sampNames)# Extract sample names form the list of .CEL files
 
-tryCatch({suppressWarnings(expr = {raw = ReadAffy()})}, error=function(e){
+tryCatch({
+  suppressWarnings(expr = {
+    raw = ReadAffy()
+  })
+}, error = function(e) {
   stop("No .CEL files detected in the current directory", call. = F)
 })
 
@@ -333,3 +401,4 @@ if(QCout == T){
   text(normPCA$rotation[,1],normPCA$rotation[,2],labels = sampNames, cex = 1,pos = 3)
   garbage <- dev.off()
 }
+
