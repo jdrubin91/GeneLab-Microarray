@@ -22,25 +22,25 @@ from mpld3 import _display
 _display.NumpyEncoder = NumpyEncoder
 
 #The main command that is run when galaxy mode is specified by user.
-def run(counts,metadata,condition1,condition2,pval):
-    limma_differential(counts,metadata,condition1,condition2)
-    differntial_visualize("Differential_Gene_Expression.txt",pval,condition1, condition2)
+def run(counts,metadata,condition1,condition2,pval,txtoutput,htmloutput1,htmloutput2,pngoutput):
+    limma_differential(counts,metadata,condition1,condition2,txtoutput)
+    differntial_visualize("Differential_Gene_Expression.txt",pval,condition1, condition2,htmloutput1,htmloutput2,pngoutput)
 
 
 #Runs differential expression on two conditions that must be within the inputted metadata
-def limma_differential(counts,metadata,condition1,condition2,pval):
+def limma_differential(counts,metadata,condition1,condition2,pval,txtoutput):
     limma_script = os.path.join(config.R_dir,'limmaDiffExp.R')
     limma_differential_command = ["Rscript", "--vanilla", limma_script, 
                                     "-d", counts, 
                                     "-i", metadata, 
                                     "--group1=" + condition1, 
                                     "--group2=" + condition2, 
-                                    "-o", "Differential_Gene_Expression.txt"]
+                                    "-o", txtoutput]
     subprocess.call(limma_differential_command)
 
 
 #Saves an interactive html graph based on user condition inputs.
-def differential_visualize(diffExp_file, pval_cut, condition1, condition2):
+def differential_visualize(diffExp_file, pval_cut, condition1, condition2,htmloutput1,htmloutput2,pngoutput):
     #In this section of the code, the style of labels is defined. In this case, we are using a table with non_sig hits being blue and sig hits being red
     css = """
         table
@@ -213,12 +213,12 @@ def differential_visualize(diffExp_file, pval_cut, condition1, condition2):
         mpld3.plugins.connect(F, tooltip, tooltip2, tooltip3, tooltip4)
 
         #Here we save both a png version of the plot (non-interactive) and the interactive html version of the plot
-        plt.savefig('Visualization_'+condition1 + '-' + condition2 +'_results.png')
-        mpld3.save_html(F,'Visualization_'+condition1 + '-' + condition2 +'_results.html')
+        plt.savefig(pngoutput)
+        mpld3.save_html(F,htmloutput1)
         plt.close(F)
 
     #This section of the code creates an html table of significant genes
-    with open('Significant_genes_'+condition1+'-'+condition2+'_'+str(pval_cut)+'.html','w') as sigGenes_file:
+    with open(htmloutput2,'w') as sigGenes_file:
         sigGenes_file.write("""<!DOCTYPE html>
             <html>
             <head>
@@ -270,6 +270,6 @@ def differential_visualize(diffExp_file, pval_cut, condition1, condition2):
 
 
     #Finally this short section appends a link to the bottom of the graph html that will go directly to the list of significant genes
-    with open('Visualization_'+condition1 + '-' + condition2 +'_results.html','a') as html_file:
-        html_file.write('<b>There were <a style="font-size: 20" href="Significant_genes_'+condition1+'-'+condition2+'_'+str(pval_cut)+'.html">'+str(len(scattersigx))+' significant genes</a> called with p-adj < '+str(pval_cut)+'</b>')
+    with open(htmloutput1,'a') as html_file:
+        html_file.write('<b>There were <a style="font-size: 20" href="'+htmloutput2+'">'+str(len(scattersigx))+' significant genes</a> called with p-adj < '+str(pval_cut)+'</b>')
 

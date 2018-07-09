@@ -14,7 +14,7 @@ def run():
         default=False,action='store_const',const=True,metavar='')
     parser.add_argument('-gt','--galaxy_table',help='For use with Galaxy input a counts table.',
         metavar='')
-    parser.add_argument('-gm','--galaxy_meta',help='For use with Galaxy input the assay file from metadata (starts with "a_").',
+    parser.add_argument('-gm','--galaxy_meta',help='For use with Galaxy input the sample file from metadata (starts with "s_").',
         metavar='')
     parser.add_argument('-gqc','--galaxy_qc',help='For use with Galaxy input the qc report.',
         metavar='')
@@ -24,6 +24,15 @@ def run():
         metavar='')
     parser.add_argument('-gc2','--galaxy_condition2',help='For use with Galaxy input condition2.',
         metavar='')
+    parser.add_argument('-gotxt','--galaxy_dge',help='For use with Galaxy. Differential Gene Expression output txt.',
+        metavar='')
+    parser.add_argument('-gohtml1','--galaxy_visualization',help='For use with Galaxy. Visualization output html.',
+        metavar='')
+    parser.add_argument('-gohtml2','--galaxy_list',help='For use with Galaxy. Significant gene list output html.',
+        metavar='')
+    parser.add_argument('-gopng','--galaxy_png',help='For use with Galaxy. Visualization output png.',
+        metavar='')
+
 
 
 
@@ -46,6 +55,10 @@ def run():
     galaxy_padj = args.galaxy_padj
     galaxy_condition1 = args.galaxy_condition1
     galaxy_condition2 = args.galaxy_condition2
+    galaxy_dge = args.galaxy_dge
+    galaxy_visualization = args.galaxy_visualization
+    galaxy_list = args.galaxy_list
+    galaxy_png = args.galaxy_png
 
 
     #Get full paths to locations within this package
@@ -125,7 +138,7 @@ def run():
         print "done. Output in: " + rawdata_out
     elif galaxy:
         import galaxy_mode
-        galaxy_mode.run(galaxy_table,galaxy_meta,galaxy_condition1,galaxy_condition2,galaxy_padj)
+        galaxy_mode.run(galaxy_table,galaxy_meta,galaxy_condition1,galaxy_condition2,galaxy_padj,galaxy_dge,galaxy_visualization,galaxy_list,galaxy_png)
     else:
         print "Error: Neither process mode nor visualize mode specified. See help for information on how to run GeneLab-Microarray. Exiting..."
         sys.exit(1)

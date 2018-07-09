@@ -3,12 +3,32 @@
         <requirement type="package">GeneLab-Microarray</requirement>
     </requirements>
     <command detect_errors="exit_code"><![CDATA[
-        GeneLab-Microarray --galaxy -gt GLDS-21_microarray_normalized.txt -gm s_GLDS-21_microarray_metadata.txt -gp 0.0000001 -gc1 spaceflight -gc2 notreatment
+        GeneLab-Microarray --galaxy -gt $counts_table -gm $sample_metadata -gp $padj -gc1 $condition1 -gc2 $condition2 -gotxt $dge_file -gohtml1 $html_file -gohtml2 '$html_file.extra_files_path' -gopng $png_file
     ]]></command>
     <inputs>
+      <param type="file" name="counts_table" format="txt" label="A txt file containing sample counts for each gene" />
+      <param type="file" name="sample_metadata" format="txt" label="A txt file containing sample metadata formatted in ISA. (S file needed specifically)" />
+      <param type="float" name="padj" label="P-adj cutoff value to determine significant gene list and for plotting" />
+      <param type="text" name="condition1" label="First condition to be compared" />
+      <param type="text" name="condition2" label="Second condition to be compared" />
     </inputs>
     <outputs>
+      <data format="txt" name="dge_file" label="${tool_name}_${condition1.value}-${condition2.value}.txt">
+      <data format="html" name="html_file" label="${tool_name}_${condition1.value}-${condition2.value}_${padj.value}.html">
+      <data format="png" name="png_file" label="${tool_name}_${condition1.value}-${condition2.value}_${padj.value}.png">
     </outputs>
+    <tests>
+        <test>
+            <param name="counts_table" value="2.fastq"/>
+            <param name="sample_metadata" value="2.fastq"/>
+            <param name="padj" value="0.0000001"/>
+            <param name="condition1" value="spaceflight"/>
+            <param name="condition2" value="notreatment"/>
+            <output name="dge_file" file="${tool_name}_${condition1.value}-${condition2.value}.txt"/>
+            <output name="html_file" file="${tool_name}_${condition1.value}-${condition2.value}_${padj.value}.html"/>
+            <output name="png_file" file="${tool_name}_${condition1.value}-${condition2.value}_${padj.value}.png"/>
+        </test>
+    </tests>
     <help><![CDATA[
         usage: GeneLab-Microarray [options] Output
 
@@ -34,8 +54,8 @@ optional arguments:
                         compatible with Galaxy tools.
   -gt , --galaxy_table 
                         For use with Galaxy input a counts table.
-  -gm , --galaxy_meta   For use with Galaxy input the assay file from metadata
-                        (starts with "a_").
+  -gm , --galaxy_meta   For use with Galaxy input the sample file from metadata
+                        (starts with "s_").
   -gqc , --galaxy_qc    For use with Galaxy input the qc report.
   -gp , --galaxy_padj   For use with Galaxy input a p-adjusted cutoff value.
   -gc1 , --galaxy_condition1 
