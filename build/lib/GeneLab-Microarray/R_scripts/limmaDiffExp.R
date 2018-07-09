@@ -13,7 +13,8 @@ option_list=list(
   make_option(c("-i","--ISApath"),type="character",help="Path to the directory containing the dataset metadata"),
   make_option("--group1",type="character",help="'_'delimited list of factors to select samples for group 1 [ex: flight_geneKO]"),
   make_option("--group2",type="character",help="'_'delimited list of factors to select samples for group 2 [ex: ground_geneKO]"),
-  make_option(c("-o","--output"),type="character",default="DGE.txt",help="Name of (or path to) file to write results to (default: DGE.txt)")
+  make_option(c("-o","--output"),type="character",default="DGE.txt",help="Name of (or path to) file to write results to (default: DGE.txt)"),
+  make_option(c("-r","--rmOutliers"),type="character",help="Underscore-delimited list of samples to exclude as outliers from differential expression analysis, matching the sample names in the metadata [ex: GSM1234_GSM1235]")
 )
 
 opt_parser = OptionParser(option_list=option_list)
@@ -113,9 +114,16 @@ for(i in 1:nrow(factorValues)){ # Reorder the factorValues dataframe to match th
 }
 factorValues = factorValues[newOrder,] 
 
+if (!is.null(opt$rmOutliers)){
+  outliers = opt$rmOutliers
+  outliers = strsplit(outliers, split = "_")[[1]]
+}else outliers = list()
+
 group <- rep(0,ncol(eset)) # Create list to hold group assignments for all
-for(i in 1:nrow(factorValues)){ # Assign each sample to a group [3 = both groups 1 & 2, 0 = neither group]
-  if(all(fact1 %in% factorValues[i,]) & all(fact2 %in% factorValues[i,])){
+for(i in 1:nrow(factorValues)){ # Assign each sample to a group [3 = both groups 1 & 2, 0 = neither group, 4 = designated as an outlier]
+  if(row.names(factorValues)[i] %in% outliers){
+    group[i] = 4
+  }else if(all(fact1 %in% factorValues[i,]) & all(fact2 %in% factorValues[i,])){
     group[i] = 3
   }else if(all(fact1 %in% factorValues[i,])){
     group[i] = 1
@@ -124,19 +132,22 @@ for(i in 1:nrow(factorValues)){ # Assign each sample to a group [3 = both groups
   }
 }
 # Error handling
+if(sum(group == 4) > 0){
+  cat("The following samples were indicated to be outliers and were removed from further analysis:\n",rownames(factorValues)[group == 4],"\n")
+}
 if(sum(group == 3) > 0){
   cat("The following samples belonged to both groups and were removed from further analysis:\n",rownames(factorValues)[group == 3],"\n")
 }
 if(sum(group == 3) == nrow(factorValues)){
-  stop("Error: All of the samples belonged to both groups! Exiting.", call.=F)
+  stop("All of the samples belonged to both groups! Exiting.", call.=F)
 }
 cat(sum(group == 1),"sample(s) found in group 1:\n",rownames(factorValues)[group == 1],"\n")
 cat(sum(group == 2),"sample(s) found in group 2:\n",rownames(factorValues)[group == 2],"\n")
 if(sum(group == 0) > 0){
   cat("Warning:",sum(group == 0),"sample(s) not found in either group:\n",rownames(factorValues)[group == 0],"\nIf this is not expected, please ensure the provided factor levels match the factor levels in the study-level metadata exactly\n")
 }
-eset = eset[,!(group == 0 | group == 3)]
-group = group[!(group == 0 | group == 3)]
+eset = eset[,!(group == 0 | group == 3 | group == 4)]
+group = group[!(group == 0 | group == 3 | group == 4)]
 
 #Create a design matrix based on the ordering of the columns within eset
 group = as.factor(group)

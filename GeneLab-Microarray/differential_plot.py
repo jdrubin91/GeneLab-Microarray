@@ -221,7 +221,7 @@ def differential_visualize(rawdata_out,GLDS):
     #In this section the matplotlib figure is initialized and the MA-plot is created
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        F = plt.figure(figsize=(15,7))
+        F = plt.figure(figsize=(14,6.5))
         gs = gridspec.GridSpec(1, 2, width_ratios=[2, 1])
         ax0 = F.add_subplot(gs[0])
         ax0.grid(color='black', linestyle='dashed')

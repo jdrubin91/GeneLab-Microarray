@@ -19,7 +19,7 @@ option_list=list(
   make_option(c("-i","--input"),type="character",help="Name of (or path to) the input file (\\t delimited .txt file)"),
   make_option(c("-a","--arrayInfo"),type="character",default="./QC_output/arrayInfo.txt",help="Name of (or path to) a file containing the array information [Line 1: Manufacturer, line 2: Array version]"),
   make_option(c("-o","--output"),type="character",default="annotExpValues.txt",help="Name of (or path to) file to write results to (default: annotExpValues.txt)"),
-  make_option(c("-d","--dupProbes"),type="character",default="topvar",help="Method for handling multiple probes [max (default, probe with the highest mean expression), average (mean of all probes for a gene), topvar (highest variance with nsFilter function)"),
+  make_option(c("-d","--dupProbes"),type="character",default="max",help="Method for handling multiple probes [max (default, probe with the highest mean expression), average (mean of all probes for a gene), topvar (highest variance with nsFilter function)"),
   make_option(c("-q","--QCoutput"),type="logical",default=TRUE,help="Output QC_reporting directory of QC plots (default = TRUE)"),
   make_option("--QCDir",type="character",default="./QC_reporting/",help="Path to directory for storing QC output, including a terminal forward slash. Will be created if it does not exist yet (default = './QC_reporting/')"),
   make_option("--GLDS",type="character",help="GLDS accession number for plot outputs (ie '21' for GLDS-21)")
@@ -45,36 +45,37 @@ if (is.null(opt$input)){
 aiFH = opt$arrayInfo
 
 tryCatch({
-    aInf = read.delim(aiFH,header=F,stringsAsFactors = F)
-    arrMan = aInf[1,1]
-    arrVer = aInf[2,1]
-  }, error=function(e){
-    stop("Array info file not found or organization not recognized, check options help", call. = F)
-  }
+  aInf = read.delim(aiFH,header=F,stringsAsFactors = F)
+  arrMan = aInf[1,1]
+  arrVer = aInf[2,1]
+}, error=function(e){
+  stop("Array info file not found or organization not recognized, check options help", call. = F)
+}
 )
 
 # Set-up array version:annotation database pseudo-dictionary
 arrayNames = c("MoGene-1_0-st-v1",
-               "MOE430A",
-               "Drosophila_2",
-               "HG-U133_Plus_2",
-               "ATH1-121501",
-               "HuGene-1_0-st-v1",
-               "Yeast_2",
-               "Rat230_2")
+             "MOE430A",
+             "Drosophila_2",
+             "HG-U133_Plus_2",
+             "ATH1-121501",
+             "HuGene-1_0-st-v1",
+             "Yeast_2",
+             "Rat230_2")
 
 arrPackages = c("mogene10sttranscriptcluster.db",
-                "moe430a.db",
-                "drosophila2.db",
-                "hgu133plus2.db",
-                "ath1121501.db",
-                "hugene10sttranscriptcluster.db",
-                "yeast2.db",
-                "rat2302.db")
+              "moe430a.db",
+              "drosophila2.db",
+              "hgu133plus2.db",
+              "ath1121501.db",
+              "hugene10sttranscriptcluster.db",
+              "yeast2.db",
+              "rat2302.db")
 
 # Call the appropriate annotation package
 tryCatch({
-    annotPack = arrPackages[grep(pattern = arrVer,x = arrayNames,ignore.case = T)] # Pick out appropriate package by the array version
+  annotPack = arrPackages[grep(pattern = arrVer,x = arrayNames,ignore.case = T)] # Pick out appropriate package by the array version
+  if(annotPack){
     suppressPackageStartupMessages(library(annotPack,character.only = T)) # Load selected package
     packObjs = ls(paste("package:",as.character(annotPack),sep="")) # Stores a list of all the objects in the selected package
     if(any(grepl(pattern = "REFSEQ",x = packObjs, ignore.case = T))){
@@ -85,10 +86,13 @@ tryCatch({
       annotEnv = packObjs[grepl(pattern = "ORF",x = packObjs, ignore.case = T)] # Select the enivornment from the package to map probes to RefSeq IDs
     }
     cat("Annotating with R package",annotPack,"using object:",annotEnv,"\n")
-  }, error=function(e){
-    stop("Array version wasn't not recognized or the annotation package was unable to load.\n
-         Check that the appropriate packages are installed and the array version is contained in the list of known arrays\n", call. = F)
+  }else{
+    # Get to guessing
   }
+}, error=function(e){
+  stop("Array version wasn't not recognized or the annotation package was unable to load.\n
+       Check that the appropriate packages are installed and the array version is contained in the list of known arrays\n", call. = F)
+}
 )
 
 # inFH = "expValues.txt"
@@ -115,14 +119,14 @@ if(opt$dupProbes == "topvar"){
   filt = nsFilter(neset, var.filter = F,require.entrez = T, remove.dupEntrez = T)
   nDups = filt[[2]]$numDupsRemoved # Number of probes removed that map to non-unique gene IDs
   filtID = featureNames(filt[[1]]) # Pulls out the probe IDs
-  cat("Mapping probes IDs to RefSeq IDs...\n")
+  cat("Mapping probes IDs to RefSeq IDs...\n\n")
   filtRefSeq = lapply(filtID,FUN = mapFun, environ= eval(parse(text=annotEnv))) # Applying mapFun to all non-filtered probe IDs
   
   cat("\tDuplicated probes removed:",nDups,"\n")
   cat("\tUnampped probes removed:",nrow(eset)-sum(!is.na(filtRefSeq))-nDups,"\n")
   cat("Annotated probes remaining:",sum(!is.na(filtRefSeq)),"\n")
   if(sum(!is.na(filtRefSeq)) > length(unique(filtRefSeq[!is.na(filtRefSeq)]))){
-    cat("\n\tWarning: non-unique probe to RefSeq mappings encountered \n")
+    cat("\n\tWarning: non-unique probe to RefSeq mappings remain \n")
   }
   
   # Replace AffyIDs with RefSeq IDs, drop probes w/o RefSeq IDs
@@ -137,13 +141,57 @@ if(opt$dupProbes == "topvar"){
   noIDCnt = sum(is.na(RefSeq)) # Count unmapped probes
   eset = eset[!is.na(RefSeq),] # Remove data from unmapped probes
   RefSeq = RefSeq[!is.na(RefSeq)] # Remove NAs so gene IDs correspond to eset rows
+  cat("Filtering out unannotated probes...\n\n")
   
   if(opt$dupProbes == "average"){
   # Collapse multiple probes per gene ID by averaging expression values across all samples
+    rmRowTag = rep(TRUE,nrow(eset)) # Tag rows to drop (set single or averaged probes to FALSE below)
+    for (i in 1:nrow(eset)){
+      if(sum(RefSeq == RefSeq[i][[1]]) > 1){
+        inds = grep(RefSeq[i][[1]], RefSeq) # List of indices at which a probe for a given gene ID occur
+        eset[inds[1],] = apply(X = eset[inds,], FUN = mean, MARGIN = 2) # Changes the values of the first occurence of a probe to the sample-specific average of the values from all the probes for that gene ID
+        rmRowTag[inds[1]] = FALSE
+      }else rmRowTag[i] = FALSE
+    }
+    nDups = sum(rmRowTag)
+    normVals = eset[!rmRowTag,]
+    row.names(normVals) = RefSeq[!rmRowTag]
+    
+    cat("\tDuplicated probes removed:",nDups,"\n")
+    cat("\tUnampped probes removed:",noIDCnt,"\n")
+    cat("Annotated probes remaining:",nrow(normVals),"\n")
+    if( nrow(normVals) > length(unique(RefSeq[!rmRowTag])) ){
+      cat("\n\tWarning: non-unique probe to RefSeq mappings remain \n")
+    }
   
   }else if(opt$dupProbes == "max"){
   # Collapse multiple probes per gene ID by selecting a representative with the highest mean expression across all samples
-
+    rmRowTag = rep(TRUE,nrow(eset)) # Tag rows to drop (set single or highest expressing probes to FALSE below)
+    for (i in 1:nrow(eset)){
+      if(sum(RefSeq == RefSeq[i][[1]]) > 1){
+        inds = grep(RefSeq[i][[1]], RefSeq)
+        top = 0
+        keep = 0
+        for (j in 1:length(inds)){
+          curr = mean(as.numeric(eset[inds[j],]))
+          if(curr > top){
+            top = curr
+            keep = inds[j]
+          }
+        }
+        rmRowTag[keep] = FALSE
+      }else rmRowTag[i] = FALSE
+    }
+    nDups = sum(rmRowTag)
+    normVals = eset[!rmRowTag,]
+    row.names(normVals) = RefSeq[!rmRowTag]
+    
+    cat("\tDuplicated probes removed:",nDups,"\n")
+    cat("\tUnampped probes removed:",noIDCnt,"\n")
+    cat("Annotated probes remaining:",nrow(normVals),"\n")
+    if( nrow(normVals) > length(unique(RefSeq[!rmRowTag])) ){
+      cat("\n\tWarning: non-unique probe to RefSeq mappings remain \n")
+    }
   }
 }else{
   stop("Method for dealing with probes mapped to the same gene IDs not recognized\n", call. = F)

@@ -2,7 +2,8 @@ __author__ = 'Jonathan Rubin'
   
 import matplotlib
 matplotlib.use('Agg')
-import os, config, math, mpld3, warnings, json
+matplotlib.rcParams['image.cmap'] = 'jet'
+import os, config, math, mpld3, warnings, json, pylab
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
 import numpy as np
@@ -148,15 +149,15 @@ def differential_visualize(rawdata_out,GLDS):
         </tr>
         <tr>
             <td style="background-color: #000000;">x</td>
-            <td style="background-color: #4B0082;">{x}</td>
+            <td style="background-color: #0000ff;">{x}</td>
         </tr>
         <tr>
             <td style="background-color: #000000;">y</td>
-            <td style="background-color: #4B0082;">{y}</td>
+            <td style="background-color: #0000ff;">{y}</td>
         </tr>
         <tr>
             <td style="background-color: #000000;">p</td>
-            <td style="background-color: #4B0082;">{pval}</td>
+            <td style="background-color: #0000ff;">{pval}</td>
         </tr>
         </table>"""
 
@@ -220,7 +221,7 @@ def differential_visualize(rawdata_out,GLDS):
     #In this section the matplotlib figure is initialized and the MA-plot is created
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        F = plt.figure(figsize=(14,6))
+        F = plt.figure(figsize=(14,6.5))
         gs = gridspec.GridSpec(1, 2, width_ratios=[2, 1])
         ax0 = F.add_subplot(gs[0])
         ax0.grid(color='black', linestyle='dashed')
@@ -237,6 +238,7 @@ def differential_visualize(rawdata_out,GLDS):
         ax0.set_title("Microarray MA Plot", size=25)
         ax0.set_ylabel("Log2 Fold Change ("+condition1+" - "+condition2+")", size=18)
         ax0.set_xlabel("Average Expression", size=18)
+
 
         #Here we create the Volcano plot
         ax1 = F.add_subplot(gs[1])
