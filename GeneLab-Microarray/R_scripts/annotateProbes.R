@@ -261,10 +261,10 @@ if(opt$dupProbes == "topvar") {
   filtRefSeq = lapply(filtID, FUN = mapFun, environ = eval(parse(text =
                                                                    annotEnv))) # Applying mapFun to all non-filtered probe IDs
   
-  cat("\tDuplicated probes removed:", nDups, "\n")
   cat("\tUnampped probes removed:",
       nrow(eset) - sum(!is.na(filtRefSeq)) - nDups,
       "\n")
+  cat("\tDuplicated probes removed:", nDups, "\n")
   cat("Annotated probes remaining:", sum(!is.na(filtRefSeq)), "\n")
   if (sum(!is.na(filtRefSeq)) > length(unique(filtRefSeq[!is.na(filtRefSeq)]))) {
     cat("\n\tWarning: non-unique probe to RefSeq mappings remain \n")
@@ -302,8 +302,8 @@ if(opt$dupProbes == "topvar") {
     normVals = eset[!rmRowTag, ]
     row.names(normVals) = RefSeq[!rmRowTag]
     
-    cat("\tDuplicated probes removed:", nDups, "\n")
     cat("\tUnampped probes removed:", noIDCnt, "\n")
+    cat("\tDuplicated probes removed:", nDups, "\n")
     cat("Annotated probes remaining:", nrow(normVals), "\n")
     if (nrow(normVals) > length(unique(RefSeq[!rmRowTag]))) {
       cat("\n\tWarning: non-unique probe to RefSeq mappings remain \n")
@@ -332,8 +332,8 @@ if(opt$dupProbes == "topvar") {
     normVals = eset[!rmRowTag, ]
     row.names(normVals) = RefSeq[!rmRowTag]
     
-    cat("\tDuplicated probes removed:", nDups, "\n")
     cat("\tUnampped probes removed:", noIDCnt, "\n")
+    cat("\tDuplicated probes removed:", nDups, "\n")
     cat("Annotated probes remaining:", nrow(normVals), "\n\n")
     if (nrow(normVals) > length(unique(RefSeq[!rmRowTag]))) {
       cat("\n\tWarning: non-unique probe to RefSeq mappings remain \n")
