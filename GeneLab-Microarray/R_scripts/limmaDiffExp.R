@@ -2,15 +2,14 @@
 
 # install.packages("optparse")
 # source("http://bioconductor.org/biocLite.R")
-# biocLite("Risa")
 # biocLite("limma")
 
 suppressPackageStartupMessages(library("optparse"))
 
 # Read options
 option_list=list(
-  make_option(c("-d","--exprData"),type="character",help="Name of (or path to) the input file (\\t delimited .txt file)"),
-  make_option(c("-i","--ISApath"),type="character",help="Path to the directory containing the dataset metadata"),
+  make_option(c("-d","--exprData"),type="character",help="Name of (or path to) the input file (tab delimited .txt file or binary RData object)"),
+  make_option(c("-i","--ISApath"),type="character",help="Path to the file containing the sample-level metadata"),
   make_option("--group1",type="character",help="'_'delimited list of factors to select samples for group 1 [ex: flight_geneKO]"),
   make_option("--group2",type="character",help="'_'delimited list of factors to select samples for group 2 [ex: ground_geneKO]"),
   make_option(c("-o","--output"),type="character",default="DGE.txt",help="Name of (or path to) file to write results to (default: DGE.txt)"),
@@ -35,41 +34,20 @@ if (is.null(opt$exprData)){
 
 if (is.null(opt$ISApath)){
   print_help(opt_parser)
-  stop("No ISA directory provided", call.=FALSE)
+  stop("No ISA file provided", call.=FALSE)
 } else {
-  isaFH = addSlash(opt$ISApath)
+  isaFH = opt$ISApath
 }
 
-tryCatch({
-  suppressPackageStartupMessages(library("Risa"))
-  tabISA = FALSE
-}, error=function(e){
-  cat("Warning: Risa package could not be loaded. Metadata will be parsed as tab-delimited files.\n")
-  tabISA = TRUE
-})
 suppressPackageStartupMessages(library("limma"))
 
-# Read in ISA tab file and extract assay file
-# isaFH = "../metadata/GLDS-4_metadata_GSE18388-ISA/"
-if(tabISA==TRUE){
-  tryCatch({
-    isaFiles = dir(isaFH)
-    sFile = isaFiles[grep("^s_*",isaFiles)]
-    studyFactors = read.delim(paste(isaFH,sFile,sep=""),header=T, sep="",stringsAsFactors = F)
-  }, error=function(e){
-    stop("ISA files could not be read by parsing tab-delimited files", call. = F)
-  })
-  isaFiles = dir(isaFH)
-  sFile = isaFiles[grep("^i_*",isaFiles)]
-}else{
-  tryCatch({
-    isaIN = readISAtab(isaFH)
-    studyFactors = isaIN@study.files[[1]]
-  }, error=function(e){
-    stop("ISA directory could not be read by Risa", call. = F)
-  })
-}
-
+# Read in ISA tab file and extract sample file
+# isaFH = "../metadata/GLDS-4_metadata_GSE18388-ISA/s_GSE18388.txt"
+tryCatch({
+  studyFactors = read.delim(isaFH, header=T, sep="",stringsAsFactors = F)
+}, error=function(e){ 
+  stop("ISA files could not be read by parsing tab-delimited files", call. = F)
+})
 
 # Read in underscore-delimited factor levels and split into lists
 if (!is.null(opt$group1) & !is.null(opt$group2)){
@@ -82,18 +60,12 @@ if (!is.null(opt$group1) & !is.null(opt$group2)){
   stop("Factor levels not provided or improperly formated", call.=FALSE)
 }
 
-#From assay file, extract column containing 'Factor Value'
+#From sample file, extract column containing 'Factor Value'
 tryCatch({
-  if(tabISA == TRUE){
-    factorValues = studyFactors[,grepl("Factor.Value",colnames(studyFactors))]
-    rownames(factorValues) = studyFactors[,grepl("Sample.Name",colnames(studyFactors))]
-    
-  }else{
-    factorValues = studyFactors[,grepl("Factor Value",colnames(studyFactors))]
-    rownames(factorValues) = studyFactors[,grepl("Sample Name",colnames(studyFactors))]
-  }
+  factorValues = studyFactors[,grepl("Factor.Value",colnames(studyFactors))]
+  rownames(factorValues) = studyFactors[,grepl("Sample.Name",colnames(studyFactors))]
 }, error=function(e){
-  stop("Error: Unable to pull sample names from the study level metadata", call. = F)
+  stop("Unable to pull sample names from the study level metadata", call. = F)
 })
 
 # Read in an expression value txt file
