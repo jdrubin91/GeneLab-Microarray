@@ -124,7 +124,7 @@ if(sum(group == 0) > 0){
 }
 
 if(sum(group == 1) == 0 | sum(group == 2) == 0){
-  stop("One or both comparison groups were found to be empty. Exiting...", call.=F)
+  stop("\nOne or both comparison groups were found to be empty. Exiting...", call.=F)
 }
 
 eset = eset[,!(group == 0 | group == 3 | group == 4)]
