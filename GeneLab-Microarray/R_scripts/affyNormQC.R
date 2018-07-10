@@ -10,8 +10,9 @@
 #   biocLite("jsonlite")
 #   biocLite("openssl")
 #   biocLite("stringi")
-
 #   biocLite("reshape2")
+#   biocLite("Cairo")
+
 #   biocLite("")
 #   biocLite("")
 #   biocLite("")
@@ -139,11 +140,11 @@ if (is.null(opt$GLDS)) {
   glAn = paste('GLDS-', opt$GLDS, sep = '')
 }
 
-# Load initial libraries
+# Load initial packages
 suppressPackageStartupMessages(require(affy))
 
 # setwd("~/Documents/genelab/rot1/GLDS-4/microarray/")
-celFiles <- list.celfiles(full.names = TRUE)
+celFiles = list.celfiles(full.names = TRUE)
 sampNames = gsub("_microarray_.*", "", celFiles)
 sampNames = gsub(".CEL", "", sampNames)
 sampNames = gsub(".*/", "", sampNames)
@@ -175,8 +176,9 @@ if (grepl("-st-", raw@cdfName, ignore.case = T)) {
 setwd(relDir) # Return the working directory to direcotry script was called from to enable use of relative paths
 # Create QC output directory
 qcDir = addSlash(opt$QCDir)
-if (!file.exists(qcDir))
+if (!file.exists(qcDir)){ # Create QC directory if it does not exist yet
   dir.create(qcDir)
+}
 
 # Output array information to a separate file
 write.table(
