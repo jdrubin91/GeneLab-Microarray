@@ -24,12 +24,17 @@ option_list = list(
     c("-o", "--outFile"),
     type = "character",
     default = "expValues",
-    help = "Name of the output file [without extension!] (default: expValues)"
+    help = "Name of the output file [without extension!] (default: not_sure_yet)"
   ),
   make_option(
     c("-i", "--ISApath"), 
     type = "character", 
     help = "Path to the directory containing the dataset metadata"
+  ),
+  make_option(
+    c("-g", "--gpl"), 
+    type = "character", 
+    help = "Path to the file containing custom array annotation information"
   )
 )
 
@@ -37,6 +42,7 @@ opt_parser = OptionParser(option_list = option_list)
 opt = parse_args(opt_parser)
 
 norm = opt$normalization
+outFH = opt$outFile
 
 addSlash = function(string) {
   # Adds a trailing forward slash to the end of a string (ex path to a driectory) if it is not present
@@ -104,7 +110,8 @@ if (is.null(opt$ISApath)) {
   })
 }
 
-
+# Link samples to factors and labels
+factors = merge(x = sampFactors, y = assFactors, by = "Sample.Name") # Join the information from the ISA tab delimited assay and sample files
 
 suppressPackageStartupMessages(library("limma"))
 
@@ -142,6 +149,13 @@ RGb = backgroundCorrect(RG, method = "normexp", offset = 50) # normexp method is
 MA = normalizeWithinArrays(RG, method = "loess", weights=NULL) # Agilent specific global loess normalization method
 ## Loess normalization assumes that the bulk of the probes on the array are not differentially expressed
 MAq = normalizeBetweenArrays(MA, method = "Aquantile") # Normalize the average intensities ("A") between arrays
+
+write.table(
+  MAq,
+  file = paste(outFH,".txt", sep = ""),
+  sep = "\t",
+  quote = F
+)
 
 # Potential QC
 arrayQualityMetrics(expressionset = MAq,
