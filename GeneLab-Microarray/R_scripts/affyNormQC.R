@@ -196,11 +196,6 @@ if (opt$arrayInfoOnly == TRUE) {
        runLast = FALSE)
 }
 
-# Make sure smaple names extracted from the list of CEL files is in the same order as the files were read into the "raw" object
-sampNames = sampNames[pmatch(sampNames,row.names(raw@phenoData@data))]
-row.names(raw@phenoData@data) = sampNames # Replace these row names with stripped sample names for easy reading of QC plots
-colnames(raw@assayData$exprs) = sampNames
-
 ## Raw QC
 if(QCout == T) {
   cat("Performing intial QC\n")
