@@ -6,6 +6,7 @@
 # biocLite("affyPLM")
 # biocLite("oligo")
 # biocLite("arrayQualityMetrics")
+#   biocLite("hexbin")
 #   biocLite("jsonlite")
 #   biocLite("openssl")
 #   biocLite("stringi")
@@ -143,11 +144,12 @@ celFiles <- list.celfiles(full.names = TRUE)
 sampNames = gsub("_microarray_.*", "", celFiles)
 sampNames = gsub(".CEL", "", sampNames)
 sampNames = gsub(".*/", "", sampNames)
-sampNames = gsub("GLDS-\\d*_", "", sampNames)# Extract sample names form the list of .CEL files
+sampNames = gsub("GLDS-\\d*_", "", sampNames)# Extract sample names from the list of .CEL files
 
 tryCatch({
   suppressWarnings(expr = {
-    raw = ReadAffy()
+    raw = ReadAffy(filenames = celFiles,
+                   sampleNames = sampNames)
   })
 }, error = function(e) {
   stop("No .CEL files detected in the current directory", call. = F)
@@ -159,7 +161,8 @@ if (grepl("-st-", raw@cdfName, ignore.case = T)) {
   detach_package(affy)
   rm(raw)
   suppressPackageStartupMessages(require(oligo))
-  raw = read.celfiles(celFiles)
+  raw = read.celfiles(filenames = celFiles,
+                      sampleNames = sampNames)
   st = T
 } else{
   suppressPackageStartupMessages(require(affyPLM))
@@ -190,6 +193,11 @@ if (opt$arrayInfoOnly == TRUE) {
        runLast = FALSE)
 }
 
+# Make sure smaple names extracted from the list of CEL files is in the same order as the files were read into the "raw" object
+sampNames = sampNames[pmatch(sampNames,row.names(raw@phenoData@data))]
+row.names(raw@phenoData@data) = sampNames # Replace these row names with stripped sample names for easy reading of QC plots
+colnames(raw@assayData$exprs) = sampNames
+
 ## Raw QC
 if(QCout == T) {
   cat("Performing intial QC\n")
@@ -199,11 +207,11 @@ if(QCout == T) {
   color = grDevices::colors()[rep(toMatch,10)] # Create a library of colors for plotting
   
   
-#  library(arrayQualityMetrics)
-#  arrayQualityMetrics(expressionset = raw,
-#                      outdir = paste(qcDir,"raw_report",sep=""),
-#                      force = T,
-#                      do.logtransform = T)
+ # library(arrayQualityMetrics)
+ # arrayQualityMetrics(expressionset = raw,
+ #                     outdir = paste(qcDir,"raw_report",sep=""),
+ #                     force = T,
+ #                     do.logtransform = T)
   
   #Images
   cat("\tGenerating raw images")
@@ -483,11 +491,11 @@ if(QCout == T) {
   cat("Post normalization QC steps...\n")
   # Post-normalization QC
   
-#  arrayQualityMetrics(
-#    expressionset = expset,
-#    outdir = paste(qcDir, "normalized_report", sep = ""),
-#    force = T
-#  )
+ # arrayQualityMetrics(
+ #   expressionset = expset,
+ #   outdir = paste(qcDir, "normalized_report", sep = ""),
+ #   force = T
+ # )
   
   png(
     paste(qcDir, glAn, '_normDensityDistributions.png', sep = ''),
