@@ -261,14 +261,14 @@ if(opt$dupProbes == "topvar") {
   )
   nDups = filt[[2]]$numDupsRemoved # Number of probes removed that map to non-unique gene IDs
   filtID = featureNames(filt[[1]]) # Pulls out the probe IDs
-  cat("Mapping probes IDs to RefSeq IDs...\n\n")
+  cat("Mapping probes IDs to RefSeq IDs...\n")
   filtRefSeq = lapply(filtID, FUN = mapFun, environ = eval(parse(text =
                                                                    annotEnv))) # Applying mapFun to all non-filtered probe IDs
   
   cat("\tUnampped probes removed:",
       nrow(eset) - sum(!is.na(filtRefSeq)) - nDups,
       "\n")
-  cat("\tDuplicated probes removed:", nDups, "\n")
+  cat("\tDuplicated probes removed:", nDups, "\n\n")
   cat("Annotated probes remaining:", sum(!is.na(filtRefSeq)), "\n")
   if (sum(!is.na(filtRefSeq)) > length(unique(filtRefSeq[!is.na(filtRefSeq)]))) {
     cat("\n\tWarning: non-unique probe to RefSeq mappings remain \n")
@@ -287,7 +287,7 @@ if(opt$dupProbes == "topvar") {
   noIDCnt = sum(is.na(RefSeq)) # Count unmapped probes
   eset = eset[!is.na(RefSeq), ] # Remove data from unmapped probes
   RefSeq = RefSeq[!is.na(RefSeq)] # Remove NAs so gene IDs correspond to eset rows
-  cat("Filtering out unannotated probes...\n\n")
+  cat("Filtering out unannotated probes...\n")
   
   if (opt$dupProbes == "average") {
     # Collapse multiple probes per gene ID by averaging expression values across all samples
@@ -307,7 +307,7 @@ if(opt$dupProbes == "topvar") {
     row.names(normVals) = RefSeq[!rmRowTag]
     
     cat("\tUnampped probes removed:", noIDCnt, "\n")
-    cat("\tDuplicated probes removed:", nDups, "\n")
+    cat("\tDuplicated probes removed:", nDups, "\n\n")
     cat("Annotated probes remaining:", nrow(normVals), "\n")
     if (nrow(normVals) > length(unique(RefSeq[!rmRowTag]))) {
       cat("\n\tWarning: non-unique probe to RefSeq mappings remain \n")
@@ -337,7 +337,7 @@ if(opt$dupProbes == "topvar") {
     row.names(normVals) = RefSeq[!rmRowTag]
     
     cat("\tUnampped probes removed:", noIDCnt, "\n")
-    cat("\tDuplicated probes removed:", nDups, "\n")
+    cat("\tDuplicated probes removed:", nDups, "\n\n")
     cat("Annotated probes remaining:", nrow(normVals), "\n\n")
     if (nrow(normVals) > length(unique(RefSeq[!rmRowTag]))) {
       cat("\n\tWarning: non-unique probe to RefSeq mappings remain \n")
