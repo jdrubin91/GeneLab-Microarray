@@ -16,7 +16,11 @@ suppressPackageStartupMessages(library("optparse"))
 
 # Read options
 option_list = list(
-  make_option(c("-i", "--input"), type = "character", help = "Name of (or path to) the input file (tab delimited .txt file or binary Rdata object)"),
+  make_option(
+    c("-i", "--input"), 
+    type = "character", 
+    help = "Name of (or path to) the input file (tab delimited .txt file or binary Rdata object)"
+    ),
   make_option(
     c("-a", "--arrayInfo"),
     type = "character",

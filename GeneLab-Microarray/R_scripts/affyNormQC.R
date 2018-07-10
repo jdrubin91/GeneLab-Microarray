@@ -26,7 +26,10 @@ relDir = getwd()
 
 # Read options
 option_list = list(
-  make_option(c("-i", "--input"), type = "character", help = "Path to directory containing input .CEL files"),
+  make_option(c("-i", "--input"), 
+              type = "character", 
+              help = "Path to directory containing input .CEL files"
+              ),
   make_option(
     c("-n", "--normalization"),
     type = "character",
