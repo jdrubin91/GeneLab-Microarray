@@ -453,7 +453,7 @@ if (opt$outputData == TRUE) {
     expset = rma(raw, background = F, normalize = F)
   } else{
     stop(
-      "Normalization did not occur, please examine script inputs and default values",
+      "Normalization did not occur, please examine script inputs and default values\n",
       call. = F
     )
   }
@@ -468,8 +468,10 @@ if (opt$outputData == TRUE) {
       sep = "\t",
       quote = F
     )
+    cat("Success! Normalized data saved to", paste(outDir, outFH, sep=""), "as both a .txt and a .RData file\n")
   } else if (opt$outType == "R") {
     save(eset, file = paste(outDir, outFH, ".rda", sep = ""))
+    cat("Success! Normalized data saved to", paste(outDir, outFH, sep=""), "as a .RData file\n")
   } else if (opt$outType == "txt") {
     write.table(
       eset,
@@ -477,6 +479,7 @@ if (opt$outputData == TRUE) {
       sep = "\t",
       quote = F
     )
+    cat("Success! Normalized data saved to", paste(outDir, outFH, sep=""), "as a .txt file\n")
   } else{
     print_help(opt_parser)
     stop("Help, I don't know how to save this data!", call. = F)

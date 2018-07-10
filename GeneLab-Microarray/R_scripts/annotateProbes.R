@@ -359,10 +359,10 @@ if (opt$outType == "both") {
     sep = "\t",
     quote = F
   )
-  cat("Success! Annotated data saved to", outFH, "as both a .txt and a .RData file")
+  cat("Success! Annotated data saved to", outFH, "as both a .txt and a .RData file\n")
 } else if (opt$outType == "R") {
   save(eset, file = paste(outFH, ".rda", sep = ""))
-  cat("Success! Annotated data saved to", outFH, "as a .RData file")
+  cat("Success! Annotated data saved to", outFH, "as a .RData file\n")
 } else if (opt$outType == "txt") {
   write.table(
     eset,
@@ -370,10 +370,10 @@ if (opt$outType == "both") {
     sep = "\t",
     quote = F
   )
-  cat("Success! Annotated data saved to", outFH, "as a .txt file")
+  cat("Success! Annotated data saved to", outFH, "as a .txt file\n")
 } else{
   print_help(opt_parser)
-  stop("Help, I don't know how to save this data!", call. = F)
+  stop("Help, I don't know how to save this data!\n", call. = F)
 }
 
 
