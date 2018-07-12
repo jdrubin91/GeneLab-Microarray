@@ -7,34 +7,56 @@
 suppressPackageStartupMessages(library("optparse"))
 
 # Read options
-option_list=list(
-  make_option(c("-d","--exprData"),type="character",help="Name of (or path to) the input file (tab delimited .txt file or binary RData object)"),
-  make_option(c("-i","--ISApath"),type="character",help="Path to the file containing the sample-level metadata"),
-  make_option("--group1",type="character",help="'_'delimited list of factors to select samples for group 1 [ex: flight_geneKO]"),
-  make_option("--group2",type="character",help="'_'delimited list of factors to select samples for group 2 [ex: ground_geneKO]"),
-  make_option(c("-o","--output"),type="character",default="DGE.txt",help="Name of (or path to) file to write results to (default: DGE.txt)"),
-  make_option(c("-r","--rmOutliers"),type="character",help="Underscore-delimited list of samples to exclude as outliers from differential expression analysis, matching the sample names in the metadata [ex: GSM1234_GSM1235]")
+option_list = list(
+  make_option(
+    c("-d", "--exprData"), 
+    type = "character", 
+    help = "Name of (or path to) the input file (tab delimited .txt file or binary RData object)"
+  ),
+  make_option(
+    c("-i", "--ISApath"), 
+    type = "character", 
+    help = "Path to the file containing the sample-level metadata"
+  ),
+  make_option(
+    "--group1", 
+    type = "character", 
+    help = "'_'delimited list of factors to select samples for group 1 [ex: flight_geneKO]"
+  ),
+  make_option(
+    "--group2", 
+    type = "character", 
+    help = "'_'delimited list of factors to select samples for group 2 [ex: ground_geneKO]"
+  ),
+  make_option(
+    c("-o", "--output"),
+    type = "character",
+    default = "DGE.txt",
+    help = "Name of (or path to) file to write results to (default: DGE.txt)"
+  ),
+  make_option(c("-r", "--rmOutliers"), type = "character", help = "Underscore-delimited list of samples to exclude as outliers from differential expression analysis, matching the sample names in the metadata [ex: GSM1234_GSM1235]")
 )
 
-opt_parser = OptionParser(option_list=option_list)
+opt_parser = OptionParser(option_list = option_list)
 opt = parse_args(opt_parser)
 
-addSlash = function(string){
+addSlash = function(string) {
   # Adds a trailing forward slash to the end of a string (ex path to a driectory) if it is not present
-  if(substr(x = string,start = nchar(string), stop = nchar(string)) != "/"){
-    string = paste(string,"/",sep="")
+  if (substr(x = string, start = nchar(string), stop = nchar(string)) != "/") {
+    string = paste(string, "/", sep = "")
   }
   return(string)
 }
 
-if (is.null(opt$exprData)){
+if (is.null(opt$exprData)) {
   print_help(opt_parser)
-  stop("No expression data provided", call.=FALSE)
-}else inFH = opt$exprData
+  stop("No expression data provided", call. = FALSE)
+} else
+  inFH = opt$exprData
 
-if (is.null(opt$ISApath)){
+if (is.null(opt$ISApath)) {
   print_help(opt_parser)
-  stop("No ISA file provided", call.=FALSE)
+  stop("No ISA file provided", call. = FALSE)
 } else {
   isaFH = opt$ISApath
 }
