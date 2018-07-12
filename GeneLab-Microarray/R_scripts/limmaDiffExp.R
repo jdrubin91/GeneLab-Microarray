@@ -143,6 +143,6 @@ fit2 <- eBayes(fit2)
 #Here we write the results to a tab delimited text file that is ordered by adjusted p-value
 #coef refers to which column is of interest (1 is log2FC), adjust refers to multiple hypothesis testing method ("BH" = Benjamini & Hochberg)
 table <- data.frame(topTable(fit2, coef=1, n=Inf, adjust="BH"))
-write.table(table,file=opt$output,sep="\t")
+write.table(table,file=opt$output,sep="\t", quote = F)
 cat("All done! Differential expression information saved to:",opt$output,"\n")
 

@@ -17,7 +17,7 @@ option_list = list(
   make_option(
     c("-n", "--normalization"),
     type = "character",
-    default = "rma",
+    default = "normexp",
     help = "Normalization method [rma (default, full rma), quantile (no background correction), background (no quant. normalization), log2 (no quant. norm. or background correction)"
   ),
   make_option(
@@ -43,6 +43,9 @@ opt = parse_args(opt_parser)
 
 norm = opt$normalization
 outFH = opt$outFile
+if (!is.null(opt$gpl)){
+  annotFH = opt$gpl
+}
 
 addSlash = function(string) {
   # Adds a trailing forward slash to the end of a string (ex path to a driectory) if it is not present
