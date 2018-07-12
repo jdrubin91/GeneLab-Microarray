@@ -27,10 +27,11 @@ relDir = getwd()
 
 # Read options
 option_list = list(
-  make_option(c("-i", "--input"), 
-              type = "character", 
-              help = "Path to directory containing input .CEL files"
-              ),
+  make_option(
+    c("-i", "--input"), 
+    type = "character", 
+    help = "Path to directory containing input .CEL files"
+  ),
   make_option(
     c("-n", "--normalization"),
     type = "character",
@@ -80,12 +81,10 @@ option_list = list(
     help = "Path to directory for storing QC output, including a terminal forward slash. Will be created if it does not exist yet (default = './QC_reporting/')"
   ),
   make_option(
-    "--NUSEplot",
-    type = "logical",
-    default = FALSE,
-    help = "Include a NUSE plot in the QC output, adds significantly to runtime (default = FALSE)"
-  ),
-  make_option("--GLDS", type = "character", help = "GLDS accession number for plot outputs (ie '21' for GLDS-21)")
+    "--GLDS", 
+    type = "character", 
+    help = "GLDS accession number for plot outputs (ie '21' for GLDS-21)"
+  )
 )
 
 opt_parser = OptionParser(option_list = option_list)
@@ -142,6 +141,7 @@ if (is.null(opt$GLDS)) {
 
 # Load initial packages
 suppressPackageStartupMessages(require(affy))
+suppressPackageStartupMessages(require(arrayQualityMetrics))
 
 # setwd("~/Documents/genelab/rot1/GLDS-4/microarray/")
 celFiles = list.celfiles(full.names = TRUE)
@@ -201,244 +201,12 @@ if (opt$arrayInfoOnly == TRUE) {
 ## Raw QC
 if(QCout == T) {
   cat("Performing intial QC\n")
-  # Prepare plotting options
-  toMatch = c(8,183,31,45,51,100,101,118,128,139,147,183,254,421,467,477,
-              483,493,498,503,508,535,552,575,635,655)
-  color = grDevices::colors()[rep(toMatch,10)] # Create a library of colors for plotting
   
-  
- # library(arrayQualityMetrics)
  # arrayQualityMetrics(expressionset = raw,
  #                     outdir = paste(qcDir,"raw_report",sep=""),
  #                     force = T,
  #                     do.logtransform = T)
-  
-  #Images
-  cat("\tGenerating raw images")
-  if (st == T) {
-    for (i in 1:length(celFiles)) {
-      png(
-        paste(qcDir, glAn, '_', sampNames[i], '_image.png', sep = ''),
-        width = 800,
-        height = 800
-      )
-      image(raw, which = i)
-      garbage <- dev.off()
-      cat(".")
-    }
-  } else{
-    nblines = length(celFiles) %/% 4 + as.numeric((length(celFiles) %% 4) !=
-                                                    0)
-    png(
-      paste(qcDir, glAn, '_images.png', sep = ''),
-      width = 800,
-      height = 200 * nblines
-    )
-    par(mfrow = c(nblines, 4))
-    image(raw)
-    garbage <- dev.off()
-  }
-  cat("\n")
-  
-  #MA plot
-  cat("\tGenerating raw data MA plots...\n")
-  nblines = length(celFiles) %/% 3 + as.numeric((length(celFiles) %% 3) !=
-                                                  0)
-  png(
-    paste(qcDir, glAn, '_rawPlotMA.png', sep = ''),
-    width = 800,
-    height = 300 * nblines
-  )
-  par(mfrow = c(nblines, 3))
-  if (st == T) {
-    MAplot(raw)
-  } else{
-    MAplot(raw, type = "pm")
-  }
-  garbage <- dev.off()
-  
-  # Intensity distributions of the pm probes from each microarray on the same graph
-  cat("\tGenerating initial distribution plots")
-  mypms = pm(raw)
-  png(
-    paste(qcDir, glAn, '_rawDensityDistributions.png', sep = ''),
-    width = 800,
-    height = 800
-  )
-  ylims = c(0, .8)
-  xlims = c(0, 16)
-  for (i in 1:ncol(mypms)) {
-    cat(".")
-    if (i == 1) {
-      plot(
-        density(log2(mypms[, i])),
-        ylim = ylims,
-        xlim = xlims,
-        xlab = 'log2(Raw Intensities)',
-        main = paste(glAn, ' Raw intensity distributions', sep = ''),
-        col = color[i]
-      )
-      par(new = T)
-    } else{
-      plot(
-        density(log2(mypms[, i])),
-        ylim = ylims,
-        xlim = xlims,
-        axes = F,
-        xlab = '',
-        ylab = '',
-        main = '',
-        col = color[i]
-      )
-      par(new = T)
-    }
-  }
-  legend(
-    13,
-    0.8,
-    col = color[1:length(celFiles)],
-    legend = sampNames
-    ,
-    pch = 15,
-    bty = "n",
-    cex = 0.9,
-    pt.cex = 0.8,
-    y.intersp = 0.8
-  )
-  garbage <- dev.off()
-  cat("\n")
-  
-  # Boxplots
-  png(paste(qcDir, glAn, '_rawBoxplot.png', sep = ''),
-      width = 800,
-      height = 400)
-  par(mar = c(7, 5, 1, 1))
-  if (st == T) {
-    invisible(capture.output(
-      # Silence oligo::rma printing statement
-      boxplot(
-        oligo::rma(
-          raw,
-          background = FALSE,
-          normalize = FALSE,
-          subset = NULL,
-          target = "core"
-        ),
-        las = 2,
-        names = sampNames,
-        main = paste(glAn, " Raw intensities", sep = ""),
-        col = color[1:length(celFiles)]
-      )
-    ))
-  } else{
-    boxplot(
-      raw,
-      las = 2,
-      outline = FALSE,
-      col = color[1:length(celFiles)],
-      main = paste(glAn, " Raw intensities", sep = ""),
-      names = sampNames
-    )
-  }
-  mtext(
-    text = "log2 Intensity",
-    side = 2,
-    line = 2.5,
-    las = 0
-  )
-  garbage <- dev.off()
-  
-  # PCA
-  cat("\tPerforming PCA of raw data...\n")
-  rawPCA = prcomp(mypms)
-  png(paste(qcDir, glAn, '_rawPCA.png', sep = ''),
-      width = 800,
-      height = 800)
-  plot(
-    rawPCA$rotation[, 1],
-    rawPCA$rotation[, 2],
-    col = color[1:length(celFiles)],
-    pch = 16,
-    xlab = paste(
-      "PC1, ",
-      round(summary(rawPCA)$importance["Proportion of Variance", 1] * 100, digits = 1),
-      "% of variance",
-      sep = ""
-    ),
-    ylab = paste(
-      "PC2, ",
-      round(summary(rawPCA)$importance["Proportion of Variance", 2] * 100, digits = 1),
-      "% of variance",
-      sep = ""
-    ),
-    main = paste(glAn, " PCA of raw data", sep = "")
-  )
-  text(
-    rawPCA$rotation[, 1],
-    rawPCA$rotation[, 2],
-    labels = sampNames,
-    cex = 1,
-    pos = 3
-  )
-  garbage <- dev.off()
-  
-  #NUSE plot
-  if (NUSEplot == T) {
-    cat("\tFitting probe-level model and generating RLE/NUSE plots...\n")
-    if (st == T) {
-      Pset = fitProbeLevelModel(raw)
-      # RLE plot
-      png(paste(qcDir, glAn, '_RLE.png', sep = ''),
-          width = 800,
-          height = 600)
-      par(mar = c(7, 5, 1, 1))
-      RLE(
-        Pset,
-        col = color[1:length(sampNames)],
-        names = sampNames,
-        las = 2,
-        main = paste(glAn, " Relative Log Expression (RLE) plot", sep = "")
-      )
-      abline(h = 0, lty = 1, col = "red")
-      garbage <- dev.off()
-      # NUSE plot
-      png(paste(qcDir, glAn, '_NUSE.png', sep = ''),
-          width = 800,
-          height = 600)
-      par(mar = c(7, 5, 1, 1))
-      NUSE(Pset, col = color[1:length(sampNames)], las = 2)
-      title(main = paste(glAn, " NUSE plot of microarray experiments", sep =
-                           ""))
-      abline(h = 1.1, lty = 1, col = "red")
-      garbage <- dev.off()
-    } else{
-      Pset = fitPLM(raw)
-      # RLE plot
-      png(paste(qcDir, glAn, '_RLE.png', sep = ''),
-          width = 800,
-          height = 600)
-      par(mar = c(7, 5, 1, 1))
-      RLE(
-        Pset,
-        col = color[1:length(sampNames)],
-        names = sampNames,
-        las = 2,
-        main = "Relative Log Expression (RLE) plot"
-      )
-      abline(h = 0, lty = 1, col = "red")
-      garbage <- dev.off()
-      # NUSE plot
-      png(paste(qcDir, glAn, '_NUSE.png', sep = ''),
-          width = 800,
-          height = 600)
-      par(mar = c(7, 5, 1, 1))
-      NUSE(Pset, col = color[1:length(sampNames)], las = 2)
-      title(main = paste(glAn, " NUSE plot of microarray experiments", sep =
-                           ""))
-      abline(h = 1.1, lty = 1, col = "red")
-      garbage <- dev.off()
-    }
-  }
+
 }
 
 outFH = opt$outFile
@@ -486,152 +254,15 @@ if (opt$outputData == TRUE) {
     print_help(opt_parser)
     stop("Help, I don't know how to save this data!", call. = F)
   }
-}
-
-
-
-if(QCout == T) {
-  cat("Post normalization QC steps...\n")
-  # Post-normalization QC
   
- # arrayQualityMetrics(
- #   expressionset = expset,
- #   outdir = paste(qcDir, "normalized_report", sep = ""),
- #   force = T
- # )
-  
-  png(
-    paste(qcDir, glAn, '_normDensityDistributions.png', sep = ''),
-    width = 800,
-    height = 800
-  )
-  ylims = c(0, .8)
-  xlims = c(0, 16)
-  normVals = exprs(expset)
-  for (i in 1:ncol(normVals)) {
-    if (i == 1) {
-      plot(
-        density(normVals[, i]),
-        ylim = ylims,
-        xlim = xlims,
-        xlab = 'Normalized expression values[log2]',
-        main = paste(glAn, ' Normalized expression distributions', sep = ''),
-        col = color[i]
-      )
-      par(new = T)
-    } else{
-      plot(
-        density(normVals[, i]),
-        ylim = ylims,
-        xlim = xlims,
-        axes = F,
-        xlab = '',
-        ylab = '',
-        main = '',
-        col = color[i]
-      )
-      par(new = T)
-    }
+  if(QCout == T) {
+    cat("Post normalization QC steps...\n")
+    # Post-normalization QC
+    
+    # arrayQualityMetrics(
+    #   expressionset = expset,
+    #   outdir = paste(qcDir, "normalized_report", sep = ""),
+    #   force = T
+    # )
   }
-  legend(
-    13,
-    0.8,
-    col = color[1:length(celFiles)],
-    legend = sampNames
-    ,
-    pch = 15,
-    bty = "n",
-    cex = 0.9,
-    pt.cex = 0.8,
-    y.intersp = 0.8
-  )
-  garbage <- dev.off()
-  
-  # Boxplots
-  png(
-    paste(qcDir, glAn, '_normBoxplot.png', sep = ''),
-    width = 800,
-    height = 400
-  )
-  par(mar = c(7, 5, 1, 1))
-  if (st == T) {
-    boxplot(
-      normVals,
-      las = 2,
-      outline = FALSE,
-      col = color[1:length(celFiles)],
-      main = paste(glAn, " Normalized intensities", sep = ""),
-      transfo = 'identity',
-      names = sampNames
-    )
-    mtext(
-      text = "log2 Intensity",
-      side = 2,
-      line = 2.5,
-      las = 0
-    )
-  } else{
-    boxplot(
-      normVals,
-      las = 2,
-      outline = FALSE,
-      col = color[1:length(celFiles)],
-      main = paste(glAn, " Normalized intensities", sep = ""),
-      names = sampNames
-    )
-    mtext(
-      text = "log2 Intensity",
-      side = 2,
-      line = 2.5,
-      las = 0
-    )
-  }
-  garbage <- dev.off()
-  
-  #MA plot
-  cat("\tGenerating MA plots from the normalized data...\n")
-  nblines = length(celFiles) %/% 3 + as.numeric((length(celFiles) %% 3) !=
-                                                  0)
-  png(
-    paste(qcDir, glAn, '_normPlotMA.png', sep = ''),
-    width = 800,
-    height = 300 * nblines
-  )
-  par(mfrow = c(nblines, 3))
-  MAplot(expset)
-  garbage <- dev.off()
-  
-  # PCA
-  cat("\tPerforming PCA of normalized data...\n")
-  normPCA = prcomp(normVals)
-  png(paste(qcDir, glAn, '_normPCA.png', sep = ''),
-      width = 800,
-      height = 800)
-  plot(
-    normPCA$rotation[, 1],
-    normPCA$rotation[, 2],
-    col = color[1:length(celFiles)],
-    pch = 16,
-    xlab = paste(
-      "PC1, ",
-      round(summary(normPCA)$importance["Proportion of Variance", 1] * 100, digits = 1),
-      "% of variance",
-      sep = ""
-    ),
-    ylab = paste(
-      "PC2, ",
-      round(summary(normPCA)$importance["Proportion of Variance", 2] * 100, digits = 1),
-      "% of variance",
-      sep = ""
-    ),
-    main = paste(glAn, " PCA of normalized data", sep = "")
-  )
-  text(
-    normPCA$rotation[, 1],
-    normPCA$rotation[, 2],
-    labels = sampNames,
-    cex = 1,
-    pos = 3
-  )
-  garbage <- dev.off()
 }
