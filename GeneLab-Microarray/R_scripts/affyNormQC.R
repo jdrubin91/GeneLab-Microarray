@@ -202,10 +202,14 @@ if (opt$arrayInfoOnly == TRUE) {
 if(QCout == T) {
   cat("Performing intial QC\n")
   
- # arrayQualityMetrics(expressionset = raw,
- #                     outdir = paste(qcDir,"raw_report",sep=""),
- #                     force = T,
- #                     do.logtransform = T)
+  # suppressWarnings(
+  #   arrayQualityMetrics(
+  #     expressionset = raw,
+  #     outdir = paste(qcDir, "raw_report", sep = ""),
+  #     force = T,
+  #     do.logtransform = T
+  #   )
+  # )
 
 }
 
@@ -259,10 +263,12 @@ if (opt$outputData == TRUE) {
     cat("Post normalization QC steps...\n")
     # Post-normalization QC
     
-    # arrayQualityMetrics(
-    #   expressionset = expset,
-    #   outdir = paste(qcDir, "normalized_report", sep = ""),
-    #   force = T
+    # suppressWarnings(
+    #   arrayQualityMetrics(
+    #     expressionset = expset,
+    #     outdir = paste(qcDir, "normalized_report", sep = ""),
+    #     force = T
+    #   )
     # )
   }
 }

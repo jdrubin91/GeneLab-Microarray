@@ -161,6 +161,10 @@ write.table(
 )
 
 # Potential QC
-arrayQualityMetrics(expressionset = MAq,
-                    outdir = "MA_test_report",
-                    force = T)
+suppressWarnings(
+  arrayQualityMetrics(
+    expressionset = MAq,
+    outdir = "MA_test_report",
+    force = T
+  )
+)

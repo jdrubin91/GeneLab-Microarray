@@ -162,7 +162,7 @@ GLDS-4    False     False
 GeneLab-Microarray will overwrite the specified batch.txt file changing booleans to True or Skipped when the specific step is finished. An example of a batch.txt file can be found within the `batch/` folder
 
 <H2 id="affyNormQC">Affy QC and Normalization</H2>
-The `affyNormQC.R` script is to be called from the directory containing Affymetrix microarray files (with a .CEL extension). It can determine the version of the array and load the appropriate packages (ie "affy" for earlier microarrays and "oligo" for the newer arrays). No inputs are required to run it, but to view the available options, simply run the line below:
+The affyNormQC.R script can be run from any directory, but requires to be pointed to the appropriate directory containing Affymetrix .CEL file microarray data with the `-i/--input` option. It can determine the version of the array and load the appropriate packages (ie "affy" for earlier microarrays and "oligo" for the newer arrays). No inputs are required to run it, but to view the available options, simply run the line below:
 
 ```
 Rscript --no-save --no-restore affyNormQC.R --help
@@ -178,6 +178,7 @@ biocLite("affyPLM")
 biocLite("oligo")
 biocLite("arrayQualityMetrics")
 ```
+Please note: bugs in the quality control report have been logged when opening the html file with Safari. At this point, either Chrome or Firefox are recommended for the viewing of the html QC report.
 An example run with all of the options explicitly set to the default or example options:
 
 ```
