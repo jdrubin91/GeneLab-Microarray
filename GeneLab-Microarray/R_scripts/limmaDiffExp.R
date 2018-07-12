@@ -34,7 +34,11 @@ option_list = list(
     default = "DGE.txt",
     help = "Name of (or path to) file to write results to (default: DGE.txt)"
   ),
-  make_option(c("-r", "--rmOutliers"), type = "character", help = "Underscore-delimited list of samples to exclude as outliers from differential expression analysis, matching the sample names in the metadata [ex: GSM1234_GSM1235]")
+  make_option(
+    c("-r", "--rmOutliers"), 
+    type = "character", 
+    help = "Underscore-delimited list of samples to exclude as outliers from differential expression analysis, matching the sample names in the metadata [ex: GSM1234_GSM1235]"
+  )
 )
 
 opt_parser = OptionParser(option_list = option_list)
