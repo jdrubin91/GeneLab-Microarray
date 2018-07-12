@@ -44,10 +44,7 @@ option_list = list(
     type = "character",
     default = "max",
     help = "Method for handling multiple probes [max (default, probe with the highest mean expression), average (mean of all probes for a gene), topvar (highest variance with nsFilter function)"
-  ),
-  make_option("--GLDS",
-              type = "character",
-              help = "GLDS accession number for plot outputs (ie '21' for GLDS-21)")
+  )
 )
 
 opt_parser = OptionParser(option_list = option_list)

@@ -205,7 +205,7 @@ biocLite("mogene10sttranscriptcluster.db")
 An example call with all of the default/recommended options explicitly defined:
 
 ```
-Rscript --no-save --no-restore annotateProbes.R -i path/to/normalized/data.txt -a GLDS-4_arrayInfo.txt -o annotExpValues --outType=both --dupProbes=max --GLDS=4
+Rscript --no-save --no-restore annotateProbes.R -i path/to/normalized/data.txt -a GLDS-4_arrayInfo.txt -o annotExpValues --outType=both --dupProbes=max
 ```
 
 <H2 id="limmaDiffExp">Limma Differential Expression</H2>
