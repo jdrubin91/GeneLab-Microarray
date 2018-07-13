@@ -3,6 +3,7 @@
 # install.packages("optparse")
 # source("http://bioconductor.org/biocLite.R")
 # biocLite("limma")
+## install.packages("statmod")
 # biocLite("arrayQualityMetrics")
 
 suppressPackageStartupMessages(library("optparse"))
@@ -30,6 +31,12 @@ option_list = list(
     c("-i", "--ISApath"), 
     type = "character", 
     help = "Path to the directory containing the dataset metadata"
+  ),
+  make_option(
+    "--QCDir",
+    type = "character",
+    default = "./QC_reporting/",
+    help = "Path to directory for storing QC output, including a terminal forward slash. Will be created if it does not exist yet (default = './QC_reporting/')"
   ),
   make_option(
     c("-g", "--gpl"), 
@@ -121,7 +128,15 @@ inFiles = inFiles[grepl("_raw.txt$",inFiles)]
 targets = data.frame(FileName = inFiles)
 row.names(targets) = gsub(".*_microarray_","",targets$FileName)
 row.names(targets) = gsub("_raw.*","",row.names(targets))
-# Cy3 = need to link file names to sample names in metadata
+
+# Pull out sample descriptions, names, and dyes from the metadata
+factNames = factors[ , grep("^Sample.Name$",colnames(factors),ignore.case = T)]
+labs = factors[ , grep("^Label$",colnames(factors),ignore.case = T)]
+facts = factors[ , grep("Comment..Sample_source_name.",colnames(factors),ignore.case = T)]
+
+Cy3 = c("space","mars") # need to link file names to sample names in metadata
+Cy5 = c("earth","earth")
+targets = cbind(targets, Cy3, Cy5)
 
 RG = read.maimages(
   files = inFiles,
@@ -137,10 +152,14 @@ RG = read.maimages(
   names = row.names(targets)
 )
 
-# Potential QC
-arrayQualityMetrics(expressionset = RG,
-                    outdir = "test_report",
-                    force = T)
+# QC step
+qcDir = opt$QCDir
+suppressWarnings(
+  arrayQualityMetrics(expressionset = RG,
+                      outdir = paste(qcDir, "raw_report", sep = ""),
+                      force = T)
+  
+)
 
 # Normalization
 RGb = backgroundCorrect(RG, method = "normexp", offset = 50) # normexp method is based on the same normal plus exponential convolution model which has previously been used to background correct Affymetrix data as part of the popular RMA algorithm [Ritchie et al. Bioinformatics 2007]
@@ -148,11 +167,19 @@ MA = normalizeWithinArrays(RG, method = "loess", weights=NULL) # Agilent specifi
 ## Loess normalization assumes that the bulk of the probes on the array are not differentially expressed
 MAq = normalizeBetweenArrays(MA, method = "Aquantile") # Normalize the average intensities ("A") between arrays
 
+# QC step
+suppressWarnings(
+  arrayQualityMetrics(expressionset = RG,
+                      outdir = paste(opt$QCDir, "raw_report", sep = ""),
+                      force = T)
+  
+)
+
 # Feature number to BSU locus
 annotFun = function(oldLab, newLink, newLab, ...){
   # Function to switch from one probe label (oldLab) to another (newLab), provided
   ## a linking variable (newLink) with common labels to the labels in the oldLab list organized in the same order as the newLab list
-  # Returns a translation from the the oldLab to the newLab with "" for unmapped probes
+  # Returns a translation from the the oldLab to the newLab with "" for unmapped probes, ordered by the oldLab
   newOrder = match(oldLab,newLink)
   out = newLab[newOrder]
   return(out)
@@ -168,6 +195,11 @@ noIDCnt = sum(BSUs == "") # Number of unmapped probes
 MAq$genes[,1] = BSUs # Translate probe IDs
 MAq = MAq[!MAq$genes[,1] == "", ] # Remove umapped probes
 BSUs = BSUs[!BSUs == ""]
+
+# Filter out probes with missing values
+naTag = (apply(is.na(MAq$M), 1, any) | apply(is.na(MAq$A), 1, any))
+MAq = MAq[!naTag,]
+BSUs = BSUs[!naTag]
 
 if (any(opt$dupProbes %in% c("average", "max"))) {
   cat("Filtering out multiple probes per gene ID...\n")
@@ -192,6 +224,7 @@ if (any(opt$dupProbes %in% c("average", "max"))) {
     MAq = MAq[!rmRowTag, ]
 
     cat("\tUnampped probes removed:", noIDCnt, "\n")
+    cat("\tProbes with missing values removed:", sum(naTag), "\n")
     cat("\tDuplicated probes removed:", nDups, "\n\n")
     cat("Annotated probes remaining:", length(MAq$genes[,1]), "\n\n")
     if (length(MAq$genes[,1]) > length(unique(MAq$genes[,1]))) {
@@ -224,6 +257,7 @@ if (any(opt$dupProbes %in% c("average", "max"))) {
     MAq = MAq[!rmRowTag, ]
 
     cat("\tUnampped probes removed:", noIDCnt, "\n")
+    cat("\tProbes with missing values removed:", sum(naTag), "\n")
     cat("\tDuplicated probes removed:", nDups, "\n\n")
     cat("Annotated probes remaining:", length(MAq$genes[,1]), "\n\n")
     if (length(MAq$genes[,1]) > length(unique(MAq$genes[,1]))) {
@@ -234,6 +268,35 @@ if (any(opt$dupProbes %in% c("average", "max"))) {
   stop("Method for dealing with probes mapped to the same gene IDs not recognized\n",
        call. = F)
 }
+
+# Differential expression analysis
+targets2 = targetsA2C(targets)
+u = unique(targets2$Target)
+f = factor(targets2$Target, levels = u)
+design = model.matrix(~0 + f)
+colnames(design) = u
+
+corfit = intraspotCorrelation(MAq, design)
+fit = lmscFit(MAq, design, correlation = corfit$consensus.correlation)
+
+cont.matrixMars = makeContrasts(mars-earth, levels = design)
+cont.matrixSpace = makeContrasts(space-earth, levels = design)
+
+fit2Mars = contrasts.fit(fit, cont.matrixMars)
+fit2Mars = eBayes(fit2Mars)
+tableMars = data.frame(topTable(fit2Mars, coef=1, n=Inf, adjust="BH"))
+fit2Space = contrasts.fit(fit, cont.matrixSpace)
+fit2Space = eBayes(fit2Space)
+tableSpace = data.frame(topTable(fit2Space, coef=1, n=Inf, adjust="BH"))
+
+
+write.table(table,file=opt$output,sep="\t", quote = F)
+cat("All done! Differential expression information saved to:",opt$output,"\n")
+
+
+# design = modelMatrix(targets, ref = "earth")
+# fit = lmFit(MA, design)
+# fit = eBayes(fit)
 
 
 
