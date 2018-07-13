@@ -44,7 +44,7 @@ opt = parse_args(opt_parser)
 norm = opt$normalization
 outFH = opt$outFile
 if (!is.null(opt$gpl)){
-  annotFH = opt$gpl
+  annotFH = opt$gpl # annotFH = "GPL15420_features_probes.txt"
 }
 
 addSlash = function(string) {
@@ -77,11 +77,6 @@ if (is.null(opt$GLDS)) {
 }
 
 #relDir = getwd() # Save the path to the original directory (for relative path handling)
-
-if (is.null(opt$ISApath)){
-  print_help(opt_parser)
-  stop("No ISA directory provided. Please re-check available options", call.=FALSE)
-}
 
 if (is.null(opt$ISApath)) {
   # Check if metadata is provided
@@ -117,6 +112,7 @@ if (is.null(opt$ISApath)) {
 factors = merge(x = sampFactors, y = assFactors, by = "Sample.Name") # Join the information from the ISA tab delimited assay and sample files
 
 suppressPackageStartupMessages(library("limma"))
+suppressPackageStartupMessages(library("arrayQualityMetrics"))
 
 # setwd("~/Documents/genelab/rot1/GLDS-28/microarray/")
 inFiles = dir(inPath)
@@ -142,7 +138,6 @@ RG = read.maimages(
 )
 
 # Potential QC
-library(arrayQualityMetrics)
 arrayQualityMetrics(expressionset = RG,
                     outdir = "test_report",
                     force = T)
@@ -153,12 +148,96 @@ MA = normalizeWithinArrays(RG, method = "loess", weights=NULL) # Agilent specifi
 ## Loess normalization assumes that the bulk of the probes on the array are not differentially expressed
 MAq = normalizeBetweenArrays(MA, method = "Aquantile") # Normalize the average intensities ("A") between arrays
 
-write.table(
-  MAq,
-  file = paste(outFH,".txt", sep = ""),
-  sep = "\t",
-  quote = F
-)
+# Feature number to BSU locus
+annotFun = function(oldLab, newLink, newLab, ...){
+  # Function to switch from one probe label (oldLab) to another (newLab), provided
+  ## a linking variable (newLink) with common labels to the labels in the oldLab list organized in the same order as the newLab list
+  # Returns a translation from the the oldLab to the newLab with "" for unmapped probes
+  newOrder = match(oldLab,newLink)
+  out = newLab[newOrder]
+  return(out)
+}
+
+annot = read.delim(annotFH,header = T, stringsAsFactors = F)
+BSUs = annotFun(
+  oldLab = MAq$genes[,1], 
+  newLink = annot$FeatureNum,
+  newLab = annot$BSU
+  )
+noIDCnt = sum(BSUs == "") # Number of unmapped probes
+MAq$genes[,1] = BSUs # Translate probe IDs
+MAq = MAq[!MAq$genes[,1] == "", ] # Remove umapped probes
+BSUs = BSUs[!BSUs == ""]
+
+if (any(opt$dupProbes %in% c("average", "max"))) {
+  cat("Filtering out multiple probes per gene ID...\n")
+  
+  if (opt$dupProbes == "average") {
+    # Collapse multiple probes per gene ID by averaging expression values across all samples
+    rmRowTag = rep(TRUE, length(MAq$genes[,1])) # Tag rows to drop (set single or averaged probes to FALSE below)
+    for (i in 1:length(ermRowTagset)) {
+      if (sum(RefSeq == RefSeq[i][[1]]) > 1) {
+        inds = grep(RefSeq[i][[1]], RefSeq) # List of indices at which a probe for a given gene ID occur
+        eset[inds[1], ] = apply(X = eset[inds, ],
+                                FUN = mean,
+                                MARGIN = 2) # Changes the values of the first occurence of a probe to the sample-specific average of the values from all the probes for that gene ID
+        rmRowTag[inds[1]] = FALSE
+      } else
+        rmRowTag[i] = FALSE
+    }
+    nDups = sum(rmRowTag)
+    normVals = eset[!rmRowTag, ]
+    row.names(normVals) = RefSeq[!rmRowTag]
+    
+    cat("\tUnampped probes removed:", noIDCnt, "\n")
+    cat("\tDuplicated probes removed:", nDups, "\n\n")
+    cat("Annotated probes remaining:", nrow(normVals), "\n")
+    if (nrow(normVals) > length(unique(RefSeq[!rmRowTag]))) {
+      cat("\n\tWarning: non-unique probe to RefSeq mappings remain \n")
+    }
+    
+  } else if (opt$dupProbes == "max") {
+    # Collapse multiple probes per gene ID by selecting a representative with the highest mean expression across all samples
+    rmRowTag = rep(TRUE, nrow(eset)) # Tag rows to drop (set single or highest expressing probes to FALSE below)
+    for (i in 1:nrow(eset)) {
+      if (sum(RefSeq == RefSeq[i][[1]]) > 1) {
+        inds = grep(RefSeq[i][[1]], RefSeq)
+        top = 0
+        keep = 0
+        for (j in 1:length(inds)) {
+          curr = mean(as.numeric(eset[inds[j], ]))
+          if (curr > top) {
+            top = curr
+            keep = inds[j]
+          }
+        }
+        rmRowTag[keep] = FALSE
+      } else
+        rmRowTag[i] = FALSE
+    }
+    nDups = sum(rmRowTag)
+    normVals = eset[!rmRowTag, ]
+    row.names(normVals) = RefSeq[!rmRowTag]
+    
+    cat("\tUnampped probes removed:", noIDCnt, "\n")
+    cat("\tDuplicated probes removed:", nDups, "\n\n")
+    cat("Annotated probes remaining:", nrow(normVals), "\n\n")
+    if (nrow(normVals) > length(unique(RefSeq[!rmRowTag]))) {
+      cat("\n\tWarning: non-unique probe to RefSeq mappings remain \n")
+    }
+  }
+} else{
+  stop("Method for dealing with probes mapped to the same gene IDs not recognized\n",
+       call. = F)
+}
+
+# write.table(
+#   MAq,
+#   file = paste(outFH,".txt", sep = ""),
+#   sep = "\t",
+#   quote = F,
+#   row.names = FALSE
+# )
 
 # Potential QC
 suppressWarnings(

@@ -139,9 +139,8 @@ if (is.null(opt$GLDS)) {
   glAn = paste('GLDS-', opt$GLDS, sep = '')
 }
 
-# Load initial packages
+# Load affy package to read in .CEL files
 suppressPackageStartupMessages(require(affy))
-suppressPackageStartupMessages(require(arrayQualityMetrics))
 
 # setwd("~/Documents/genelab/rot1/GLDS-4/microarray/")
 celFiles = list.celfiles(full.names = TRUE)
@@ -173,6 +172,9 @@ if (grepl("-st-", raw@cdfName, ignore.case = T)) {
   st = F
 }
 
+# Load in QC package
+suppressPackageStartupMessages(require(arrayQualityMetrics))
+
 setwd(relDir) # Return the working directory to direcotry script was called from to enable use of relative paths
 # Create QC output directory
 qcDir = addSlash(opt$QCDir)
@@ -202,14 +204,14 @@ if (opt$arrayInfoOnly == TRUE) {
 if(QCout == T) {
   cat("Performing intial QC\n")
   
-  # suppressWarnings(
-  #   arrayQualityMetrics(
-  #     expressionset = raw,
-  #     outdir = paste(qcDir, "raw_report", sep = ""),
-  #     force = T,
-  #     do.logtransform = T
-  #   )
-  # )
+  suppressWarnings(
+    arrayQualityMetrics(
+      expressionset = raw,
+      outdir = paste(qcDir, "raw_report", sep = ""),
+      force = T,
+      do.logtransform = T
+    )
+  )
 
 }
 
@@ -242,10 +244,10 @@ if (opt$outputData == TRUE) {
       sep = "\t",
       quote = F
     )
-    cat("Success! Normalized data saved to", paste(outDir, outFH, sep=""), "as both a .txt and a .RData file\n")
+    cat("Success! Normalized data saved to", paste(outDir, outFH, sep=""), "as both a .txt and a .RData file\n\n")
   } else if (opt$outType == "R") {
     save(eset, file = paste(outDir, outFH, ".rda", sep = ""))
-    cat("Success! Normalized data saved to", paste(outDir, outFH, sep=""), "as a .RData file\n")
+    cat("Success! Normalized data saved to", paste(outDir, outFH, sep=""), "as a .RData file\n\n")
   } else if (opt$outType == "txt") {
     write.table(
       eset,
@@ -253,7 +255,7 @@ if (opt$outputData == TRUE) {
       sep = "\t",
       quote = F
     )
-    cat("Success! Normalized data saved to", paste(outDir, outFH, sep=""), "as a .txt file\n")
+    cat("Success! Normalized data saved to", paste(outDir, outFH, sep=""), "as a .txt file\n\n")
   } else{
     print_help(opt_parser)
     stop("Help, I don't know how to save this data!", call. = F)
@@ -263,12 +265,12 @@ if (opt$outputData == TRUE) {
     cat("Post normalization QC steps...\n")
     # Post-normalization QC
     
-    # suppressWarnings(
-    #   arrayQualityMetrics(
-    #     expressionset = expset,
-    #     outdir = paste(qcDir, "normalized_report", sep = ""),
-    #     force = T
-    #   )
-    # )
+    suppressWarnings(
+      arrayQualityMetrics(
+        expressionset = expset,
+        outdir = paste(qcDir, "normalized_report", sep = ""),
+        force = T
+      )
+    )
   }
 }
