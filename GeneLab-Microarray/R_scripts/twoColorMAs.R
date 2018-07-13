@@ -175,37 +175,42 @@ if (any(opt$dupProbes %in% c("average", "max"))) {
   if (opt$dupProbes == "average") {
     # Collapse multiple probes per gene ID by averaging expression values across all samples
     rmRowTag = rep(TRUE, length(MAq$genes[,1])) # Tag rows to drop (set single or averaged probes to FALSE below)
-    for (i in 1:length(ermRowTagset)) {
-      if (sum(RefSeq == RefSeq[i][[1]]) > 1) {
-        inds = grep(RefSeq[i][[1]], RefSeq) # List of indices at which a probe for a given gene ID occur
-        eset[inds[1], ] = apply(X = eset[inds, ],
+    for (i in 1:length(rmRowTag)) {
+      if (sum(BSUs == BSUs[i]) > 1) {
+        inds = grep(BSUs[i], BSUs) # List of indices at which a probe for a given gene ID occur
+        MAq$M[inds[1], ] = apply(X = MAq$M[inds, ],
                                 FUN = mean,
                                 MARGIN = 2) # Changes the values of the first occurence of a probe to the sample-specific average of the values from all the probes for that gene ID
+        MAq$A[inds[1], ] = apply(X = MAq$A[inds, ],
+                                 FUN = mean,
+                                 MARGIN = 2) # Changes the values of the first occurence of a probe to the sample-specific average of the values from all the probes for that gene ID
         rmRowTag[inds[1]] = FALSE
       } else
         rmRowTag[i] = FALSE
     }
     nDups = sum(rmRowTag)
-    normVals = eset[!rmRowTag, ]
-    row.names(normVals) = RefSeq[!rmRowTag]
-    
+    MAq = MAq[!rmRowTag, ]
+
     cat("\tUnampped probes removed:", noIDCnt, "\n")
     cat("\tDuplicated probes removed:", nDups, "\n\n")
-    cat("Annotated probes remaining:", nrow(normVals), "\n")
-    if (nrow(normVals) > length(unique(RefSeq[!rmRowTag]))) {
-      cat("\n\tWarning: non-unique probe to RefSeq mappings remain \n")
+    cat("Annotated probes remaining:", length(MAq$genes[,1]), "\n\n")
+    if (length(MAq$genes[,1]) > length(unique(MAq$genes[,1]))) {
+      cat("\n\tWarning: non-unique probe to ID mappings remain \n")
     }
     
   } else if (opt$dupProbes == "max") {
-    # Collapse multiple probes per gene ID by selecting a representative with the highest mean expression across all samples
-    rmRowTag = rep(TRUE, nrow(eset)) # Tag rows to drop (set single or highest expressing probes to FALSE below)
-    for (i in 1:nrow(eset)) {
-      if (sum(RefSeq == RefSeq[i][[1]]) > 1) {
-        inds = grep(RefSeq[i][[1]], RefSeq)
+    # Collapse multiple probes per gene ID by selecting a representative with the highest mean intensity across all samples
+    rmRowTag = rep(TRUE, length(MAq$genes[,1])) # Tag rows to drop (set single or highest expressing probes to FALSE below)
+    for (i in 1:length(MAq$genes[,1])) {
+      if (sum(BSUs == BSUs[i]) > 1) {
+        inds = grep(BSUs[i], BSUs)
         top = 0
         keep = 0
         for (j in 1:length(inds)) {
-          curr = mean(as.numeric(eset[inds[j], ]))
+          curr = mean(as.numeric(MAq$A[inds[j], ]))
+          if (is.na(curr)){ # Check if at least one of the samples has a missing value for the current probe
+            curr = 0
+          }
           if (curr > top) {
             top = curr
             keep = inds[j]
@@ -216,20 +221,21 @@ if (any(opt$dupProbes %in% c("average", "max"))) {
         rmRowTag[i] = FALSE
     }
     nDups = sum(rmRowTag)
-    normVals = eset[!rmRowTag, ]
-    row.names(normVals) = RefSeq[!rmRowTag]
-    
+    MAq = MAq[!rmRowTag, ]
+
     cat("\tUnampped probes removed:", noIDCnt, "\n")
     cat("\tDuplicated probes removed:", nDups, "\n\n")
-    cat("Annotated probes remaining:", nrow(normVals), "\n\n")
-    if (nrow(normVals) > length(unique(RefSeq[!rmRowTag]))) {
-      cat("\n\tWarning: non-unique probe to RefSeq mappings remain \n")
+    cat("Annotated probes remaining:", length(MAq$genes[,1]), "\n\n")
+    if (length(MAq$genes[,1]) > length(unique(MAq$genes[,1]))) {
+      cat("\n\tWarning: non-unique probe to ID mappings remain \n")
     }
   }
 } else{
   stop("Method for dealing with probes mapped to the same gene IDs not recognized\n",
        call. = F)
 }
+
+
 
 # write.table(
 #   MAq,

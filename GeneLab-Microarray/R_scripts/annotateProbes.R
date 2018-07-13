@@ -256,7 +256,7 @@ if(opt$dupProbes == "topvar") {
   cat("\tDuplicated probes removed:", nDups, "\n\n")
   cat("Annotated probes remaining:", sum(!is.na(filtRefSeq)), "\n")
   if (sum(!is.na(filtRefSeq)) > length(unique(filtRefSeq[!is.na(filtRefSeq)]))) {
-    cat("\n\tWarning: non-unique probe to RefSeq mappings remain \n")
+    cat("\n\tWarning: non-unique probe to ID mappings remain \n")
   }
   
   # Replace AffyIDs with RefSeq IDs, drop probes w/o RefSeq IDs
@@ -293,9 +293,9 @@ if(opt$dupProbes == "topvar") {
     
     cat("\tUnampped probes removed:", noIDCnt, "\n")
     cat("\tDuplicated probes removed:", nDups, "\n\n")
-    cat("Annotated probes remaining:", nrow(normVals), "\n")
+    cat("Annotated probes remaining:", nrow(normVals), "\n\n")
     if (nrow(normVals) > length(unique(RefSeq[!rmRowTag]))) {
-      cat("\n\tWarning: non-unique probe to RefSeq mappings remain \n")
+      cat("\n\tWarning: non-unique probe to ID mappings remain \n")
     }
     
   } else if (opt$dupProbes == "max") {
@@ -325,7 +325,7 @@ if(opt$dupProbes == "topvar") {
     cat("\tDuplicated probes removed:", nDups, "\n\n")
     cat("Annotated probes remaining:", nrow(normVals), "\n\n")
     if (nrow(normVals) > length(unique(RefSeq[!rmRowTag]))) {
-      cat("\n\tWarning: non-unique probe to RefSeq mappings remain \n")
+      cat("\n\tWarning: non-unique probe to ID mappings remain \n")
     }
   }
 } else{
