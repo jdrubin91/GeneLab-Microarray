@@ -172,9 +172,6 @@ if (grepl("-st-", raw@cdfName, ignore.case = T)) {
   st = F
 }
 
-# Load in QC package
-suppressPackageStartupMessages(require(arrayQualityMetrics))
-
 setwd(relDir) # Return the working directory to direcotry script was called from to enable use of relative paths
 # Create QC output directory
 qcDir = addSlash(opt$QCDir)
@@ -202,16 +199,20 @@ if (opt$arrayInfoOnly == TRUE) {
 
 ## Raw QC
 if(QCout == T) {
-  cat("Performing intial QC\n")
   
-  suppressWarnings(
-    arrayQualityMetrics(
-      expressionset = raw,
-      outdir = paste(qcDir, "raw_report", sep = ""),
-      force = T,
-      do.logtransform = T
-    )
-  )
+  # # Load in QC package
+  # suppressPackageStartupMessages(require(arrayQualityMetrics))
+  # 
+  # cat("Performing intial QC\n")
+  # 
+  # suppressWarnings(
+  #   arrayQualityMetrics(
+  #     expressionset = raw,
+  #     outdir = paste(qcDir, "raw_report", sep = ""),
+  #     force = T,
+  #     do.logtransform = T
+  #   )
+  # )
 
 }
 
@@ -261,16 +262,16 @@ if (opt$outputData == TRUE) {
     stop("Help, I don't know how to save this data!", call. = F)
   }
   
-  if(QCout == T) {
-    cat("Post normalization QC steps...\n")
-    # Post-normalization QC
-    
-    suppressWarnings(
-      arrayQualityMetrics(
-        expressionset = expset,
-        outdir = paste(qcDir, "normalized_report", sep = ""),
-        force = T
-      )
-    )
-  }
+  # if(QCout == T) {
+  #   cat("Post normalization QC steps...\n")
+  #   # Post-normalization QC
+  #   
+  #   suppressWarnings(
+  #     arrayQualityMetrics(
+  #       expressionset = expset,
+  #       outdir = paste(qcDir, "normalized_report", sep = ""),
+  #       force = T
+  #     )
+  #   )
+  # }
 }

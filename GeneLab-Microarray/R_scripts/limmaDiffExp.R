@@ -108,6 +108,13 @@ if(nrow(factorValues) != ncol(eset)){
   cat("\nWarning: Number of samples in the expression set not equal to the number of samples in the metadata\n")
 }
 
+
+# for (i in 1:nrow(factorValues)){
+#   tmp = rownames(factorValues)[i]
+#   tmp = strsplit(tmp, split = " ")[[1]][1]
+#   row.names(factorValues)[i] = tmp
+# }
+
 #From the eset matrix, determine which columns correspond to which factor values
 esetSampNames <- colnames(eset)
 newOrder = rep(0,ncol(eset))
@@ -168,7 +175,8 @@ fit2 <- eBayes(fit2)
 
 #Here we write the results to a tab delimited text file that is ordered by adjusted p-value
 #coef refers to which column is of interest (1 is log2FC), adjust refers to multiple hypothesis testing method ("BH" = Benjamini & Hochberg)
+outFH = opt$output
 table <- data.frame(topTable(fit2, coef=1, n=Inf, adjust="BH"))
-write.table(table,file=opt$output,sep="\t", quote = F)
-cat("All done! Differential expression information saved to:",opt$output,"\n")
+write.table(table,file= outFH,sep="\t", quote = F)
+cat("All done! Differential expression information saved to:",outFH,"\n")
 
