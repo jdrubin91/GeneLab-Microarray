@@ -26,7 +26,7 @@ def run():
     indir = args.process
     outdir = os.path.normpath(args.Output)
     visualize = args.visualize
-    galaxy = args.galaxy.split(',_,')
+    galaxy = args.galaxy
 
 
     #Get full paths to locations within this package
@@ -104,10 +104,11 @@ def run():
         print "done. Output in: " + rawdata_out
     elif galaxy != False:
         import galaxy_mode
-        counts_table,metadata,condition1,condition2,padj_cutoff,outliers,html_main,html_folder = galaxy
+        counts_table,metadata,condition1,condition2,padj_cutoff,outliers,html_main,html_folder = galaxy.split(',_,')
         galaxy_mode.run(counts_table,metadata,condition1,condition2,padj_cutoff,outliers,html_main,html_folder)
+        print "done."
     else:
-        print "Error: Neither process mode nor visualize mode specified. See help for information on how to run GeneLab-Microarray. Exiting..."
+        print "Error: No mode selected. See help for information on how to run GeneLab-Microarray. Exiting..."
         sys.exit(1)
 
 
