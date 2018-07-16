@@ -22,25 +22,40 @@ from mpld3 import _display
 _display.NumpyEncoder = NumpyEncoder
 
 #The main command that is run when galaxy mode is specified by user.
-def run(counts,metadata,condition1,condition2,pval,txtoutput,htmloutput1,htmloutput2,pngoutput):
-    limma_differential(counts,metadata,condition1,condition2,txtoutput)
-    differntial_visualize("Differential_Gene_Expression.txt",pval,condition1, condition2,htmloutput1,htmloutput2,pngoutput)
+def run(counts_table,metadata,condition1,condition2,padj_cutoff,outliers,html_main,html_folder):
+    #Create folder for secondary html output
+    if not os.path.exists(html_folder):
+        os.makedirs(html_folder)
+
+    limma_differential(counts_table,metadata,condition1,condition2,outliers,html_folder)
+    differential_visualize(os.path.join(html_folder,'limma_out.txt'),padj_cutoff,condition1,condition2,html_main,html_folder)
 
 
 #Runs differential expression on two conditions that must be within the inputted metadata
-def limma_differential(counts,metadata,condition1,condition2,pval,txtoutput):
+def limma_differential(counts_table,metadata,condition1,condition2,outliers,html_folder):
     limma_script = os.path.join(config.R_dir,'limmaDiffExp.R')
-    limma_differential_command = ["Rscript", "--vanilla", limma_script, 
-                                    "-d", counts, 
-                                    "-i", metadata, 
-                                    "--group1=" + condition1, 
-                                    "--group2=" + condition2, 
-                                    "-o", txtoutput]
-    subprocess.call(limma_differential_command)
+    if outliers != 'None':
+        outliers = '_'.join([outlier.split('_')[1] for outlier in outliers.split(',')])
+        limma_differential_command = ["Rscript", "--vanilla", limma_script, 
+                                        "-d", counts_table, 
+                                        "-i", metadata, 
+                                        "--group1=" + condition1, 
+                                        "--group2=" + condition2, 
+                                        "-r", outliers,
+                                        "-o", os.path.join(html_folder,'limma_out.txt')]
+        subprocess.call(limma_differential_command)
+    else:
+        limma_differential_command = ["Rscript", "--vanilla", limma_script, 
+                                        "-d", counts_table, 
+                                        "-i", metadata, 
+                                        "--group1=" + condition1,
+                                        "--group2=" + condition2,
+                                        "-o", os.path.join(html_folder,'limma_out.txt')]
+        subprocess.call(limma_differential_command)
 
 
 #Saves an interactive html graph based on user condition inputs.
-def differential_visualize(diffExp_file, pval_cut, condition1, condition2,htmloutput1,htmloutput2,pngoutput):
+def differential_visualize(diffExp_file,pval_cut,condition1,condition2,html_main,html_folder):
     #In this section of the code, the style of labels is defined. In this case, we are using a table with non_sig hits being blue and sig hits being red
     css = """
         table
@@ -162,9 +177,10 @@ def differential_visualize(diffExp_file, pval_cut, condition1, condition2,htmlou
     #In this section the matplotlib figure is initialized and the MA-plot is created
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        F = plt.figure(figsize=(14,6.5))
-        gs = gridspec.GridSpec(1, 2, width_ratios=[2, 1])
-        ax0 = F.add_subplot(gs[0])
+        F = plt.figure(figsize=(11,7))
+        # gs = gridspec.GridSpec(1, 2, width_ratios=[2, 1])
+        # ax0 = F.add_subplot(gs[0])
+        ax0 = F.add_subplot(111)
         ax0.grid(color='black', linestyle='dashed')
         x = averageExpression
         y = foldChange
@@ -182,94 +198,102 @@ def differential_visualize(diffExp_file, pval_cut, condition1, condition2,htmlou
 
 
         #Here we create the Volcano plot
-        ax1 = F.add_subplot(gs[1])
-        x = foldChange
-        y = log10pval
-        xy = np.vstack([x,y])
-        z = gaussian_kde(xy)(xy)
-        idx = np.argsort(z)
-        x, y, z = [x[i] for i in idx], [y[i] for i in idx], [z[i] for i in idx]
-        volcano = ax1.scatter(x=x,y=y,c=z,s=100,edgecolor="")
-        sigvolcano = ax1.scatter(volcanosigx,volcanosigy,c='r',s=100,edgecolor="")
-        ax1.tick_params(axis='y', which='both', left='on', right='off', labelleft='on')
-        ax1.tick_params(axis='x', which='both', bottom='off', top='off', labelbottom='on')
-        ax1.set_title("Microarray Volcano Plot", size=25)
-        ax1.set_ylabel("-Log10 P-value", size=18)
-        ax1.set_xlabel("Log2 Fold Change ("+condition1+" - "+condition2+")", size=18)
-        ax1.grid(color='black', linestyle='dashed')
-        ax1.set_ylim(bottom=0)
+        # ax1 = F.add_subplot(gs[1])
+        # x = foldChange
+        # y = log10pval
+        # xy = np.vstack([x,y])
+        # z = gaussian_kde(xy)(xy)
+        # idx = np.argsort(z)
+        # x, y, z = [x[i] for i in idx], [y[i] for i in idx], [z[i] for i in idx]
+        # volcano = ax1.scatter(x=x,y=y,c=z,s=100,edgecolor="")
+        # sigvolcano = ax1.scatter(volcanosigx,volcanosigy,c='r',s=100,edgecolor="")
+        # ax1.tick_params(axis='y', which='both', left='on', right='off', labelleft='on')
+        # ax1.tick_params(axis='x', which='both', bottom='off', top='off', labelbottom='on')
+        # ax1.set_title("Microarray Volcano Plot", size=25)
+        # ax1.set_ylabel("-Log10 P-value", size=18)
+        # ax1.set_xlabel("Log2 Fold Change ("+condition1+" - "+condition2+")", size=18)
+        # ax1.grid(color='black', linestyle='dashed')
+        # ax1.set_ylim(bottom=0)
 
         #This line adjusts the whitespace around the subplots since I noticed there was a lot of wasted space
-        F.subplots_adjust(left=0.05,right=0.95,hspace = 0.05, wspace = 0.15)
+        # F.subplots_adjust(left=0.05,right=0.95,hspace = 0.05, wspace = 0.15)
 
         #This is the bulk of the mpld3 code, basically we're creating 'tooltips' which allows us to have the interactive labels
-        tooltip = mpld3.plugins.PointHTMLTooltip(scatter, labels=scatterlabels[:int(0.5*len(scatterlabels))], css=css)
-        tooltip2 = mpld3.plugins.PointHTMLTooltip(sigscatter, labels=scattersiglabels, css=css)
-        tooltip3 = mpld3.plugins.PointHTMLTooltip(volcano, labels=volcanolabels[:int(0.5*len(volcanolabels))], css=css)
-        tooltip4 = mpld3.plugins.PointHTMLTooltip(sigvolcano, labels=volcanosiglabels, css=css)
-        # mpld3.plugins.connect(F, tooltip, tooltip2, tooltip3, tooltip4, SliderView(scatter, callback_func="updateSlider"))
+        # tooltip = mpld3.plugins.PointHTMLTooltip(scatter, labels=scatterlabels[:int(0.1*len(scatterlabels))], css=css)
+        tooltip2 = mpld3.plugins.PointHTMLTooltip(sigscatter, labels=[x for x,i in zip(scattersiglabels,range(200))], css=css)
+        # tooltip3 = mpld3.plugins.PointHTMLTooltip(volcano, labels=volcanolabels[:int(0.1*len(volcanolabels))], css=css)
+        # tooltip4 = mpld3.plugins.PointHTMLTooltip(sigvolcano, labels=volcanosiglabels, css=css)
 
         #This connects our plots together
-        mpld3.plugins.connect(F, tooltip, tooltip2, tooltip3, tooltip4)
+        # mpld3.plugins.connect(F, tooltip, tooltip2, tooltip3, tooltip4)
+        mpld3.plugins.connect(F, tooltip2)
 
         #Here we save both a png version of the plot (non-interactive) and the interactive html version of the plot
-        plt.savefig(pngoutput)
-        mpld3.save_html(F,htmloutput1)
+        plt.savefig(os.path.join(html_folder,'MA_plot.png'),dpi=600)
+        mpld3.save_html(F,html_main)
+        mpld3.save_html(F,os.path.join(html_folder,'index.html'))
         plt.close(F)
 
     #This section of the code creates an html table of significant genes
-    with open(htmloutput2,'w') as sigGenes_file:
+    with open(os.path.join(html_folder,'Gene_list.html'),'w') as sigGenes_file:
         sigGenes_file.write("""<!DOCTYPE html>
-            <html>
-            <head>
-            <title>List of Significant Genes</title>
-            <style>
-            table {
-                font-family: arial, sans-serif;
-                border-collapse: collapse;
-                width: 100%;
-            }
+<html>
+    <head>
+        <title>List of Significant Genes</title>
+        <style>
+        table {
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
 
-            td, th {
-                border: 1px solid #dddddd;
-                text-align: left;
-                padding: 8px;
-            }
+        td, th {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
 
-            tr:nth-child(even) {
-                background-color: #dddddd;
-            }
-            </style>
-            </head>
-            <body style="width: 1300px; overflow:scroll">
-                <h1>List of Significant Genes</h1>
-            <div>
-                <div style="float: middle; width: 1300px; overflow:scroll; padding-bottom:25px; padding-top:25px">
-                    <table> 
-                        <tr>
-                            <th>Gene</th>
-                            <th>Average Expression</th> 
-                            <th>Log Fold Change</th>
-                            <th>Adjusted P-value</th>
-                        </tr>""")
+        tr:nth-child(even) {
+            background-color: #dddddd;
+        }
+        </style>
+    </head>
+    <body style="width: 900px; overflow:scroll">
+        <h1>List of Significant Genes</h1>
+        <a href="index.html">back</a>
+    <div>
+        <div style="float: middle; width: 900px; overflow:scroll; padding-bottom:25px; padding-top:25px">
+            <table> 
+                <tr>
+                    <th>Gene</th>
+                    <th>Average Expression</th> 
+                    <th>Log Fold Change</th>
+                    <th>Adjusted P-value</th>
+                </tr>""")
         for row in cell_text:
             name,exp,fc,pval = row
             sigGenes_file.write("""
-                        <tr>
-                            <td>"""+name+"""</td>
-                            <td>"""+str(exp)+"""</td>
-                            <td>"""+str(fc)+"""</td>
-                            <td>"""+str(pval)+"""</td>
-                        </tr>""")
-        sigGenes_file.write("""        </table>
-                </div>
-            </div>
-            
-            </body>
-            </html>""")
+                <tr>
+                    <td>"""+name+"""</td>
+                    <td>"""+str(exp)+"""</td>
+                    <td>"""+str(fc)+"""</td>
+                    <td>"""+str(pval)+"""</td>
+                </tr>""")
+        sigGenes_file.write("""
+            </table>
+        </div>
+    </div>
+    
+    </body>
+</html>""")
 
 
     #Finally this short section appends a link to the bottom of the graph html that will go directly to the list of significant genes
-    with open(htmloutput1,'a') as html_file:
-        html_file.write('<b>There were <a style="font-size: 20" href="'+htmloutput2+'">'+str(len(scattersigx))+' significant genes</a> called with p-adj < '+str(pval_cut)+'</b>')
+    with open(os.path.join(html_folder,'index.html'),'a') as html_file:
+        html_file.write('<b>There were <a style="font-size: 20" href="Gene_list.html">'+str(len(scattersigx))+' significant genes</a> called with p-adj < '+str(pval_cut)+'</b>')
+        
+    #Finally this short section appends a link to the bottom of the graph html that will go directly to the list of significant genes
+    with open(html_main,'a') as html_file:
+        html_file.write('<b>There were <a style="font-size: 20" href="Gene_list.html">'+str(len(scattersigx))+' significant genes</a> called with p-adj < '+str(pval_cut)+'</b>')
+
 

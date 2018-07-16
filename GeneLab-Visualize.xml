@@ -1,78 +1,87 @@
-<tool id="GeneLab-Visualize" name="Visualize comparisons from processed GeneLab data" version="0.1.0">
+<tool id="GeneLab-Visualize" name="GeneLab-Visualize" version="0.5.4">
+    <description>Visualization tool for generating interactive plots from processed GeneLab data.</description>
     <requirements>
-        <requirement type="package">GeneLab-Microarray</requirement>
     </requirements>
+    <code file="galaxy_tools.py" />
     <command detect_errors="exit_code"><![CDATA[
-        GeneLab-Microarray --galaxy -gt $counts_table -gm $sample_metadata -gp $padj -gc1 $condition1 -gc2 $condition2 -gotxt $dge_file -gohtml1 $html_file -gohtml2 '$html_file.extra_files_path' -gopng $png_file
+        #set $counts_filename = "counts_table.txt"
+        #set $meta_filename = "sample_metadata.txt"
+        ln -s "${counts_table}" "${counts_filename}" &&
+        ln -s "${sample_metadata}" "${meta_filename}" &&
+        GeneLab-Microarray --galaxy '$counts_filename',_,'$meta_filename',_,'$condition1',_,'$condition2',_,$padj,_,'$outliers',_,'$html_file',_,'${html_file.extra_files_path}' .
     ]]></command>
     <inputs>
-      <param type="file" name="counts_table" format="txt" label="A txt file containing sample counts for each gene" />
-      <param type="file" name="sample_metadata" format="txt" label="A txt file containing sample metadata formatted in ISA. (S file needed specifically)" />
-      <param type="float" name="padj" label="P-adj cutoff value to determine significant gene list and for plotting" />
-      <param type="text" name="condition1" label="First condition to be compared" />
-      <param type="text" name="condition2" label="Second condition to be compared" />
+      <param name="counts_table" type="data" format="txt" label="Counts table" help="A txt file containing sample counts for each gene" />
+      <param name="sample_metadata" type="data" format="txt" label="Metadata" help="A txt file containing sample metadata formatted in ISA. (S file needed specifically)" />
+      <param name="padj" type="float" value="0.01" label="P-adj" help="Cutoff value to determine significant gene list and for plotting." />
+      <param name="condition1" type="select" dynamic_options="get_conditions(sample_metadata.file_name,'Factor Value')" multiple="true" label="Condition1" help="First condition to be compared"/>
+      <param name="condition2" type="select" dynamic_options="get_conditions(sample_metadata.file_name,'Factor Value')" multiple="true" label="Condition2" help="Second condition to be compared"/>
+      <param name="outliers" type="select" refresh_on_change="true" dynamic_options="get_sample_names(counts_table.file_name)" multiple="true" label="Remove Outliers" help="Select which samples to remove as outliers"/>
     </inputs>
     <outputs>
-      <data format="txt" name="dge_file" label="${tool_name}_${condition1.value}-${condition2.value}.txt">
-      <data format="html" name="html_file" label="${tool_name}_${condition1.value}-${condition2.value}_${padj.value}.html">
-      <data format="png" name="png_file" label="${tool_name}_${condition1.value}-${condition2.value}_${padj.value}.png">
+      <data name="html_file" format="html" from_work_dir="index.html" label="GeneLab-Visualize : ${condition1}-${condition2} : p&lt;${padj}" />
     </outputs>
     <tests>
         <test>
-            <param name="counts_table" value="2.fastq"/>
-            <param name="sample_metadata" value="2.fastq"/>
+            <param name="counts_table" value="/Users/jonathanrubin/Google_Drive/NASA/home/GeneLab-Microarray/test-data/GLDS-21_microarray_normalized.txt"/>
+            <param name="sample_metadata" value="/Users/jonathanrubin/Google_Drive/NASA/home/GeneLab-Microarray/test-data/s_GLDS-21_microarray_metadata.txt"/>
             <param name="padj" value="0.0000001"/>
             <param name="condition1" value="spaceflight"/>
             <param name="condition2" value="notreatment"/>
-            <output name="dge_file" file="${tool_name}_${condition1.value}-${condition2.value}.txt"/>
-            <output name="html_file" file="${tool_name}_${condition1.value}-${condition2.value}_${padj.value}.html"/>
-            <output name="png_file" file="${tool_name}_${condition1.value}-${condition2.value}_${padj.value}.png"/>
+            <output name="html_file" ftype="html" file="GeneLab-Visualize_spaceflight-notreatment_1e-07.html"/>
         </test>
     </tests>
     <help><![CDATA[
-        usage: GeneLab-Microarray [options] Output
 
-Standardized processing pipeline for microarray data on GeneLab.
 
-positional arguments:
-  Output                The full path to the desired output directory.
+**Galaxy Usage**
 
-optional arguments:
-  -h, --help            show this help message and exit
-  -p , --process        Specify for process mode. If specified, give a
-                        directory to a GLDS directory to be processed.
-  -b, --batch           Specify for batch processing submode (must also
-                        specify process). If specified, input the full
-                        directory to a batch.txt file (see README for format
-                        guidelines) to the process flag.
-  -v , --visualize      Specify for visualization mode. If selected, must
-                        input a comma-separated list of factor values and an
-                        adjusted p-value cutoff (ex. --visualize
-                        flight,ground,0.1) to compare.
-  -g, --galaxy          For use with Galaxy only. Same outputs as
-                        visualization mode simply formatted in a way thats
-                        compatible with Galaxy tools.
-  -gt , --galaxy_table 
-                        For use with Galaxy input a counts table.
-  -gm , --galaxy_meta   For use with Galaxy input the sample file from metadata
-                        (starts with "s_").
-  -gqc , --galaxy_qc    For use with Galaxy input the qc report.
-  -gp , --galaxy_padj   For use with Galaxy input a p-adjusted cutoff value.
-  -gc1 , --galaxy_condition1 
-                        For use with Galaxy input condition1.
-  -gc2 , --galaxy_condition2 
-                        For use with Galaxy input condition2.
+.. class:: infomark
+
+Files required
+
+1. Counts File: A .txt file containing normalized counts values (from RNA-Seq or microarray) where the first column corresponds to gene names (or probe IDs) and each subsequent column are the counts for a specific sample. 
+
+2. Metadata File: A .txt file containing ISA formatted metadata (S file needed specifically). GeneLab-Visualize will parse this file and return a list of possible condition options
+
+.. class:: infomark
+
+Other Inputs
+
+1. P-Adj: Adjusted p-value cutoff for generating list of significant genes and also for use with plotting.
+
+2. Condition 1: First condition to be compared.
+
+3. Condition 2: Second condition to be compared. 
+
+4. Remove Outliers: Choose which samples to remove as outliers.
+
+-----
+
+**Command Line Usage**
+        
+Usage:   GeneLab-Microarray --galaxy [args] .
+
+Arguments (',_,' delimited list with the following in order): 
+         counts_table    FILE     Counts table in txt format
+         metadata        FILE     Sample metadata file in ISA format 
+         condition1      TXT      Condition 1 to be compared    
+         condition2      TXT      Condition 2 to be compared
+         p-adj           FLOAT    Adjusted p-value cutoff for gene significance
+         html_main       FILE     Output main visualization file with graphs
+         html_folder     FOLDER   Output list of significant genes
+
 
     ]]></help>
     <citations>
         <citation type="bibtex">
-@misc{githubGeneLab-Microarray,
-  author = {Rubin, Jonathan},
-  year = {2018},
-  title = {GeneLab-Microarray},
-  publisher = {GitHub},
-  journal = {GitHub repository},
-  url = {https://github.com/jdrubin91/GeneLab-Microarray},
-}</citation>
+        @misc{githubGeneLab-Microarray,
+          author = {Rubin, Jonathan},
+          year = {2018},
+          title = {GeneLab-Microarray},
+          publisher = {GitHub},
+          journal = {GitHub repository},
+          url = {https://github.com/jdrubin91/GeneLab-Microarray},
+        }</citation>
     </citations>
 </tool>

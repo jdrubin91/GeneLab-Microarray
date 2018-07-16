@@ -11,29 +11,7 @@ def run():
     parser.add_argument('-v','--visualize',help='Specify for visualization mode. If selected, must input a comma-separated list of factor values and an adjusted p-value cutoff (ex. --visualize flight,ground,0.1) to compare.',
         default=False,metavar='')
     parser.add_argument('-g','--galaxy',help='For use with Galaxy only. Same outputs as visualization mode simply formatted in a way thats compatible with Galaxy tools.',
-        default=False,action='store_const',const=True,metavar='')
-    parser.add_argument('-gt','--galaxy_table',help='For use with Galaxy input a counts table.',
-        metavar='')
-    parser.add_argument('-gm','--galaxy_meta',help='For use with Galaxy input the sample file from metadata (starts with "s_").',
-        metavar='')
-    parser.add_argument('-gqc','--galaxy_qc',help='For use with Galaxy input the qc report.',
-        metavar='')
-    parser.add_argument('-gp','--galaxy_padj',help='For use with Galaxy input a p-adjusted cutoff value.',
-        metavar='')
-    parser.add_argument('-gc1','--galaxy_condition1',help='For use with Galaxy input condition1.',
-        metavar='')
-    parser.add_argument('-gc2','--galaxy_condition2',help='For use with Galaxy input condition2.',
-        metavar='')
-    parser.add_argument('-gotxt','--galaxy_dge',help='For use with Galaxy. Differential Gene Expression output txt.',
-        metavar='')
-    parser.add_argument('-gohtml1','--galaxy_visualization',help='For use with Galaxy. Visualization output html.',
-        metavar='')
-    parser.add_argument('-gohtml2','--galaxy_list',help='For use with Galaxy. Significant gene list output html.',
-        metavar='')
-    parser.add_argument('-gopng','--galaxy_png',help='For use with Galaxy. Visualization output png.',
-        metavar='')
-
-
+        default=False,metavar='')
 
 
     #If user does not provide any arguments, simply display help message
@@ -48,17 +26,7 @@ def run():
     indir = args.process
     outdir = os.path.normpath(args.Output)
     visualize = args.visualize
-    galaxy = args.galaxy
-    galaxy_table = args.galaxy_table
-    galaxy_meta = args.galasy_meta
-    galaxy_qc = args.galaxy_qc
-    galaxy_padj = args.galaxy_padj
-    galaxy_condition1 = args.galaxy_condition1
-    galaxy_condition2 = args.galaxy_condition2
-    galaxy_dge = args.galaxy_dge
-    galaxy_visualization = args.galaxy_visualization
-    galaxy_list = args.galaxy_list
-    galaxy_png = args.galaxy_png
+    galaxy = args.galaxy.split(',_,')
 
 
     #Get full paths to locations within this package
@@ -80,8 +48,6 @@ def run():
         outfile.write('md5sum = {"original": [], "new": []}\n')
         outfile.write('batch = "' + str(batch) + '"\n')
         outfile.write('visualize = "' + str(visualize) + '"\n')
-        outfile.write('galaxy_table = "' + str(galaxy_table) + '"\n')
-        outfile.write('galaxy_meta = "' + str(galaxy_meta) + '"\n')
         outfile.write("""def get_md5sum(filepath,key,action=False):
     import os, subprocess
     if not action:
@@ -136,9 +102,10 @@ def run():
         rawdata_process.limma_differential(rawdata_out,metadata_out,GLDS)
         differential_plot.differential_visualize(rawdata_out,GLDS)
         print "done. Output in: " + rawdata_out
-    elif galaxy:
+    elif galaxy != False:
         import galaxy_mode
-        galaxy_mode.run(galaxy_table,galaxy_meta,galaxy_condition1,galaxy_condition2,galaxy_padj,galaxy_dge,galaxy_visualization,galaxy_list,galaxy_png)
+        counts_table,metadata,condition1,condition2,padj_cutoff,outliers,html_main,html_folder = galaxy
+        galaxy_mode.run(counts_table,metadata,condition1,condition2,padj_cutoff,outliers,html_main,html_folder)
     else:
         print "Error: Neither process mode nor visualize mode specified. See help for information on how to run GeneLab-Microarray. Exiting..."
         sys.exit(1)
