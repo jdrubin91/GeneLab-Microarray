@@ -121,6 +121,13 @@ tryCatch({
           "Package failed to install. Consider manually installing the annotation packages listed at the top of the script\n"
         )
       })
+      tryCatch({
+        suppressPackageStartupMessages(library(annotPack, character.only = T)) # Load selected package after installing
+      }, error = function(e) {
+        cat(
+          "Package installed but was unable to load\n"
+        )
+      })
     })
     packObjs = ls(paste("package:", as.character(annotPack), sep = "")) # Stores a list of all the objects in the selected package
     if (any(grepl(
@@ -184,8 +191,7 @@ tryCatch({
   }
 }, error = function(e) {
   stop(
-    "Array version wasn't not recognized or the annotation package was unable to load.\n
-    Check that the appropriate packages are installed and the array version is contained in the list of known arrays\n",
+    "Array version wasn't not recognized or the annotation package was unable to load.\nCheck that the appropriate packages are installed and the array version is contained in the list of known arrays\n",
     call. = F
   )
 })
