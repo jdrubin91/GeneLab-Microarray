@@ -157,7 +157,6 @@ def qc_and_normalize(rawdata_out,GLDS):
                     "--outType=txt", 
                     "--outputData=TRUE",
                     "--QCoutput=TRUE", 
-                    "--NUSEplot=FALSE", 
                     "--GLDS="+GLDS.split('-')[1]]
     subprocess.call(R_command)
     if not GLDS+'_microarray_normalized.txt' in os.listdir(rawdata_out):
@@ -170,8 +169,7 @@ def annotate(rawdata_out,GLDS):
     R_command = ["Rscript", R_script, 
                     "-i", normalized_expression,
                     "-a", array_info, 
-                    "-o", os.path.join(rawdata_out,GLDS+"_microarray_normalized-annotated.txt"),
-                    "--GLDS="+GLDS.split('-')[1],
+                    "-o", os.path.join(rawdata_out,GLDS+"_microarray_normalized-annotated"),
                     "--QCDir="+os.path.join(rawdata_out,'QC_reporting')]
     subprocess.call(R_command)
 
