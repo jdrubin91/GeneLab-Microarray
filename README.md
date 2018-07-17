@@ -32,14 +32,22 @@ And to finish installation, open an R session and run the following commands:
 ```
 install.packages("optparse")
 source("http://bioconductor.org/biocLite.R")
+
+## affy dependencies:
 biocLite("zlibbioc")
 biocLite("Biobase")
-biocLite("affy")**
+# Primary package:
+biocLite("affy")
+
+## affyPLM dependencies:
 biocLite("S4Vectors")
 biocLite("IRanges")
 biocLite("XVector")
 biocLite("Biostrings")
-biocLite("affyPLM")**
+# Primary package:
+biocLite("affyPLM")
+
+## oligo dependencies:
 biocLite("bit")
 biocLite("ff")
 biocLite("bitops")
@@ -50,9 +58,15 @@ biocLite("Rcpp")
 biocLite("bit64")
 biocLite("digest")
 biocLite("RSQLite")
-biocLite("oligo")**
+# Primary package:
+biocLite("oligo")
+
+## genefilter dependencies:
 biocLite("XML")
+# Primary package:
 biocLite("genefilter")
+
+# Annotation packages
 biocLite("mogene10sttranscriptcluster.db")
 biocLite("moe430a.db")
 biocLite("drosophila2.db")
@@ -61,30 +75,22 @@ biocLite("ath1121501.db")
 biocLite("yeast2.db")
 biocLite("hugene10sttranscriptcluster.db")
 biocLite("rat2302.db")
-biocLite("limma")**
+
+# Primary package:
+biocLite("limma")
+
+## arrayQualityMetrics dependencies:
 biocLite("hexbin")
 biocLite("jsonlite")
 biocLite("openssl")
 biocLite("stringi")
 biocLite("reshape2")
 biocLite("Cairo")
-biocLite("arrayQualityMetrics")**
+# dependencies list incomplete
 
-biocLite("colorspace")
-biocLite("plyr")
-biocLite("scales")
-biocLite("lazyeval")
-biocLite("rlang")
-biocLite("tibble")
-biocLite("graph")
-biocLite("biocViews")
+# Primary package:
+biocLite("arrayQualityMetrics")
 
-biocLite("mzR") # I think this requires manual installation of ncdf first?
-biocLite("MSnbase")
-
-biocLite("RBGL")
-
-biocLite("Risa")
 ```
 **Note - These packages should be the only commands needed to run to install all packages, the rest of the biocLite() commands are dependencies for these packages and in some cases may need to be installed individually
 
