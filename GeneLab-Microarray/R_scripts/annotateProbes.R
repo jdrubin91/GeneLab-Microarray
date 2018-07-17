@@ -40,6 +40,12 @@ option_list = list(
     help = "Format of output data: R (Rdata object), txt (tab delimited file with identifiers and sample names), both (default)"
   ),
   make_option(
+    "--QCDir",
+    type = "character",
+    default = "./QC_reporting/",
+    help = "Path to directory to save the annotation output. Will be created if it does not exist yet, but it is recommended to use the same directory as was used for QC with the normalization step (default = './QC_reporting/')"
+  ),
+  make_option(
     c("-d", "--dupProbes"),
     type = "character",
     default = "max",
@@ -63,6 +69,12 @@ addSlash = function(string) {
 if (is.null(opt$input)) {
   print_help(opt_parser)
   stop("At least one argument must be supplied (input file)", call. = FALSE)
+}
+
+# Create QC output directory
+qcDir = addSlash(opt$QCDir)
+if (!file.exists(qcDir)){ # Create QC directory if it does not exist yet
+  dir.create(qcDir)
 }
 
 # aiFH = "arrayInfo.txt"
@@ -129,29 +141,6 @@ tryCatch({
         )
       })
     })
-    packObjs = ls(paste("package:", as.character(annotPack), sep = "")) # Stores a list of all the objects in the selected package
-    if (any(grepl(
-      pattern = "REFSEQ",
-      x = packObjs,
-      ignore.case = T
-    ))) {
-      annotEnv = packObjs[grepl(pattern = "REFSEQ",
-                                x = packObjs,
-                                ignore.case = T)] # Select the enivornment from the package to map probes to RefSeq IDs
-    } else if (annotPack == "ath1121501.db") {
-      annotEnv = packObjs[grepl(pattern = "ACCNUM",
-                                x = packObjs,
-                                ignore.case = T)] # Select the enivornment from the package to map probes to RefSeq IDs
-    } else if (annotPack == "yeast2.db") {
-      annotEnv = packObjs[grepl(pattern = "ORF",
-                                x = packObjs,
-                                ignore.case = T)] # Select the enivornment from the package to map probes to RefSeq IDs
-    }
-    cat("Annotating with R package",
-        annotPack,
-        "using object:",
-        annotEnv,
-        "\n")
   } else{
     if (grepl("-st-", arrVer, ignore.case = T)) {
       affyST = TRUE
@@ -187,8 +176,40 @@ tryCatch({
           "Package failed to install. Consider manually installing the appropriate annotation package and adding it to the list of encountered packages above.\n"
         )
       })
+      tryCatch({
+        suppressPackageStartupMessages(library(annotPack, character.only = T)) # Load selected package after installing
+      }, error = function(e) {
+        cat(
+          "Package installed but was unable to load\n"
+        )
+      })
     })
   }
+  
+  packObjs = ls(paste("package:", as.character(annotPack), sep = "")) # Stores a list of all the objects in the selected package
+  if (any(grepl(
+    pattern = "REFSEQ",
+    x = packObjs,
+    ignore.case = T
+  ))) {
+    annotEnv = packObjs[grepl(pattern = "REFSEQ",
+                              x = packObjs,
+                              ignore.case = T)] # Select the enivornment from the package to map probes to RefSeq IDs
+  } else if (annotPack == "ath1121501.db") {
+    annotEnv = packObjs[grepl(pattern = "ACCNUM",
+                              x = packObjs,
+                              ignore.case = T)] # Select the enivornment from the package to map probes to RefSeq IDs
+  } else if (annotPack == "yeast2.db") {
+    annotEnv = packObjs[grepl(pattern = "ORF",
+                              x = packObjs,
+                              ignore.case = T)] # Select the enivornment from the package to map probes to RefSeq IDs
+  }
+  AR1 = paste("This microarray experiment was annotated with the R package: ", annotPack,", using the object: ",annotEnv,".",sep="")
+  cat("Annotating with R package",
+      annotPack,
+      "using object:",
+      annotEnv,
+      "\n")
 }, error = function(e) {
   stop(
     "Array version wasn't not recognized or the annotation package was unable to load.\nCheck that the appropriate packages are installed and the array version is contained in the list of known arrays\n",
@@ -196,7 +217,7 @@ tryCatch({
   )
 })
 
-# For loop to check that guess-regex matches all known array version-annotation package pairs
+# For-loop to check that guess-regex matches all known array version-annotation package pairs
 # for(i in 1:length(arrayNames)){
 #   if(grepl("-st-",arrayNames[i],ignore.case = T)){affyST = TRUE} else{affyST = FALSE}
 #   pack = tolower(arrayNames[i])
@@ -297,7 +318,7 @@ if(opt$dupProbes == "topvar") {
     normVals = eset[!rmRowTag, ]
     row.names(normVals) = RefSeq[!rmRowTag]
     
-    cat("\tUnampped probes removed:", noIDCnt, "\n")
+    cat("\tUnmapped probes removed:", noIDCnt, "\n")
     cat("\tDuplicated probes removed:", nDups, "\n\n")
     cat("Annotated probes remaining:", nrow(normVals), "\n\n")
     if (nrow(normVals) > length(unique(RefSeq[!rmRowTag]))) {
@@ -327,7 +348,7 @@ if(opt$dupProbes == "topvar") {
     normVals = eset[!rmRowTag, ]
     row.names(normVals) = RefSeq[!rmRowTag]
     
-    cat("\tUnampped probes removed:", noIDCnt, "\n")
+    cat("\tUnmapped probes removed:", noIDCnt, "\n")
     cat("\tDuplicated probes removed:", nDups, "\n\n")
     cat("Annotated probes remaining:", nrow(normVals), "\n\n")
     if (nrow(normVals) > length(unique(RefSeq[!rmRowTag]))) {
@@ -339,7 +360,22 @@ if(opt$dupProbes == "topvar") {
        call. = F)
 }
 
-# Save filtered expression values to working directory
+# Output annotation report to the specified QC directory
+AR = c(
+  AR1,
+  paste("Unmapped probes removed:", noIDCnt),
+  paste("Duplicated probes removed:", nDups),
+  paste("Annotated probes remaining:", nrow(normVals))
+)
+write.table(
+  AR,
+  file = paste(qcDir, glAn, "_annotReport.txt", sep = ""),
+  quote = F,
+  col.names = F,
+  row.names = F
+)
+
+# Save filtered expression values
 outFH = opt$output
 eset = normVals # Standardizing variable naming convention between scripts
 if (opt$outType == "both") {
