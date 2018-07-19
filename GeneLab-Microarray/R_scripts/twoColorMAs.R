@@ -121,7 +121,9 @@ factors = merge(x = sampFactors, y = assFactors, by = "Sample.Name") # Join the 
 suppressPackageStartupMessages(library("limma"))
 suppressPackageStartupMessages(library("arrayQualityMetrics"))
 
-# setwd("~/Documents/genelab/rot1/GLDS-28/microarray/")
+# inPath = "~/Documents/genelab/rot1/GLDS-28/microarray/"
+# setwd(inPath)
+
 inFiles = dir(inPath)
 inFiles = inFiles[grepl("_raw.txt$",inFiles)]
 
@@ -268,6 +270,8 @@ if (any(opt$dupProbes %in% c("average", "max"))) {
   stop("Method for dealing with probes mapped to the same gene IDs not recognized\n",
        call. = F)
 }
+
+
 
 # Differential expression analysis
 targets2 = targetsA2C(targets)

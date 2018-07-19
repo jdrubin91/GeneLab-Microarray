@@ -50,6 +50,11 @@ option_list = list(
     type = "character",
     default = "max",
     help = "Method for handling multiple probes [max (default, probe with the highest mean expression), average (mean of all probes for a gene), topvar (highest variance with nsFilter function)"
+  ),
+  make_option(
+    "--GLDS", 
+    type = "character", 
+    help = "GLDS accession number for plot outputs (ie '21' for GLDS-21)"
   )
 )
 
@@ -69,6 +74,17 @@ addSlash = function(string) {
 if (is.null(opt$input)) {
   print_help(opt_parser)
   stop("At least one argument must be supplied (input file)", call. = FALSE)
+}else { inFH = opt$input }
+
+if (is.null(opt$GLDS)) {
+  # Include GLDS accession number in outputs if provided
+  glAn = ''
+  cat("Warning: No GLDS accession number provided\n")
+  if (grepl("GLDS-[0-9]+", inFH)) {
+    glAn = regmatches(inFH, regexpr("GLDS-[0-9]+", inFH)) # Attempt to extract the GLDS accession number from the input path
+  }
+} else{
+  glAn = paste('GLDS-', opt$GLDS, sep = '')
 }
 
 # Create QC output directory
@@ -231,7 +247,6 @@ tryCatch({
 # }
 
 # inFH = "expValues.txt"
-inFH = opt$input
 tryCatch({
   if (grepl(".txt$", x = inFH) == TRUE) {
     eset = read.delim(

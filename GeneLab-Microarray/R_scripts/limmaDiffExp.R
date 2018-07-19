@@ -88,11 +88,28 @@ if (!is.null(opt$group1) & !is.null(opt$group2)){
 
 #From sample file, extract column containing 'Factor Value'
 tryCatch({
-  factorValues = studyFactors[,grepl("Factor.Value",colnames(studyFactors))]
-  rownames(factorValues) = studyFactors[,grepl("Sample.Name",colnames(studyFactors))]
-}, error=function(e){
-  stop("Unable to pull sample names from the study level metadata", call. = F)
+  factorValues = studyFactors[, grepl("Factor.Value", colnames(studyFactors))]
+  row.names(factorValues) = studyFactors[, grepl("Sample.Name", colnames(studyFactors))]
+  {
+    # Match sample names in file name
+    ## [replace('_','-').replace('(','-').replace(')','-').replace(' ','-').strip('-')]
+    replaceWithHyphen = c("_", "\\(", "\\)", " ")
+    removeList = c("^-", "-$")
+    for (i in 1:length(replaceWithHyphen)) {
+      # Replace other characters with hyphens
+      row.names(factorValues) =  gsub(replaceWithHyphen[i], '-', row.names(factorValues))
+    }
+    for (i in 1:length(removeList)) {
+      # Remove leading/trailing hypens
+      row.names(factorValues) =  gsub(removeList[i], '', row.names(factorValues))
+    }
+    
+  }
+}, error = function(e) {
+  stop("Unable to pull sample names from the study level metadata",
+       call. = F)
 })
+
 
 # Read in an expression value txt file
 # inFH = "annotExpValues.txt"
