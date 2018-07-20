@@ -65,16 +65,6 @@ if (is.null(opt$ISApath)) {
   isaFH = opt$ISApath
 }
 
-suppressPackageStartupMessages(library("limma"))
-
-# Read in ISA tab file and extract sample file
-# isaFH = "../metadata/GLDS-4_metadata_GSE18388-ISA/s_GSE18388.txt"
-tryCatch({
-  studyFactors = read.delim(isaFH, header=T, sep="",stringsAsFactors = F)
-}, error=function(e){ 
-  stop("ISA files could not be read by parsing tab-delimited files", call. = F)
-})
-
 # Read in underscore-delimited factor levels and split into lists
 if (!is.null(opt$group1) & !is.null(opt$group2)){
   fact1 = opt$group1
@@ -86,6 +76,16 @@ if (!is.null(opt$group1) & !is.null(opt$group2)){
   stop("Factor levels not provided or improperly formated", call.=FALSE)
 }
 
+suppressPackageStartupMessages(library("limma"))
+
+# Read in ISA tab file and extract sample file
+# isaFH = "../metadata/GLDS-4_metadata_GSE18388-ISA/s_GSE18388.txt"
+tryCatch({
+  studyFactors = read.delim(isaFH, header=T, sep="",stringsAsFactors = F)
+}, error=function(e){ 
+  stop("ISA sample file could not be read by parsing tab-delimited files", call. = F)
+})
+
 #From sample file, extract column containing 'Factor Value'
 tryCatch({
   factorValues = studyFactors[, grepl("Factor.Value", colnames(studyFactors))]
@@ -93,7 +93,7 @@ tryCatch({
   {
     # Match sample names in file name
     ## [replace('_','-').replace('(','-').replace(')','-').replace(' ','-').strip('-')]
-    replaceWithHyphen = c("_", "\\(", "\\)", " ")
+    replaceWithHyphen = c("_", "\\(", "\\)", " ", "\\.")
     removeList = c("^-", "-$")
     for (i in 1:length(replaceWithHyphen)) {
       # Replace other characters with hyphens
@@ -115,6 +115,7 @@ tryCatch({
 # inFH = "annotExpValues.txt"
 if(grepl(".txt$",x = inFH) == TRUE){
   eset = read.delim(inFH,header=T,sep = "\t",stringsAsFactors = F)
+  colnames(eset) = gsub("\\.","-",colnames(eset)) # Keep the sample names standardized (if data read in as a text file, hyphens are swapped for periods)
   # rownames(eset) = eset[,1]
   # eset[,1] = NULL
 }else{
@@ -134,11 +135,21 @@ if(nrow(factorValues) != ncol(eset)){
 
 #From the eset matrix, determine which columns correspond to which factor values
 esetSampNames <- colnames(eset)
-newOrder = rep(0,ncol(eset))
-for(i in 1:nrow(factorValues)){ # Reorder the factorValues dataframe to match the order of sample names in the expression set
-  newOrder[i] = grep(pattern = rownames(factorValues)[i], x = esetSampNames,ignore.case = T)
+if ( all(esetSampNames %in% row.names(factorValues)) ){
+  # Sample names match exactly between file names and metadata and can be used to order the factors
+  factorValues = factorValues[esetSampNames,]
+} else {
+  # Match by non-case-sensitive pattern matching
+  newOrder = rep(0,ncol(eset))
+  for(i in 1:ncol(eset)){ # Reorder the factorValues dataframe to match the order of sample names in the expression set
+    newOrder[i] = grep(pattern = esetSampNames[i], x = row.names(factorValues),ignore.case = T)
+  }
+  factorValues = factorValues[newOrder,] 
 }
-factorValues = factorValues[newOrder,] 
+
+if ( ! all(esetSampNames == row.names(factorValues)) ) {
+  cat("\nWarning: non-exact matching of sample names from files to metadata\n")
+}
 
 if (!is.null(opt$rmOutliers)){
   outliers = opt$rmOutliers
@@ -179,6 +190,10 @@ if(sum(group == 1) == 0 | sum(group == 2) == 0){
 
 eset = eset[,!(group == 0 | group == 3 | group == 4)]
 group = group[!(group == 0 | group == 3 | group == 4)]
+
+# # Troubleshooting print statements
+# cat("\nGroup1:\n",colnames(eset)[group == 1],"\n")
+# cat("\nGroup2:\n",colnames(eset)[group == 2],"\n")
 
 #Create a design matrix based on the ordering of the columns within eset
 group = as.factor(group)
