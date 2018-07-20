@@ -126,13 +126,6 @@ if(nrow(factorValues) != ncol(eset)){
   cat("\nWarning: Number of samples in the expression set not equal to the number of samples in the metadata\n")
 }
 
-
-# for (i in 1:nrow(factorValues)){
-#   tmp = rownames(factorValues)[i]
-#   tmp = strsplit(tmp, split = " ")[[1]][1]
-#   row.names(factorValues)[i] = tmp
-# }
-
 #From the eset matrix, determine which columns correspond to which factor values
 esetSampNames <- colnames(eset)
 if ( all(esetSampNames %in% row.names(factorValues)) ){
@@ -145,10 +138,6 @@ if ( all(esetSampNames %in% row.names(factorValues)) ){
     newOrder[i] = grep(pattern = esetSampNames[i], x = row.names(factorValues),ignore.case = T)
   }
   factorValues = factorValues[newOrder,] 
-}
-
-if ( ! all(esetSampNames == row.names(factorValues)) ) {
-  cat("\nWarning: non-exact matching of sample names from files to metadata\n")
 }
 
 if (!is.null(opt$rmOutliers)){
