@@ -393,6 +393,8 @@ write.table(
 # Save filtered expression values
 outFH = opt$output
 eset = normVals # Standardizing variable naming convention between scripts
+colnames(eset) = gsub(".","-",colnames(eset)) # Keep the sample names standardized (if data read in as a text file, hyphens are swapped for periods)
+if(colname)
 if (opt$outType == "both") {
   save(eset, file = paste(outFH, ".rda", sep = ""))
   write.table(
