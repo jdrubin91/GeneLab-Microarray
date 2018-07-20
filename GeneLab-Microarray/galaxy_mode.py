@@ -48,7 +48,7 @@ def run(counts_table,metadata,condition1,condition2,padj_cutoff,outliers,html_ma
                         padj_cutoff,condition1,condition2,html_main,html_folder)
 
     #Gets significant genes based on differential expression to be plotted in a heatmap later
-    x,x_full,row_header,column_header = get_matrix(sig_genes,counts_table,limma_output,condition1,condition2)
+    x,x_full,x_50,row_header,column_header,sig_header = get_matrix(sig_genes,counts_table,limma_output,condition1,condition2)
 
     #Create a PCA plot of samples based on user inputted counts table
     pca(x_full,column_header,condition1,condition2,html_folder)
@@ -60,7 +60,7 @@ def run(counts_table,metadata,condition1,condition2,padj_cutoff,outliers,html_ma
         row_metric = 'cityblock'
         column_metric = 'euclidean'
         color_gradient = 'red_black_green'
-        heatmap(x, row_header, column_header, row_method,
+        heatmap(x, sig_header, column_header, row_method,
                 column_method, row_metric, column_metric,
                 color_gradient, html_folder)
     else:
@@ -70,7 +70,7 @@ def run(counts_table,metadata,condition1,condition2,padj_cutoff,outliers,html_ma
         row_metric = 'cityblock'
         column_metric = 'euclidean'
         color_gradient = 'red_black_green'
-        heatmap(x_full, row_header, column_header, row_method,
+        heatmap(x_50, row_header, column_header, row_method,
                 column_method, row_metric, column_metric,
                 color_gradient, html_folder)
 
@@ -198,23 +198,30 @@ def get_matrix(sig_genes,counts_table,limma_output,condition1,condition2):
 
     x = list()
     x_full = list()
+    x_50 = list()
     row_header = list()
     with open(counts_table,'r') as F:
         header = F.readline().strip('\n').split('\t')
         indexes = [header.index(i) for i in column_header]
+        counter = 0
         for line in F:
             line = line.strip('\n').split('\t')
-            x_full.append(map(float,[line[1:][index] for index in indexes]))
-            if line[0] in sig_genes:
-                x.append(map(float,[line[1:][index] for index in indexes]))
+            append_list = map(float,[line[1:][index] for index in indexes])
+            x_full.append(append_list)
+            if counter < 50:
+                x_50.append(append_list)
                 row_header.append(line[0])
+                if line[0] in sig_genes:
+                    x.append(append_list)
+                    sig_header.append(line[0])
+            counter += 1
 
     x = np.squeeze(np.asarray(x))
     x_full= np.squeeze(np.asarray(x_full))
     column_header = [i+': '+condition1 for i in limma_output[group1_index].split()] + [i+': '+condition2 for i in limma_output[group2_index].split()]
 
 
-    return x,x_full,row_header,column_header
+    return x,x_full,x_50,row_header,column_header,sig_header
 
 
 
@@ -626,7 +633,7 @@ def differential_visualize(diffExp_file,pval_cut,condition1,condition2,html_main
 </html>""")
 
 
-    return [gene for (gene,exp,fc,pval),i in zip(sig_genes,range(200))]
+    return [gene for (gene,exp,fc,pval),i in zip(sig_genes,range(50))]
 
 
 #The below code is taken from https://gist.github.com/peterk87/5505691
