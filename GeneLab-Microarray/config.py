@@ -1,7 +1,7 @@
 indir = "False"
 outdir = "."
 srcdir = "/Users/jonathanrubin/Google_Drive/NASA/home/GeneLab-Microarray/GeneLab-Microarray"
-wrkdir = "/private/var/folders/rr/fbksjg6n2d7_3gh_8t_jgj_r0000gn/T/tmpYJINtB/job_working_directory/000/3/working"
+wrkdir = "/private/var/folders/rr/fbksjg6n2d7_3gh_8t_jgj_r0000gn/T/tmpeTXDfd/job_working_directory/000/41/working"
 tempdir = "/Users/jonathanrubin/Google_Drive/NASA/home/GeneLab-Microarray/temp"
 R_dir = "/Users/jonathanrubin/Google_Drive/NASA/home/GeneLab-Microarray/GeneLab-Microarray/R_scripts"
 md5sum = {"original": [], "new": []}

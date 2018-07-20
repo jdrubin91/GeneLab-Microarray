@@ -32,9 +32,8 @@ def run():
     #Get full paths to locations within this package
     srcdir = os.path.dirname(os.path.realpath(__file__))
     wrkdir = os.getcwd()
-    print "Working Directory: ", wrkdir
     tempdir = os.path.join(os.path.dirname(srcdir),'temp')
-    R_dir = os.path.join(os.path.dirname(srcdir),'GeneLab-Microarray','R_scripts')
+    R_dir = os.path.join(srcdir,'R_scripts')
 
 
     #Write full paths to locations to a config.py file to be used by other scripts in this package
@@ -64,11 +63,13 @@ def run():
     if indir != False:
         indir = os.path.normpath(indir)
         if batch:
+            print "Working Directory: ", wrkdir
             print "Batch option specified.\nUsing batch file: " + indir + "\nWriting output to: " + outdir
             import batch_process
             batch_process.run(indir)
         else:
             import metadata_process, rawdata_process
+            print "Working Directory: ", wrkdir
             print "Processing: " + indir + "\nWriting output to: " + outdir
             GLDS = os.path.basename(indir)
             rawdata_out = os.path.join(outdir,GLDS,'microarray')

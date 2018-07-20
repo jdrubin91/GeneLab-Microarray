@@ -79,6 +79,26 @@ def clean(metadata_directory):
         subprocess.call(move_command)
         config.get_md5sum(os.path.join(metadata_out,newfilename),'new')
 
+    #Modify the investigation file to account for sample and assay renaming
+    modify_i(GLDS,os.path.join(metadata_out,'i_' + GLDS + '_microarray_metadata.txt'))
+
+
+
+#Modifies investigation file to correctly detect sample and assay files that have been renamed
+def modify_i(GLDS,i_file):
+    #First read in all lines in investigation file
+    with open(i_file,'r') as infile:
+        lines = infile.readlines()
+
+    #Then rewrite the same lines simply substituting in the correct filenames
+    with open(i_file,'w') as outfile:
+        for line in lines:
+            if 'Study File Name' in line:
+                line = 'Study File Name\t"s_'+GLDS+'_microarray_metadata.txt"\n'
+            if 'Study Assay File Name' in line:
+                line = 'Study Assay File Name\t"a_'+GLDS+'_microarray_metadata.txt"\n'
+            outfile.write(line)
+
 
 #Creates an assay dictionary which is basically just the metadata (specifically the assay file in the isa metadata)
 #where the key is the first column (assumed to be sample name) and the value is the rest of the columns. This is 

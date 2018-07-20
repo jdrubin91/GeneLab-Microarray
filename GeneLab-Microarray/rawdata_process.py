@@ -102,7 +102,7 @@ def rename(GLDS_path):
                     for item in assay_dict[key]:
                         if item in filename and item != '':
                             sample_in_other_column = True
-                            new_filename = filename.split('.')[0].replace('_','-').replace('(','-').replace(')','-').replace(' ','-').strip('-')
+                            new_filename = key.split('.')[0].replace('_','-').replace('(','-').replace(')','-').replace(' ','-').strip('-')
                             move_command = ["mv", os.path.join(rawdata_out,filename), os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_raw.'+extension)]
                             new_md5sum_file = os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_raw.'+extension)
 
@@ -115,11 +115,11 @@ def rename(GLDS_path):
                     config.get_md5sum(new_md5sum_file,'new')
                 except subprocess.CalledProcessError:
                     config.md5sum['new'].append(('Move Error','N/A'))
-            elif not os.path.isdir(os.path.join(rawdata_out,filename)):
-                remove_command = ["rm",os.path.join(rawdata_out,filename)]
-                config.get_md5sum(os.path.join(rawdata_out,filename),'original',action='remove')
-                subprocess.call(remove_command)
-                config.md5sum['new'].append(('Removed','N/A'))
+            # elif not os.path.isdir(os.path.join(rawdata_out,filename)):
+            #     remove_command = ["rm",os.path.join(rawdata_out,filename)]
+            #     config.get_md5sum(os.path.join(rawdata_out,filename),'original',action='remove')
+            #     subprocess.call(remove_command)
+            #     config.md5sum['new'].append(('Removed','N/A'))
 
 #A function to simply detect the array type. Outputs into the 'QC_reporting' directory. Assumes the input is already within 'raw'. This means that the rename
 #function has already been called.
@@ -149,7 +149,7 @@ def detect_array(GLDS_path):
 def qc_and_normalize(rawdata_out,GLDS):
     R_script = os.path.join(config.R_dir,'affyNormQC.R')
     R_command = ["Rscript", R_script, 
-                    "--normalization", "rma", 
+                    "-n", "rma", 
                     "-o", GLDS+"_microarray_normalized",
                     "--outDir="+rawdata_out, 
                     "--QCDir="+os.path.join(rawdata_out,'QC_reporting'), 
