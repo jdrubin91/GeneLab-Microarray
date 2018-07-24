@@ -180,9 +180,14 @@ if (!file.exists(qcDir)){ # Create QC directory if it does not exist yet
 }
 
 # Output array information to a separate file
+summDir = paste(qcDir, "summary_report/", sep = "")
+if (!file.exists(summDir)){ # Create a summary report directory within qcDir if it does not exist yet
+  dir.create(summDir)
+}
+
 write.table(
   arrInfo,
-  file = paste(qcDir, glAn, "_arrayInfo.txt", sep = ""),
+  file = paste(summDir, glAn, "_arrayInfo.txt", sep = ""),
   quote = F,
   col.names = F,
   row.names = F

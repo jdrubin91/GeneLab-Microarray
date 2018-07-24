@@ -376,6 +376,10 @@ if(opt$dupProbes == "topvar") {
 }
 
 # Output annotation report to the specified QC directory
+summDir = paste(qcDir, "summary_report/", sep = "")
+if (!file.exists(summDir)){ # Create a summary report directory within qcDir if it does not exist yet
+  dir.create(summDir)
+}
 AR = c(
   AR1,
   paste("Unmapped probes removed:", noIDCnt),
@@ -384,7 +388,7 @@ AR = c(
 )
 write.table(
   AR,
-  file = paste(qcDir, glAn, "_annotReport.txt", sep = ""),
+  file = paste(summDir, glAn, "_annotReport.txt", sep = ""),
   quote = F,
   col.names = F,
   row.names = F
