@@ -204,20 +204,20 @@ if (opt$arrayInfoOnly == TRUE) {
 
 ## Raw QC
 if(QCout == T) {
-  
-  # # Load in QC package
-  # suppressPackageStartupMessages(require(arrayQualityMetrics))
-  # 
-  # cat("Performing intial QC\n")
-  # 
-  # suppressWarnings(
-  #   arrayQualityMetrics(
-  #     expressionset = raw,
-  #     outdir = paste(qcDir, "raw_report", sep = ""),
-  #     force = T,
-  #     do.logtransform = T
-  #   )
-  # )
+
+  # Load in QC package
+  suppressPackageStartupMessages(require(arrayQualityMetrics))
+
+  cat("Performing intial QC\n")
+
+  suppressWarnings(
+    arrayQualityMetrics(
+      expressionset = raw,
+      outdir = paste(qcDir, "raw_report", sep = ""),
+      force = T,
+      do.logtransform = T
+    )
+  )
 
 }
 
@@ -267,16 +267,16 @@ if (opt$outputData == TRUE) {
     stop("Help, I don't know how to save this data!", call. = F)
   }
   
-  # if(QCout == T) {
-  #   cat("Post normalization QC steps...\n")
-  #   # Post-normalization QC
-  #   
-  #   suppressWarnings(
-  #     arrayQualityMetrics(
-  #       expressionset = expset,
-  #       outdir = paste(qcDir, "normalized_report", sep = ""),
-  #       force = T
-  #     )
-  #   )
-  # }
+  if(QCout == T) {
+    cat("Post normalization QC steps...\n")
+    # Post-normalization QC
+
+    suppressWarnings(
+      arrayQualityMetrics(
+        expressionset = expset,
+        outdir = paste(qcDir, "normalized_report", sep = ""),
+        force = T
+      )
+    )
+  }
 }
