@@ -71,8 +71,8 @@ def rename(GLDS_path):
     #First get all the proper paths according to specifications
     metadata_out = os.path.join(GLDS_path,'metadata')
     rawdata_out = os.path.join(GLDS_path,'microarray')
-    assay_dict = metadata_process.read_assay(metadata_out)
     GLDS = os.path.basename(GLDS_path)
+    assay_dict = metadata_process.read_assay(metadata_out)
     final_rawdata_out = os.path.join(rawdata_out,'raw')
 
     #Make the 'raw' directory if it doesn't already exist
@@ -102,7 +102,7 @@ def rename(GLDS_path):
                     for item in assay_dict[key]:
                         if item in filename and item != '':
                             sample_in_other_column = True
-                            new_filename = filename.split('.')[0].replace('_','-').replace('(','-').replace(')','-').replace(' ','-').strip('-')
+                            new_filename = key.split('.')[0].replace('_','-').replace('(','-').replace(')','-').replace(' ','-').strip('-')
                             move_command = ["mv", os.path.join(rawdata_out,filename), os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_raw.'+extension)]
                             new_md5sum_file = os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_raw.'+extension)
 
@@ -115,11 +115,12 @@ def rename(GLDS_path):
                     config.get_md5sum(new_md5sum_file,'new')
                 except subprocess.CalledProcessError:
                     config.md5sum['new'].append(('Move Error','N/A'))
-            elif not os.path.isdir(os.path.join(rawdata_out,filename)):
-                remove_command = ["rm",os.path.join(rawdata_out,filename)]
-                config.get_md5sum(os.path.join(rawdata_out,filename),'original',action='remove')
-                subprocess.call(remove_command)
-                config.md5sum['new'].append(('Removed','N/A'))
+            # elif not os.path.isdir(os.path.join(rawdata_out,filename)):
+            #     remove_command = ["rm",os.path.join(rawdata_out,filename)]
+            #     config.get_md5sum(os.path.join(rawdata_out,filename),'original',action='remove')
+            #     subprocess.call(remove_command)
+            #     config.md5sum['new'].append(('Removed','N/A'))
+    metadata_process.modify_assay(metadata_out,GLDS,extension)
 
 #A function to simply detect the array type. Outputs into the 'QC_reporting' directory. Assumes the input is already within 'raw'. This means that the rename
 #function has already been called.
@@ -149,7 +150,7 @@ def detect_array(GLDS_path):
 def qc_and_normalize(rawdata_out,GLDS):
     R_script = os.path.join(config.R_dir,'affyNormQC.R')
     R_command = ["Rscript", R_script, 
-                    "--normalization", "rma", 
+                    "-n", "rma", 
                     "-o", GLDS+"_microarray_normalized",
                     "--outDir="+rawdata_out, 
                     "--QCDir="+os.path.join(rawdata_out,'QC_reporting'), 
@@ -157,7 +158,6 @@ def qc_and_normalize(rawdata_out,GLDS):
                     "--outType=txt", 
                     "--outputData=TRUE",
                     "--QCoutput=TRUE", 
-                    "--NUSEplot=FALSE", 
                     "--GLDS="+GLDS.split('-')[1]]
     subprocess.call(R_command)
     if not GLDS+'_microarray_normalized.txt' in os.listdir(rawdata_out):
@@ -170,9 +170,7 @@ def annotate(rawdata_out,GLDS):
     R_command = ["Rscript", R_script, 
                     "-i", normalized_expression,
                     "-a", array_info, 
-                    "-o", os.path.join(rawdata_out,GLDS+"_microarray_normalized-annotated.txt"),
-                    "--GLDS="+GLDS.split('-')[1],
-                    "--QCDir="+os.path.join(rawdata_out,'QC_reporting')]
+                    "-o", os.path.join(rawdata_out,GLDS+"_microarray_normalized-annotated")]
     subprocess.call(R_command)
 
     

@@ -1,12 +1,12 @@
 indir = "False"
-outdir = "demo_out/GLDS-21"
+outdir = "."
 srcdir = "/Users/jonathanrubin/Google_Drive/NASA/home/GeneLab-Microarray/GeneLab-Microarray"
-wrkdir = "/Users/jonathanrubin/Google_Drive/NASA/home"
+wrkdir = "/private/var/folders/rr/fbksjg6n2d7_3gh_8t_jgj_r0000gn/T/tmpIrVwnR/job_working_directory/000/5/working"
 tempdir = "/Users/jonathanrubin/Google_Drive/NASA/home/GeneLab-Microarray/temp"
 R_dir = "/Users/jonathanrubin/Google_Drive/NASA/home/GeneLab-Microarray/GeneLab-Microarray/R_scripts"
 md5sum = {"original": [], "new": []}
 batch = "False"
-visualize = "spaceflight,no treatment,0.0000001"
+visualize = "False"
 def get_md5sum(filepath,key,action=False):
     import os, subprocess
     if not action:

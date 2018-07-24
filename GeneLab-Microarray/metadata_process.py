@@ -123,9 +123,35 @@ def read_assay(metadata_out):
         print "File Error: No assay file found in ISA metadata. Exiting..."
         sys.exit(1)
 
+def modify_assay(metadata_out,GLDS,extension):
+    for filename in os.listdir(metadata_out):
+        if 'a_' in filename[:2]:
+            assay_file = os.path.join(metadata_out,filename)
+
+    #Create an assay dictionary where the key is the name of the sample file
+    new_assay_file = list()
+    try:
+        with open(assay_file) as F:
+            new_assay_file.append(F.readline().replace('\n','\t')+'\t'.join(['"Protocol REF"','"Parameter Value[Raw File]"',
+                '"Term Source REF"','"Term Accession Number"','"Parameter Value[Normalized Counts File]"',
+                '"Term Source REF"','"Term Accession Number"','"Parameter Value[Annotated Normalized Counts File]"',
+                '"Term Source REF"','"Term Accession Number"']))
+            for line in F:
+                linelist = line.strip('\n').split('\t')
+                basefilename = linelist[0].split('.')[0].replace('_','-').replace('(','-').replace(')','-').replace(' ','-').strip('-')
+                raw_filename = '"' + GLDS + '_' + basefilename + '_microarray_raw.'+extension
+                new_assay_file.append(line.replace('\n','\t')+'\t'.join(['"GeneLab data processing protocol"', '""', '""',
+                    '"'+raw_filename+'"','"'+GLDS+'_microarray_normalized.txt"','""', '""',
+                    '"'+GLDS+'_microarray_normalized-annotated.txt"''""', '""']))
+        with open(assay_file,'w') as outfile:
+            outfile.write('\n'.join(new_assay_file))
+    except:
+        print "File Error: No assay file found in ISA metadata. Exiting..."
+        sys.exit(1)
+
 #Creates a .txt file with all md5sum output
 def create_md5sum_out(rawdata_out,GLDS):
-    with open(os.path.join(rawdata_out,GLDS+'_md5sum.txt'),'w') as outfile:
+    with open(os.path.join(rawdata_out,'raw_files',GLDS+'_md5sum.txt'),'w') as outfile:
         outfile.write('#Action\tCheck\tOriginalFile,md5sum -> NewFile,md5sum\n')
         for original,new in zip(config.md5sum['original'],config.md5sum['new']):
             if original[0] != 'remove':

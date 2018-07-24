@@ -71,11 +71,11 @@ def rename(GLDS_path):
     #First get all the proper paths according to specifications
     metadata_out = os.path.join(GLDS_path,'metadata')
     rawdata_out = os.path.join(GLDS_path,'microarray')
-    assay_dict = metadata_process.read_assay(metadata_out)
     GLDS = os.path.basename(GLDS_path)
-    final_rawdata_out = os.path.join(rawdata_out,'raw')
+    assay_dict = metadata_process.read_assay(metadata_out)
+    final_rawdata_out = os.path.join(rawdata_out,'raw_files')
 
-    #Make the 'raw' directory if it doesn't already exist
+    #Make the 'raw_files' directory if it doesn't already exist
     if not os.path.isdir(final_rawdata_out):
         os.makedirs(final_rawdata_out)
 
@@ -120,8 +120,9 @@ def rename(GLDS_path):
             #     config.get_md5sum(os.path.join(rawdata_out,filename),'original',action='remove')
             #     subprocess.call(remove_command)
             #     config.md5sum['new'].append(('Removed','N/A'))
+    metadata_process.modify_assay(metadata_out,GLDS,extension)
 
-#A function to simply detect the array type. Outputs into the 'QC_reporting' directory. Assumes the input is already within 'raw'. This means that the rename
+#A function to simply detect the array type. Outputs into the 'QC_reporting' directory. Assumes the input is already within 'raw_files'. This means that the rename
 #function has already been called.
 def detect_array(GLDS_path):
     GLDS = os.path.basename(GLDS_path)
@@ -131,7 +132,7 @@ def detect_array(GLDS_path):
                     "--arrayInfoOnly=TRUE",
                     "--outDir="+rawdata_out, 
                     "--QCDir="+os.path.join(rawdata_out,'QC_reporting'), 
-                    "-i", os.path.join(rawdata_out,'raw'),
+                    "-i", os.path.join(rawdata_out,'raw_files'),
                     "--GLDS="+GLDS.split('-')[1]]
     subprocess.call(R_command)
 
@@ -153,7 +154,7 @@ def qc_and_normalize(rawdata_out,GLDS):
                     "-o", GLDS+"_microarray_normalized",
                     "--outDir="+rawdata_out, 
                     "--QCDir="+os.path.join(rawdata_out,'QC_reporting'), 
-                    "-i", os.path.join(rawdata_out,'raw'),
+                    "-i", os.path.join(rawdata_out,'raw_files'),
                     "--outType=txt", 
                     "--outputData=TRUE",
                     "--QCoutput=TRUE", 

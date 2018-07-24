@@ -40,22 +40,26 @@ option_list = list(
     help = "Format of output data: R (Rdata object), txt (tab delimited file with identifiers and sample names), both (default)"
   ),
   make_option(
-    "--QCDir",
-    type = "character",
-    default = "./QC_reporting/",
-    help = "Path to directory to save the annotation output. Will be created if it does not exist yet, but it is recommended to use the same directory as was used for QC with the normalization step (default = './QC_reporting/')"
-  ),
-  make_option(
     c("-d", "--dupProbes"),
     type = "character",
     default = "max",
     help = "Method for handling multiple probes [max (default, probe with the highest mean expression), average (mean of all probes for a gene), topvar (highest variance with nsFilter function)"
   ),
   make_option(
-    "--GLDS", 
-    type = "character", 
-    help = "GLDS accession number for plot outputs (ie '21' for GLDS-21)"
-  )
+    c("-q", "--QCoutput"),
+    type = "logical",
+    default = TRUE,
+    help = "Output QC_reporting directory of QC plots (default = TRUE)"
+  ),
+  make_option(
+    "--QCDir",
+    type = "character",
+    default = "./QC_reporting/",
+    help = "Path to directory for storing QC output, including a terminal forward slash. Will be created if it does not exist yet (default = './QC_reporting/')"
+  ),
+  make_option("--GLDS",
+              type = "character",
+              help = "GLDS accession number for plot outputs (ie '21' for GLDS-21)")
 )
 
 opt_parser = OptionParser(option_list = option_list)
@@ -74,23 +78,6 @@ addSlash = function(string) {
 if (is.null(opt$input)) {
   print_help(opt_parser)
   stop("At least one argument must be supplied (input file)", call. = FALSE)
-}else { inFH = opt$input }
-
-if (is.null(opt$GLDS)) {
-  # Include GLDS accession number in outputs if provided
-  glAn = ''
-  cat("Warning: No GLDS accession number provided\n")
-  if (grepl("GLDS-[0-9]+", inFH)) {
-    glAn = regmatches(inFH, regexpr("GLDS-[0-9]+", inFH)) # Attempt to extract the GLDS accession number from the input path
-  }
-} else{
-  glAn = paste('GLDS-', opt$GLDS, sep = '')
-}
-
-# Create QC output directory
-qcDir = addSlash(opt$QCDir)
-if (!file.exists(qcDir)){ # Create QC directory if it does not exist yet
-  dir.create(qcDir)
 }
 
 # aiFH = "arrayInfo.txt"
@@ -149,14 +136,30 @@ tryCatch({
           "Package failed to install. Consider manually installing the annotation packages listed at the top of the script\n"
         )
       })
-      tryCatch({
-        suppressPackageStartupMessages(library(annotPack, character.only = T)) # Load selected package after installing
-      }, error = function(e) {
-        cat(
-          "Package installed but was unable to load\n"
-        )
-      })
     })
+    packObjs = ls(paste("package:", as.character(annotPack), sep = "")) # Stores a list of all the objects in the selected package
+    if (any(grepl(
+      pattern = "REFSEQ",
+      x = packObjs,
+      ignore.case = T
+    ))) {
+      annotEnv = packObjs[grepl(pattern = "REFSEQ",
+                                x = packObjs,
+                                ignore.case = T)] # Select the enivornment from the package to map probes to RefSeq IDs
+    } else if (annotPack == "ath1121501.db") {
+      annotEnv = packObjs[grepl(pattern = "ACCNUM",
+                                x = packObjs,
+                                ignore.case = T)] # Select the enivornment from the package to map probes to RefSeq IDs
+    } else if (annotPack == "yeast2.db") {
+      annotEnv = packObjs[grepl(pattern = "ORF",
+                                x = packObjs,
+                                ignore.case = T)] # Select the enivornment from the package to map probes to RefSeq IDs
+    }
+    cat("Annotating with R package",
+        annotPack,
+        "using object:",
+        annotEnv,
+        "\n")
   } else{
     if (grepl("-st-", arrVer, ignore.case = T)) {
       affyST = TRUE
@@ -192,48 +195,17 @@ tryCatch({
           "Package failed to install. Consider manually installing the appropriate annotation package and adding it to the list of encountered packages above.\n"
         )
       })
-      tryCatch({
-        suppressPackageStartupMessages(library(annotPack, character.only = T)) # Load selected package after installing
-      }, error = function(e) {
-        cat(
-          "Package installed but was unable to load\n"
-        )
-      })
     })
   }
-  
-  packObjs = ls(paste("package:", as.character(annotPack), sep = "")) # Stores a list of all the objects in the selected package
-  if (any(grepl(
-    pattern = "REFSEQ",
-    x = packObjs,
-    ignore.case = T
-  ))) {
-    annotEnv = packObjs[grepl(pattern = "REFSEQ",
-                              x = packObjs,
-                              ignore.case = T)] # Select the enivornment from the package to map probes to RefSeq IDs
-  } else if (annotPack == "ath1121501.db") {
-    annotEnv = packObjs[grepl(pattern = "ACCNUM",
-                              x = packObjs,
-                              ignore.case = T)] # Select the enivornment from the package to map probes to RefSeq IDs
-  } else if (annotPack == "yeast2.db") {
-    annotEnv = packObjs[grepl(pattern = "ORF",
-                              x = packObjs,
-                              ignore.case = T)] # Select the enivornment from the package to map probes to RefSeq IDs
-  }
-  AR1 = paste("This microarray experiment was annotated with the R package: ", annotPack,", using the object: ",annotEnv,".",sep="")
-  cat("Annotating with R package",
-      annotPack,
-      "using object:",
-      annotEnv,
-      "\n")
 }, error = function(e) {
   stop(
-    "Array version wasn't not recognized or the annotation package was unable to load.\nCheck that the appropriate packages are installed and the array version is contained in the list of known arrays\n",
+    "Array version wasn't not recognized or the annotation package was unable to load.\n
+    Check that the appropriate packages are installed and the array version is contained in the list of known arrays\n",
     call. = F
   )
 })
 
-# For-loop to check that guess-regex matches all known array version-annotation package pairs
+# For loop to check that guess-regex matches all known array version-annotation package pairs
 # for(i in 1:length(arrayNames)){
 #   if(grepl("-st-",arrayNames[i],ignore.case = T)){affyST = TRUE} else{affyST = FALSE}
 #   pack = tolower(arrayNames[i])
@@ -247,6 +219,7 @@ tryCatch({
 # }
 
 # inFH = "expValues.txt"
+inFH = opt$input
 tryCatch({
   if (grepl(".txt$", x = inFH) == TRUE) {
     eset = read.delim(
@@ -298,7 +271,7 @@ if(opt$dupProbes == "topvar") {
   cat("\tDuplicated probes removed:", nDups, "\n\n")
   cat("Annotated probes remaining:", sum(!is.na(filtRefSeq)), "\n")
   if (sum(!is.na(filtRefSeq)) > length(unique(filtRefSeq[!is.na(filtRefSeq)]))) {
-    cat("\n\tWarning: non-unique probe to ID mappings remain \n")
+    cat("\n\tWarning: non-unique probe to RefSeq mappings remain \n")
   }
   
   # Replace AffyIDs with RefSeq IDs, drop probes w/o RefSeq IDs
@@ -333,11 +306,11 @@ if(opt$dupProbes == "topvar") {
     normVals = eset[!rmRowTag, ]
     row.names(normVals) = RefSeq[!rmRowTag]
     
-    cat("\tUnmapped probes removed:", noIDCnt, "\n")
+    cat("\tUnampped probes removed:", noIDCnt, "\n")
     cat("\tDuplicated probes removed:", nDups, "\n\n")
-    cat("Annotated probes remaining:", nrow(normVals), "\n\n")
+    cat("Annotated probes remaining:", nrow(normVals), "\n")
     if (nrow(normVals) > length(unique(RefSeq[!rmRowTag]))) {
-      cat("\n\tWarning: non-unique probe to ID mappings remain \n")
+      cat("\n\tWarning: non-unique probe to RefSeq mappings remain \n")
     }
     
   } else if (opt$dupProbes == "max") {
@@ -363,11 +336,11 @@ if(opt$dupProbes == "topvar") {
     normVals = eset[!rmRowTag, ]
     row.names(normVals) = RefSeq[!rmRowTag]
     
-    cat("\tUnmapped probes removed:", noIDCnt, "\n")
+    cat("\tUnampped probes removed:", noIDCnt, "\n")
     cat("\tDuplicated probes removed:", nDups, "\n\n")
     cat("Annotated probes remaining:", nrow(normVals), "\n\n")
     if (nrow(normVals) > length(unique(RefSeq[!rmRowTag]))) {
-      cat("\n\tWarning: non-unique probe to ID mappings remain \n")
+      cat("\n\tWarning: non-unique probe to RefSeq mappings remain \n")
     }
   }
 } else{
@@ -375,25 +348,9 @@ if(opt$dupProbes == "topvar") {
        call. = F)
 }
 
-# Output annotation report to the specified QC directory
-AR = c(
-  AR1,
-  paste("Unmapped probes removed:", noIDCnt),
-  paste("Duplicated probes removed:", nDups),
-  paste("Annotated probes remaining:", nrow(normVals))
-)
-write.table(
-  AR,
-  file = paste(qcDir, glAn, "_annotReport.txt", sep = ""),
-  quote = F,
-  col.names = F,
-  row.names = F
-)
-
-# Save filtered expression values
+# Save filtered expression values to working directory
 outFH = opt$output
 eset = normVals # Standardizing variable naming convention between scripts
-colnames(eset) = gsub("\\.","-",colnames(eset)) # Keep the sample names standardized (if data read in as a text file, hyphens are swapped for periods)
 if (opt$outType == "both") {
   save(eset, file = paste(outFH, ".rda", sep = ""))
   write.table(
@@ -417,5 +374,116 @@ if (opt$outType == "both") {
 } else{
   print_help(opt_parser)
   stop("Help, I don't know how to save this data!\n", call. = F)
+}
+
+
+if(opt$QCoutput == T){
+  # Prepare plotting options
+  toMatch = c(8,183,31,45,51,100,101,118,128,139,147,183,254,421,467,477,
+              483,493,498,503,508,535,552,575,635,655)
+  color = grDevices::colors()[rep(toMatch, 3)] # Create a library of colors for plotting
+  qcDir = addSlash(opt$QCDir)
+  if (!file.exists(qcDir))
+    dir.create(qcDir)
+  
+  sampNames = colnames(normVals)
+  sampNames = gsub(".CEL", "", sampNames)
+  if (is.null(opt$GLDS)) {
+    # Include GLDS accession number in outputs if provided
+    glAn = ''
+    cat("Warning: No GLDS accession number provided\n")
+    if (grepl("GLDS-[0-9]+", inFH)) {
+      glAn = regmatches(inFH, regexpr("GLDS-[0-9]+", inFH)) # Attempt to extract the GLDS accession number from the input path
+    }
+  } else{
+    glAn = paste('GLDS-', opt$GLDS, sep = '')
+  }
+  # Post-normalization QC
+  cat("Post annotation/filtering QC...\n")
+  
+  # Density distributions
+  png(
+    paste(qcDir, glAn, "_microarray_filtDensityDistributions.png", sep = ""),
+    width = 800,
+    height = 800
+  )
+  ylims = c(0, .8)
+  xlims = c(0, 16)
+  for (i in 1:ncol(normVals)) {
+    if (i == 1) {
+      plot(
+        density(normVals[, i]),
+        ylim = ylims,
+        xlim = xlims
+        ,
+        xlab = 'Normalized, annotated expression values[log2]'
+        ,
+        main = paste(glAn, ' Normalized, filtered expression distributions', sep =
+                       ''),
+        col = color[i]
+      )
+      par(new = T)
+    } else{
+      plot(
+        density(normVals[, i]),
+        ylim = ylims,
+        xlim = xlims,
+        axes = F,
+        xlab = '',
+        ylab = '',
+        main = '',
+        col = color[i]
+      )
+      par(new = T)
+    }
+  }
+  legend(
+    13,
+    0.8,
+    col = color[1:length(sampNames)],
+    legend = sampNames
+    ,
+    pch = 15,
+    bty = "n",
+    cex = 0.9,
+    pt.cex = 0.8,
+    y.intersp = 0.8
+  )
+  garbage <- dev.off()
+  
+  # PCA plot
+  filtPCA = prcomp(normVals)
+  png(
+    paste(qcDir, glAn, "_microarray_filtPCA.png", sep = ""),
+    width = 800,
+    height = 800
+  )
+  plot(
+    filtPCA$rotation[, 1],
+    filtPCA$rotation[, 2],
+    col = color[1:length(sampNames)],
+    pch = 16,
+    xlab = paste(
+      "PC1, ",
+      round(summary(filtPCA)$importance["Proportion of Variance", 1] * 100, digits = 1),
+      "% of variance",
+      sep = ""
+    ),
+    ylab = paste(
+      "PC2, ",
+      round(summary(filtPCA)$importance["Proportion of Variance", 2] * 100, digits = 1),
+      "% of variance",
+      sep = ""
+    ),
+    main = paste(glAn, " PCA of normalized, filtered probes", sep = "")
+  )
+  text(
+    filtPCA$rotation[, 1],
+    filtPCA$rotation[, 2],
+    labels = sampNames,
+    cex = 1,
+    pos = 3
+  )
+  garbage <- dev.off()
 }
 
