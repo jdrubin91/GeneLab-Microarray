@@ -2,10 +2,14 @@
 
 ## Table of Contents
 1. <A href=#Installation>Installation</A>
+   - <A href=#Dependencies>Dependencies</A>
+        + <A href=#R>R</A>
+        + <A href=#Python>Python</A>
 2. <A href=#Running>Running GeneLab-Microarray</A>
    - <A href=#ProcessMode>Process Mode</A>
         + <A href=#BatchSubmode>Batch Submode</A>
    - <A href=#VisualizationMode>Visualization Mode</A>
+   - <A href=#GalaxyMode>Galaxy Mode</A>
 3. <A href=#Directory>Directory Structure</A>
 4. <A href=#BatchFile>Batch File Format</A>
 5. <A href=#affyNormQC>Affy QC and Normalization</A>
@@ -20,14 +24,13 @@ GeneLab-Microarray writes to itself so to ensure you can easily run it, it is re
 pip install --user GeneLab-Microarray
 ```
 
-**Note - GeneLab-Microarray requires matplotlib version 1.3.1 this is due to a bug with the mpld3 package that does not recognize matplotlib figures generated with version 2.2.2 to be json serializable. 
-
+<H3 id="Dependencies">Dependencies</H3>
 GeneLab-Microarray uses md5sum to check files that are copied/renamed. If you do not have this installed, and you're on MacOSX, the md5 -r option should be identical output to md5sum so within your ~/.bashrc or ~/.profile add the following:
 ```
 alias md5sum='md5 -r'
 ```
 
-
+<H4 id="R">R</H4>
 And to finish installation, open an R session and run the following commands:
 ```
 install.packages("optparse")
@@ -93,6 +96,10 @@ biocLite("arrayQualityMetrics")
 
 ```
 **Note - These packages should be the only commands needed to run to install all packages, the rest of the biocLite() commands are dependencies for these packages and in some cases may need to be installed individually
+
+<H4 id="Python">Python</H4>
+Python packages are installed automatically when installing GeneLab-Microarray using pip. But for documentation purposes, these are the packages (with version numbers) that are known to work:
+
 
 
 Once the above steps are completed without error, you should be able to call GeneLab-Microarray from any directory. Try:
