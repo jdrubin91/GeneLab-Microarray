@@ -26,12 +26,14 @@ pip install --user GeneLab-Microarray
 
 <H3 id="Dependencies">Dependencies</H3>
 GeneLab-Microarray uses md5sum to check files that are copied/renamed. If you do not have this installed, and you're on MacOSX, the md5 -r option should be identical output to md5sum so within your ~/.bashrc or ~/.profile add the following:
+
 ```
 alias md5sum='md5 -r'
 ```
 
 <H4 id="R">R</H4>
 And to finish installation, open an R session and run the following commands:
+
 ```
 install.packages("optparse")
 source("http://bioconductor.org/biocLite.R")
