@@ -86,10 +86,10 @@ tryCatch({
   stop("ISA sample file could not be read by parsing tab-delimited files", call. = F)
 })
 
-#From sample file, extract column containing 'Factor Value'
+# From sample file, extract column containing 'Factor Value'
 tryCatch({
-  factorValues = studyFactors[, grepl("Factor.Value", colnames(studyFactors))]
-  row.names(factorValues) = studyFactors[, grepl("Sample.Name", colnames(studyFactors))]
+  factorValues = as.data.frame(studyFactors[, grepl("Factor.Value", colnames(studyFactors))])
+  row.names(factorValues) = studyFactors[, grepl("^Sample.Name$", colnames(studyFactors))]
   {
     # Match sample names in file name
     ## [replace('_','-').replace('(','-').replace(')','-').replace(' ','-').strip('-')]
