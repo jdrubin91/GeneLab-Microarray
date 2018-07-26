@@ -138,6 +138,11 @@ tryCatch({
 
 # Read counts data
 if (!is.null(opt$countsFiles)) {
+  ##############
+  # Temporarily treat opt$countFiles as a method to provide a whole directory containing the appropriate files
+  inFH = dir(inFH)
+  inFH = inFH[grepl("\\.tabular", inFH)]
+  ##############
   # Read in and concatenate counts data from a list of individual files
   # Assumes each file for a study has the same number of rows and they are in the same order
   sampNames = gsub("_transcriptomics_.*", "", inFH)
