@@ -16,7 +16,12 @@ option_list = list(
   make_option(
     c("-f", "--countsFiles"), 
     type = "character", 
-    help = "A list of tab-delimited counts .txt files to read in and concatenate into a dataframe within R"
+    help = "A comma-separated list of tab-delimited counts .txt files to read in and concatenate into a dataframe within R"
+  ),
+  make_option(
+    c("-d", "--inputDirectory"), 
+    type = "character", 
+    help = "A path to a directory containing a set of tab-delimited counts .txt files to read in and concatenate into a dataframe within R"
   ),
   make_option(
     c("-i", "--ISApath"), 
@@ -69,15 +74,21 @@ addSlash = function(string) {
   return(string)
 }
 
-if (is.null(opt$countsMatrix) & is.null(opt$countsFiles)) {
+if (is.null(opt$countsMatrix) & is.null(opt$countsFiles) & is.null(opt$inputDirectory)) {
   print_help(opt_parser)
   stop("No counts data provided", call. = FALSE)
 } else {
   if (!is.null(opt$countsMatrix)) {
     inFH = opt$countsMatrix
-  } else {
+  } else if (!is.null(opt$countsFiles)) {
     inFH = opt$countsFiles
+  } else {
+    inFH = opt$inputDirectory
   }
+}
+
+if(sum(c(!is.null(opt$countsMatrix), !is.null(opt$countsFiles), !is.null(opt$inputDirectory))) > 1){
+  stop("More than one input option used, please review available input options and use only one", call. = FALSE)
 }
 
 if (is.null(opt$ISApath)) {
@@ -138,14 +149,40 @@ tryCatch({
 # Read counts data
 # wd = "/Users/dmattox/Documents/genelab/RNAseq/GLDS-101/RNAseq/Feature counts/"
 # inFH = dir(wd)
-if (!is.null(opt$countsFiles)) {
-  ##############
-  # Temporarily treat opt$countFiles as a method to provide a whole directory containing the appropriate files
+if (!is.null(opt$inputDirectory)) {
   inFH = dir(inFH)
   inFH = inFH[grepl("\\.tabular", inFH)]
-  ##############
+  
+  sampNames = gsub("_transcriptomics_.*", "", inFH)
+  sampNames = gsub("\\.txt", "", sampNames)
+  sampNames = gsub("\\.tab", "", sampNames)
+  sampNames = gsub("\\.tabular", "", sampNames)
+  sampNames = gsub(".*/", "", sampNames)
+  sampNames = gsub("GLDS-\\d*_", "", sampNames) # Extract sample names from the list of input files
+  
+  cat("Reading in:", inFH[1],"\n")
+  tmp = read.delim(inFH[1], header=T, sep = "\t", stringsAsFactors = F)
+  noID = grepl("^$",x = tmp[,1]) # Tag missing gene IDs ("")
+  if (any(noID)) {
+    tmp = tmp[!noID,]
+  }
+  cnts = as.data.frame(matrix(nrow = nrow(tmp), ncol = length(inFH)),row.names = tmp[,1])
+  cnts[,1] = tmp[,2]
+  colnames(cnts) = sampNames
+  for (i in 2:length(inFH)) {
+    cat("Reading in:", inFH[i],"\n")
+    tmp = read.delim(inFH[i], header=T, sep = "\t", stringsAsFactors = F)
+    if (any(noID)) {
+      tmp = tmp[!noID,] # Remove the same row from every separate counts file
+    }
+    cnts[,i] = tmp[,2]
+  }
+  cat("\nWarning:",sum(noID),"gene ID(s) were found missing and removed\n")
+} else if (!is.null(opt$countsFiles)) {
   # Read in and concatenate counts data from a list of individual files
   # Assumes each file for a study has the same number of rows and they are in the same order
+  inFH = strsplit(inFH, split = ",")[[1]]
+  
   sampNames = gsub("_transcriptomics_.*", "", inFH)
   sampNames = gsub("\\.txt", "", sampNames)
   sampNames = gsub("\\.tab", "", sampNames)
