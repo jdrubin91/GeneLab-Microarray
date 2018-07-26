@@ -177,9 +177,6 @@ if(sum(group == 1) == 0 | sum(group == 2) == 0){
   stop("One or both comparison groups were found to be empty. Exiting...", call.=F)
 }
 
-eset = eset[,!(group == 0 | group == 3 | group == 4)]
-group = group[!(group == 0 | group == 3 | group == 4)]
-
 # # Troubleshooting print statements
 # cat("\nGroup1:\n",colnames(eset)[group == 1],"\n")
 # cat("\nGroup2:\n",colnames(eset)[group == 2],"\n")
