@@ -130,8 +130,8 @@ if(nrow(factorValues) != ncol(eset)){
 esetSampNames <- colnames(eset)
 if ( all(esetSampNames %in% row.names(factorValues)) ){
   # Sample names match exactly between file names and metadata and can be used to order the factors
-  factorValues = as.data.frame(factorValues[sampNames,])
-  row.names(factorValues) = sampNames # Reset the row names of the factorValues object in the case where there is only one factor and the row names are lost
+  factorValues = as.data.frame(factorValues[esetSampNames,])
+  row.names(factorValues) = esetSampNames # Reset the row names of the factorValues object in the case where there is only one factor and the row names are lost
 } else {
   # Match by non-case-sensitive pattern matching
   newOrder = rep(0,ncol(eset))
@@ -139,7 +139,7 @@ if ( all(esetSampNames %in% row.names(factorValues)) ){
     newOrder[i] = grep(pattern = esetSampNames[i], x = row.names(factorValues),ignore.case = T)
   }
   factorValues = as.data.frame(factorValues[newOrder,])
-  row.names(factorValues) = sampNames # Reset the row names of the factorValues object in the case where there is only one factor and the row names are lost
+  row.names(factorValues) = esetSampNames # Reset the row names of the factorValues object in the case where there is only one factor and the row names are lost
 }
 
 if (!is.null(opt$rmOutliers)){
