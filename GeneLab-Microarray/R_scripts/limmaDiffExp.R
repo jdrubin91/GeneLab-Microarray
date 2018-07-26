@@ -130,14 +130,16 @@ if(nrow(factorValues) != ncol(eset)){
 esetSampNames <- colnames(eset)
 if ( all(esetSampNames %in% row.names(factorValues)) ){
   # Sample names match exactly between file names and metadata and can be used to order the factors
-  factorValues = factorValues[esetSampNames,]
+  factorValues = as.data.frame(factorValues[sampNames,])
+  row.names(factorValues) = sampNames # Reset the row names of the factorValues object in the case where there is only one factor and the row names are lost
 } else {
   # Match by non-case-sensitive pattern matching
   newOrder = rep(0,ncol(eset))
   for(i in 1:ncol(eset)){ # Reorder the factorValues dataframe to match the order of sample names in the expression set
     newOrder[i] = grep(pattern = esetSampNames[i], x = row.names(factorValues),ignore.case = T)
   }
-  factorValues = factorValues[newOrder,] 
+  factorValues = as.data.frame(factorValues[newOrder,])
+  row.names(factorValues) = sampNames # Reset the row names of the factorValues object in the case where there is only one factor and the row names are lost
 }
 
 if (!is.null(opt$rmOutliers)){
