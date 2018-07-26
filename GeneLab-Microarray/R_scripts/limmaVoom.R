@@ -252,7 +252,7 @@ group = group[!(group == 4)]
 
 #Create a design matrix
 group = as.factor(group)
-design <- model.matrix(~0+group)
+design = model.matrix( ~ 0 + group)
 
 # Create voom object
 cat("\nApplying voom transformation and performing differential expression analysis...\n")

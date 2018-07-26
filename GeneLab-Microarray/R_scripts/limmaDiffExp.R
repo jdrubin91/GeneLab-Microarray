@@ -35,6 +35,12 @@ option_list = list(
     help = "Name of (or path to) file to write results to (default: DGE.txt)"
   ),
   make_option(
+    c("-t", "--trend"),
+    type = "logical",
+    default = "FALSE",
+    help = "Logical option to use limma-trend, setting the trend argument for the eBayes function  (default: FALSE)"
+  ),
+  make_option(
     c("-r", "--rmOutliers"), 
     type = "character", 
     help = "Underscore-delimited list of samples to exclude as outliers from differential expression analysis, matching the sample names in the metadata [ex: GSM1234_GSM1235]"
@@ -188,13 +194,18 @@ group = group[!(group == 4)]
 
 #Create a design matrix based on the ordering of the columns within eset
 group = as.factor(group)
-design <- model.matrix(~0+group)
+design = model.matrix( ~ 0 + group)
 
 #This part of the script is straight from Limma documentation
 fit <- lmFit(eset, design)
 contrast.matrix <- makeContrasts(group1-group2,levels=design)
 fit2 <- contrasts.fit(fit, contrast.matrix)
-fit2 <- eBayes(fit2)
+if (opt$trend) {
+  fit2 <- eBayes(fit2, trend = TRUE)
+} else {
+  fit2 <- eBayes(fit2, trend = FALSE)
+}
+
 
 #Here we write the results to a tab delimited text file that is ordered by adjusted p-value
 #coef refers to which column is of interest (1 is log2FC), adjust refers to multiple hypothesis testing method ("BH" = Benjamini & Hochberg)
