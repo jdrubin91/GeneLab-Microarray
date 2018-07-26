@@ -69,9 +69,6 @@ addSlash = function(string) {
   return(string)
 }
 
-# wd = "/Users/dmattox/Documents/genelab/RNAseq/GLDS-101/RNAseq/Feature counts/"
-# inFH = dir(wd)
-
 if (is.null(opt$countsMatrix) & is.null(opt$countsFiles)) {
   print_help(opt_parser)
   stop("No counts data provided", call. = FALSE)
@@ -100,6 +97,8 @@ if (!is.null(opt$group1) & !is.null(opt$group2)){
   print_help(opt_parser)
   stop("Factor levels not provided or improperly formated", call.=FALSE)
 }
+
+outFH = opt$output
 
 suppressPackageStartupMessages(library("limma"))
 suppressPackageStartupMessages(library("edgeR"))
@@ -137,6 +136,8 @@ tryCatch({
 })
 
 # Read counts data
+# wd = "/Users/dmattox/Documents/genelab/RNAseq/GLDS-101/RNAseq/Feature counts/"
+# inFH = dir(wd)
 if (!is.null(opt$countsFiles)) {
   ##############
   # Temporarily treat opt$countFiles as a method to provide a whole directory containing the appropriate files
@@ -169,7 +170,6 @@ if (!is.null(opt$countsFiles)) {
     }
     cnts[,i] = tmp[,2]
   }
-  cat("\n")
   cat("\nWarning:",sum(noID),"gene ID(s) were found missing and removed\n")
 } else {
   # If data read in as a counts matrix
@@ -184,7 +184,7 @@ if (!is.null(opt$countsFiles)) {
 dge = DGEList(cnts)
 if (opt$normalization %in% c("TMM", "RLE", "upperquartile", "none")){
   dge = calcNormFactors(dge, method = opt$normalization)
-  cat("Normalized with method:",opt$normalization,"\n")
+  cat("Normalized with method:",opt$normalization,"\n\n")
 } else{
   warning("Normalization method not recognized, data was not normalized", call. = F)
 }
@@ -252,7 +252,7 @@ group = as.factor(group)
 design <- model.matrix(~0+group)
 
 # Create voom object
-cat("\nApplying voom transformation...\n")
+cat("\nApplying voom transformation and performing differential expression analysis...\n")
 v = voom(dge, design, plot = F)
 
 # Standard limma differential gene expression analysis
