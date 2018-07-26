@@ -247,6 +247,9 @@ if(sum(group == 1) == 0 | sum(group == 2) == 0){
   stop("One or both comparison groups were found to be empty. Exiting...", call.=F)
 }
 
+dge = dge[,!(group == 4)] # Remove outliers before fitting the linear model
+group = group[!(group == 4)]
+
 #Create a design matrix
 group = as.factor(group)
 design <- model.matrix(~0+group)

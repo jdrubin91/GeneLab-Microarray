@@ -164,7 +164,7 @@ if(sum(group == 4) > 0){
   cat("The following samples were indicated to be outliers and were removed from further analysis:\n",rownames(factorValues)[group == 4],"\n")
 }
 if(sum(group == 3) > 0){
-  cat("The following samples belonged to both groups and were removed from further analysis:\n",rownames(factorValues)[group == 3],"\n")
+  cat("The following samples belonged to both groups and not considered in the diffrential expression analysis:\n",rownames(factorValues)[group == 3],"\n")
 }
 if(sum(group == 3) == nrow(factorValues)){
   stop("All of the samples belonged to both groups! Exiting.", call.=F)
@@ -178,6 +178,9 @@ if(sum(group == 0) > 0){
 if(sum(group == 1) == 0 | sum(group == 2) == 0){
   stop("One or both comparison groups were found to be empty. Exiting...", call.=F)
 }
+
+eset = eset[,!(group == 4)] # Remove outliers before fitting the linear model
+group = group[!(group == 4)]
 
 # # Troubleshooting print statements
 # cat("\nGroup1:\n",colnames(eset)[group == 1],"\n")
