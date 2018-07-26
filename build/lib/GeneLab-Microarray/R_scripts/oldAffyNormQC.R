@@ -84,7 +84,11 @@ option_list = list(
     default = FALSE,
     help = "Include a NUSE plot in the QC output, adds significantly to runtime (default = FALSE)"
   ),
-  make_option("--GLDS", type = "character", help = "GLDS accession number for plot outputs (ie '21' for GLDS-21)")
+  make_option(
+    "--GLDS", 
+    type = "character", 
+    help = "GLDS accession number for plot outputs (ie '21' for GLDS-21)"
+  )
 )
 
 opt_parser = OptionParser(option_list = option_list)
@@ -139,11 +143,11 @@ if (is.null(opt$GLDS)) {
   glAn = paste('GLDS-', opt$GLDS, sep = '')
 }
 
-# Load initial libraries
+# Load affy package to read in .CEL files
 suppressPackageStartupMessages(require(affy))
 
 # setwd("~/Documents/genelab/rot1/GLDS-4/microarray/")
-celFiles <- list.celfiles(full.names = TRUE)
+celFiles = list.celfiles(full.names = TRUE)
 sampNames = gsub("_microarray_.*", "", celFiles)
 sampNames = gsub(".CEL", "", sampNames)
 sampNames = gsub(".*/", "", sampNames)
@@ -172,11 +176,12 @@ if (grepl("-st-", raw@cdfName, ignore.case = T)) {
   st = F
 }
 
-setwd(relDir) # Return the working directory to direcotry script was called from to enable use of relative paths
+setwd(relDir) # Return the working directory to directory script was called from to enable use of relative paths
 # Create QC output directory
 qcDir = addSlash(opt$QCDir)
-if (!file.exists(qcDir))
+if (!file.exists(qcDir)){ # Create QC directory if it does not exist yet
   dir.create(qcDir)
+}
 
 # Output array information to a separate file
 write.table(
@@ -204,13 +209,6 @@ if(QCout == T) {
               483,493,498,503,508,535,552,575,635,655)
   color = grDevices::colors()[rep(toMatch,10)] # Create a library of colors for plotting
   
-  
- # library(arrayQualityMetrics)
- # arrayQualityMetrics(expressionset = raw,
- #                     outdir = paste(qcDir,"raw_report",sep=""),
- #                     force = T,
- #                     do.logtransform = T)
-  
   #Images
   cat("\tGenerating raw images")
   if (st == T) {
@@ -225,8 +223,7 @@ if(QCout == T) {
       cat(".")
     }
   } else{
-    nblines = length(celFiles) %/% 4 + as.numeric((length(celFiles) %% 4) !=
-                                                    0)
+    nblines = length(celFiles) %/% 4 + as.numeric((length(celFiles) %% 4) != 0)
     png(
       paste(qcDir, glAn, '_images.png', sep = ''),
       width = 800,
@@ -468,10 +465,10 @@ if (opt$outputData == TRUE) {
       sep = "\t",
       quote = F
     )
-    cat("Success! Normalized data saved to", paste(outDir, outFH, sep=""), "as both a .txt and a .RData file\n")
+    cat("Success! Normalized data saved to", paste(outDir, outFH, sep=""), "as both a .txt and a .RData file\n\n")
   } else if (opt$outType == "R") {
     save(eset, file = paste(outDir, outFH, ".rda", sep = ""))
-    cat("Success! Normalized data saved to", paste(outDir, outFH, sep=""), "as a .RData file\n")
+    cat("Success! Normalized data saved to", paste(outDir, outFH, sep=""), "as a .RData file\n\n")
   } else if (opt$outType == "txt") {
     write.table(
       eset,
@@ -479,157 +476,149 @@ if (opt$outputData == TRUE) {
       sep = "\t",
       quote = F
     )
-    cat("Success! Normalized data saved to", paste(outDir, outFH, sep=""), "as a .txt file\n")
+    cat("Success! Normalized data saved to", paste(outDir, outFH, sep=""), "as a .txt file\n\n")
   } else{
     print_help(opt_parser)
     stop("Help, I don't know how to save this data!", call. = F)
   }
-}
-
-
-
-if(QCout == T) {
-  cat("Post normalization QC steps...\n")
-  # Post-normalization QC
   
- # arrayQualityMetrics(
- #   expressionset = expset,
- #   outdir = paste(qcDir, "normalized_report", sep = ""),
- #   force = T
- # )
-  
-  png(
-    paste(qcDir, glAn, '_normDensityDistributions.png', sep = ''),
-    width = 800,
-    height = 800
-  )
-  ylims = c(0, .8)
-  xlims = c(0, 16)
-  normVals = exprs(expset)
-  for (i in 1:ncol(normVals)) {
-    if (i == 1) {
-      plot(
-        density(normVals[, i]),
-        ylim = ylims,
-        xlim = xlims,
-        xlab = 'Normalized expression values[log2]',
-        main = paste(glAn, ' Normalized expression distributions', sep = ''),
-        col = color[i]
-      )
-      par(new = T)
-    } else{
-      plot(
-        density(normVals[, i]),
-        ylim = ylims,
-        xlim = xlims,
-        axes = F,
-        xlab = '',
-        ylab = '',
-        main = '',
-        col = color[i]
-      )
-      par(new = T)
-    }
-  }
-  legend(
-    13,
-    0.8,
-    col = color[1:length(celFiles)],
-    legend = sampNames
-    ,
-    pch = 15,
-    bty = "n",
-    cex = 0.9,
-    pt.cex = 0.8,
-    y.intersp = 0.8
-  )
-  garbage <- dev.off()
-  
-  # Boxplots
-  png(
-    paste(qcDir, glAn, '_normBoxplot.png', sep = ''),
-    width = 800,
-    height = 400
-  )
-  par(mar = c(7, 5, 1, 1))
-  if (st == T) {
-    boxplot(
-      normVals,
-      las = 2,
-      outline = FALSE,
-      col = color[1:length(celFiles)],
-      main = paste(glAn, " Normalized intensities", sep = ""),
-      transfo = 'identity',
-      names = sampNames
-    )
-    mtext(
-      text = "log2 Intensity",
-      side = 2,
-      line = 2.5,
-      las = 0
-    )
-  } else{
-    boxplot(
-      normVals,
-      las = 2,
-      outline = FALSE,
-      col = color[1:length(celFiles)],
-      main = paste(glAn, " Normalized intensities", sep = ""),
-      names = sampNames
-    )
-    mtext(
-      text = "log2 Intensity",
-      side = 2,
-      line = 2.5,
-      las = 0
-    )
-  }
-  garbage <- dev.off()
-  
-  #MA plot
-  cat("\tGenerating MA plots from the normalized data...\n")
-  nblines = length(celFiles) %/% 3 + as.numeric((length(celFiles) %% 3) !=
-                                                  0)
-  png(
-    paste(qcDir, glAn, '_normPlotMA.png', sep = ''),
-    width = 800,
-    height = 300 * nblines
-  )
-  par(mfrow = c(nblines, 3))
-  MAplot(expset)
-  garbage <- dev.off()
-  
-  # PCA
-  cat("\tPerforming PCA of normalized data...\n")
-  normPCA = prcomp(normVals)
-  png(paste(qcDir, glAn, '_normPCA.png', sep = ''),
+  if(QCout == T) {
+    cat("Post normalization QC steps...\n")
+    # Post-normalization QC
+    
+    png(
+      paste(qcDir, glAn, '_normDensityDistributions.png', sep = ''),
       width = 800,
-      height = 800)
-  plot(
-    normPCA$rotation[, 1],
-    normPCA$rotation[, 2],
-    col = color[1:length(celFiles)],
-    pch = 16,
-    xlab = paste(
-      "PC1, ",
-      round(summary(normPCA)$importance["Proportion of Variance", 1] * 100, digits = 1),
-      "% of variance",
-      sep = ""
-    ),
-    ylab = paste(
-      "PC2, ",
-      round(summary(normPCA)$importance["Proportion of Variance", 2] * 100, digits = 1),
-      "% of variance",
-      sep = ""
-    ),
-    main = paste(glAn, " PCA of normalized data", sep = "")
-  )
-  text(
-    normPCA$rotation[, 1],
-    normPCA$rotation[, 2],
-    labels = sampNames,
-    cex = 1,
-    pos = 3
-  )
-  garbage <- dev.off()
+      height = 800
+    )
+    ylims = c(0, .8)
+    xlims = c(0, 16)
+    normVals = exprs(expset)
+    for (i in 1:ncol(normVals)) {
+      if (i == 1) {
+        plot(
+          density(normVals[, i]),
+          ylim = ylims,
+          xlim = xlims,
+          xlab = 'Normalized expression values[log2]',
+          main = paste(glAn, ' Normalized expression distributions', sep = ''),
+          col = color[i]
+        )
+        par(new = T)
+      } else{
+        plot(
+          density(normVals[, i]),
+          ylim = ylims,
+          xlim = xlims,
+          axes = F,
+          xlab = '',
+          ylab = '',
+          main = '',
+          col = color[i]
+        )
+        par(new = T)
+      }
+    }
+    legend(
+      13,
+      0.8,
+      col = color[1:length(celFiles)],
+      legend = sampNames
+      ,
+      pch = 15,
+      bty = "n",
+      cex = 0.9,
+      pt.cex = 0.8,
+      y.intersp = 0.8
+    )
+    garbage <- dev.off()
+    
+    # Boxplots
+    png(
+      paste(qcDir, glAn, '_normBoxplot.png', sep = ''),
+      width = 800,
+      height = 400
+    )
+    par(mar = c(7, 5, 1, 1))
+    if (st == T) {
+      boxplot(
+        normVals,
+        las = 2,
+        outline = FALSE,
+        col = color[1:length(celFiles)],
+        main = paste(glAn, " Normalized intensities", sep = ""),
+        transfo = 'identity',
+        names = sampNames
+      )
+      mtext(
+        text = "log2 Intensity",
+        side = 2,
+        line = 2.5,
+        las = 0
+      )
+    } else{
+      boxplot(
+        normVals,
+        las = 2,
+        outline = FALSE,
+        col = color[1:length(celFiles)],
+        main = paste(glAn, " Normalized intensities", sep = ""),
+        names = sampNames
+      )
+      mtext(
+        text = "log2 Intensity",
+        side = 2,
+        line = 2.5,
+        las = 0
+      )
+    }
+    garbage <- dev.off()
+    
+    #MA plot
+    cat("\tGenerating MA plots from the normalized data...\n")
+    nblines = length(celFiles) %/% 3 + as.numeric((length(celFiles) %% 3) !=
+                                                    0)
+    png(
+      paste(qcDir, glAn, '_normPlotMA.png', sep = ''),
+      width = 800,
+      height = 300 * nblines
+    )
+    par(mfrow = c(nblines, 3))
+    MAplot(expset)
+    garbage <- dev.off()
+    
+    # PCA
+    cat("\tPerforming PCA of normalized data...\n")
+    normPCA = prcomp(normVals)
+    png(paste(qcDir, glAn, '_normPCA.png', sep = ''),
+        width = 800,
+        height = 800)
+    plot(
+      normPCA$rotation[, 1],
+      normPCA$rotation[, 2],
+      col = color[1:length(celFiles)],
+      pch = 16,
+      xlab = paste(
+        "PC1, ",
+        round(summary(normPCA)$importance["Proportion of Variance", 1] * 100, digits = 1),
+        "% of variance",
+        sep = ""
+      ),
+      ylab = paste(
+        "PC2, ",
+        round(summary(normPCA)$importance["Proportion of Variance", 2] * 100, digits = 1),
+        "% of variance",
+        sep = ""
+      ),
+      main = paste(glAn, " PCA of normalized data", sep = "")
+    )
+    text(
+      normPCA$rotation[, 1],
+      normPCA$rotation[, 2],
+      labels = sampNames,
+      cex = 1,
+      pos = 3
+    )
+    garbage <- dev.off()
+  }
 }

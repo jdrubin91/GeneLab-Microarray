@@ -132,26 +132,26 @@ def modify_assay(metadata_out,GLDS,extension):
     new_assay_file = list()
     try:
         with open(assay_file) as F:
-            new_assay_file.append(F.readline().replace('\n','\t')+'\t'.join(['"Protocol REF"','"Parameter Value[Raw File]"',
+            new_assay_file.append(F.readline().replace('\r','').replace('\n','').replace('^M','')+'\t'+'\t'.join(['"Protocol REF"','"Parameter Value[Raw File]"',
                 '"Term Source REF"','"Term Accession Number"','"Parameter Value[Normalized Counts File]"',
                 '"Term Source REF"','"Term Accession Number"','"Parameter Value[Annotated Normalized Counts File]"',
                 '"Term Source REF"','"Term Accession Number"']))
             for line in F:
                 linelist = line.strip('\n').split('\t')
-                basefilename = linelist[0].split('.')[0].replace('_','-').replace('(','-').replace(')','-').replace(' ','-').strip('-')
-                raw_filename = '"' + GLDS + '_' + basefilename + '_microarray_raw.'+extension
-                new_assay_file.append(line.replace('\n','\t')+'\t'.join(['"GeneLab data processing protocol"', '""', '""',
+                basefilename = linelist[0].split('.')[0].replace('_','-').replace('(','-').replace(')','-').replace(' ','-').strip('-').strip('"')
+                raw_filename = GLDS + '_' + basefilename + '_microarray_raw.'+extension
+                new_assay_file.append(line.replace('\r','').replace('\n','').replace('^M','')+'\t'+'\t'.join(['"GeneLab data processing protocol"', '""', '""',
                     '"'+raw_filename+'"','"'+GLDS+'_microarray_normalized.txt"','""', '""',
-                    '"'+GLDS+'_microarray_normalized-annotated.txt"''""', '""']))
+                    '"'+GLDS+'_microarray_normalized-annotated.txt"','""', '""']))
         with open(assay_file,'w') as outfile:
-            outfile.write('\n'.join(new_assay_file))
+            outfile.write('\r\n'.join(new_assay_file))
     except:
         print "File Error: No assay file found in ISA metadata. Exiting..."
         sys.exit(1)
 
 #Creates a .txt file with all md5sum output
 def create_md5sum_out(rawdata_out,GLDS):
-    with open(os.path.join(rawdata_out,'raw',GLDS+'_md5sum.txt'),'w') as outfile:
+    with open(os.path.join(rawdata_out,'raw_files',GLDS+'_md5sum.txt'),'w') as outfile:
         outfile.write('#Action\tCheck\tOriginalFile,md5sum -> NewFile,md5sum\n')
         for original,new in zip(config.md5sum['original'],config.md5sum['new']):
             if original[0] != 'remove':
@@ -161,4 +161,12 @@ def create_md5sum_out(rawdata_out,GLDS):
                 outfile.write(original[0] + '\t' + str(check) + '\t' + ','.join(original[1:])+' -> '+','.join(new)+'\n')
             else:
                 outfile.write(original[0] + '\tN/A\t' + ','.join(original[1:])+' -> '+','.join(new)+'\n')
+
+if __name__ == "__main__":
+    metadata_out = '/Users/jonathanrubin/Google_Drive/NASA/home/processed_GLDS/GLDS-4/metadata/'
+    GLDS = 'GLDS-4'
+    extension = 'CEL'
+    outdir = '/Users/jonathanrubin/Google_Drive/NASA/home/assay_test/GLDS-4/metadata/'
+    modify_assay(metadata_out,GLDS,extension,outdir)
+
 

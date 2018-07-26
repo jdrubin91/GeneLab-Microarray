@@ -1,11 +1,11 @@
-indir = "False"
-outdir = "."
+indir = "./test_batch.txt"
+outdir = "assay_test"
 srcdir = "/Users/jonathanrubin/Google_Drive/NASA/home/GeneLab-Microarray/GeneLab-Microarray"
-wrkdir = "/private/var/folders/rr/fbksjg6n2d7_3gh_8t_jgj_r0000gn/T/tmpIrVwnR/job_working_directory/000/5/working"
+wrkdir = "/Users/jonathanrubin/Google_Drive/NASA/home"
 tempdir = "/Users/jonathanrubin/Google_Drive/NASA/home/GeneLab-Microarray/temp"
 R_dir = "/Users/jonathanrubin/Google_Drive/NASA/home/GeneLab-Microarray/GeneLab-Microarray/R_scripts"
 md5sum = {"original": [], "new": []}
-batch = "False"
+batch = "True"
 visualize = "False"
 def get_md5sum(filepath,key,action=False):
     import os, subprocess

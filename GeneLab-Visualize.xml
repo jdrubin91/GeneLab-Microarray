@@ -63,13 +63,22 @@ Other Inputs
 Usage:   GeneLab-Microarray --galaxy [args] .
 
 Arguments (',_,' delimited list with the following in order): 
-         counts_table    FILE     Counts table in txt format
-         metadata        FILE     Sample metadata file in ISA format 
-         condition1      TXT      Condition 1 to be compared    
-         condition2      TXT      Condition 2 to be compared
-         p-adj           FLOAT    Adjusted p-value cutoff for gene significance
-         html_main       FILE     Output main visualization file with graphs
-         html_folder     FOLDER   Output list of significant genes
+
+<table>
+counts_table    FILE     Counts table in txt format
+
+metadata        FILE     Sample metadata file in ISA format 
+
+condition1      TXT      Condition 1 to be compared
+
+condition2      TXT      Condition 2 to be compared
+
+p-adj           FLOAT    Adjusted p-value cutoff for gene significance
+
+html_main       FILE     Output main visualization file with graphs
+
+html_folder     FOLDER   Output list of significant genes
+</table>
 
 
     ]]></help>

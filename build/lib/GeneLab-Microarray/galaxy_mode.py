@@ -7,6 +7,7 @@ mpl.use('Agg')
 mpl.rcParams['image.cmap'] = 'jet'
 mpl.rcParams.update({'figure.autolayout': True})
 import os, subprocess, config, math, mpld3, warnings, json, pylab
+warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.stats import gaussian_kde
@@ -56,7 +57,7 @@ def run(counts_table,metadata,condition1,condition2,padj_cutoff,outliers,html_ma
     if len(x) != 0:
         #Creates heatmap of significant genes
         row_method = 'average'
-        column_method = 'single'
+        column_method = 'ward'
         row_metric = 'cityblock'
         column_metric = 'euclidean'
         color_gradient = 'red_black_green'
@@ -67,7 +68,7 @@ def run(counts_table,metadata,condition1,condition2,padj_cutoff,outliers,html_ma
         #Creates heatmap of significant genes
         print "Warning: No significant genes found at padj < " +str(padj_cutoff)+ ". Displaying top 50 genes in heatmap."
         row_method = 'average'
-        column_method = 'single'
+        column_method = 'ward'
         row_metric = 'cityblock'
         column_metric = 'euclidean'
         color_gradient = 'red_black_green'
@@ -255,7 +256,10 @@ def limma_differential(counts_table,metadata,condition1,condition2,outliers,html
                                         "--group2=" + condition2,
                                         "-o", os.path.join(html_folder,'limma_out.txt')]
 
-    output = str(subprocess.check_output(limma_differential_command).decode("utf-8"))
+    try:
+        output = str(subprocess.check_output(limma_differential_command).decode("utf-8"))
+    except:
+        subprocess.call(limma_differential_command)
 
     return output
 

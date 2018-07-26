@@ -7,6 +7,7 @@ mpl.use('Agg')
 mpl.rcParams['image.cmap'] = 'jet'
 mpl.rcParams.update({'figure.autolayout': True})
 import os, subprocess, config, math, mpld3, warnings, json, pylab
+warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.stats import gaussian_kde
@@ -34,9 +35,9 @@ def run(counts_table,metadata,condition1,condition2,padj_cutoff,outliers,html_ma
         os.makedirs(html_folder)
 
     #Copies the NASA GeneLab banner to be used in visualization
-    copy_logo_command=["scp",os.path.join(os.path.dirname(config.srcdir),"NASA_GeneLab_banner.jpg"),html_folder]
+    copy_logo_command=["scp",os.path.join(config.srcdir,"logos","NASA_GeneLab_banner.jpg"),html_folder]
     subprocess.call(copy_logo_command)
-    copy_logo_command=["scp",os.path.join(os.path.dirname(config.srcdir),"nasa_logo.png"),html_folder]
+    copy_logo_command=["scp",os.path.join(config.srcdir,"logos","nasa_logo.png"),html_folder]
     subprocess.call(copy_logo_command)
 
     #Performs differential expression via limma using custom R scripts
@@ -56,7 +57,7 @@ def run(counts_table,metadata,condition1,condition2,padj_cutoff,outliers,html_ma
     if len(x) != 0:
         #Creates heatmap of significant genes
         row_method = 'average'
-        column_method = 'single'
+        column_method = 'average'
         row_metric = 'cityblock'
         column_metric = 'euclidean'
         color_gradient = 'red_black_green'
@@ -67,7 +68,7 @@ def run(counts_table,metadata,condition1,condition2,padj_cutoff,outliers,html_ma
         #Creates heatmap of significant genes
         print "Warning: No significant genes found at padj < " +str(padj_cutoff)+ ". Displaying top 50 genes in heatmap."
         row_method = 'average'
-        column_method = 'single'
+        column_method = 'average'
         row_metric = 'cityblock'
         column_metric = 'euclidean'
         color_gradient = 'red_black_green'
@@ -162,6 +163,7 @@ def pca(x_full,column_header,condition1,condition2,html_folder):
     plot1 = ax1.plot([], [], "o", color="#BA3232", label=condition1,markersize=15,markeredgecolor="#BA3232")
     pca2 = ax1.scatter(x=c2_x,y=c2_y,c='#32BABA',s=300,edgecolor="")
     plot2 = ax1.plot([], [], "o", color="#32BABA", label=condition2,markersize=15,markeredgecolor="#32BABA")
+    cover = ax1.plot([],[], "o", color='w', markersize=16,markeredgecolor='w')
     ax1.tick_params(axis='y', which='both', left='on', right='off', labelleft='on')
     ax1.tick_params(axis='x', which='both', bottom='off', top='off', labelbottom='on')
     ax1.set_title("PCA Plot", size=25)
@@ -176,7 +178,10 @@ def pca(x_full,column_header,condition1,condition2,html_folder):
     xoff = (maxx-minx)/2.0
     ax1.set_ylim([miny-yoff,maxy+yoff])
     ax1.set_xlim([minx-xoff,maxx+xoff])
-    ax1.legend(loc="best", framealpha=0.5, fancybox=True, numpoints=1,fontsize=18)
+    l = ax1.legend(loc="best", framealpha=0.5, fancybox=True, numpoints=1,fontsize=18)
+    colors = ['#BA3232','#32BABA']
+    for i, text in enumerate(l.get_texts()):
+        text.set_color(colors[i])
     plt.savefig(os.path.join(html_folder,'PCA.png'))
     plt.savefig(os.path.join(html_folder,'PCA.svg'))
 
@@ -221,9 +226,9 @@ def get_matrix(sig_genes,counts_table,limma_output,condition1,condition2):
             if counter < 50:
                 x_50.append(append_list)
                 row_header.append(line[0])
-                if line[0] in sig_genes:
-                    x.append(append_list)
-                    sig_header.append(line[0])
+            if line[0] in sig_genes:
+                x.append(append_list)
+                sig_header.append(line[0])
             counter += 1
 
     x = np.squeeze(np.asarray(x))
@@ -255,7 +260,10 @@ def limma_differential(counts_table,metadata,condition1,condition2,outliers,html
                                         "--group2=" + condition2,
                                         "-o", os.path.join(html_folder,'limma_out.txt')]
 
-    output = str(subprocess.check_output(limma_differential_command).decode("utf-8"))
+    try:
+        output = str(subprocess.check_output(limma_differential_command).decode("utf-8"))
+    except:
+        subprocess.call(limma_differential_command)
 
     return output
 
@@ -824,7 +832,7 @@ def heatmap(x, row_header, column_header, row_method,column_method, row_metric, 
         axcb.set_title("Normalized Expression")
 
         #Save figures
-        plt.savefig(os.path.join(html_folder,'Heatmap.png'), dpi=300)
+        plt.savefig(os.path.join(html_folder,'Heatmap.png'), bbox_inches='tight', dpi=300)
         plt.savefig(os.path.join(html_folder,'Heatmap.svg'))
 
         #Create html output file
