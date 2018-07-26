@@ -37,8 +37,8 @@ option_list = list(
   make_option(
     c("-t", "--trend"),
     type = "logical",
-    default = "FALSE",
-    help = "Logical option to use limma-trend, setting the trend argument for the eBayes function  (default: FALSE)"
+    default = "TRUE",
+    help = "Logical option to use limma-trend, setting the trend argument for the eBayes function  (default: TRUE)"
   ),
   make_option(
     c("-r", "--rmOutliers"), 
