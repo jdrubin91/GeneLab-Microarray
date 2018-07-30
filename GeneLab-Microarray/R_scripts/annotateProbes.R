@@ -24,7 +24,7 @@ option_list = list(
   make_option(
     c("-a", "--arrayInfo"),
     type = "character",
-    default = "./QC_output/arrayInfo.txt",
+    default = "./QC_output/summary_report/arrayInfo.txt",
     help = "Name of (or path to) a file containing the array information [Line 1: Manufacturer, line 2: Array version]"
   ),
   make_option(

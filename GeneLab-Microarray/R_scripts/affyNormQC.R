@@ -130,10 +130,11 @@ if (is.null(opt$input)) {
 
 if (is.null(opt$GLDS)) {
   # Include GLDS accession number in outputs if provided
-  glAn = ''
   cat("Warning: No GLDS accession number provided\n")
   if (grepl("GLDS-[0-9]+", inPath)) {
     glAn = regmatches(inPath, regexpr("GLDS-[0-9]+", inPath)) # Attempt to extract the GLDS accession number from the input path
+  } else{
+    glAn = FALSE
   }
 } else{
   glAn = paste('GLDS-', opt$GLDS, sep = '')
@@ -148,6 +149,8 @@ sampNames = gsub("_microarray_.*", "", celFiles)
 sampNames = gsub(".CEL", "", sampNames)
 sampNames = gsub(".*/", "", sampNames)
 sampNames = gsub("GLDS-\\d*_", "", sampNames)# Extract sample names from the list of .CEL files
+
+cat("Detected .CEL files:\n", celFiles,"\n")
 
 raw = ReadAffy(filenames = celFiles,
                sampleNames = sampNames)
@@ -188,13 +191,24 @@ if (!file.exists(summDir)){ # Create a summary report directory within qcDir if 
   dir.create(summDir)
 }
 
-write.table(
-  arrInfo,
-  file = paste(summDir, glAn, "_arrayInfo.txt", sep = ""),
-  quote = F,
-  col.names = F,
-  row.names = F
-)
+if (glAn != FALSE) {
+  write.table(
+    arrInfo,
+    file = paste(summDir, glAn, "_arrayInfo.txt", sep = ""),
+    quote = F,
+    col.names = F,
+    row.names = F
+  )
+} else {
+  write.table(
+    arrInfo,
+    file = paste("arrayInfo.txt", sep = ""),
+    quote = F,
+    col.names = F,
+    row.names = F
+  )
+}
+
 cat("Array type detected.\n")
 
 # Exit script if arrayInfoOnly mode is True
