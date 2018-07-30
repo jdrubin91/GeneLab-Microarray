@@ -150,8 +150,8 @@ def modify_assay(metadata_out,GLDS,extension):
         sys.exit(1)
 
 #Creates a .txt file with all md5sum output
-def create_md5sum_out(rawdata_out,GLDS):
-    with open(os.path.join(rawdata_out,'raw_files',GLDS+'_md5sum.txt'),'w') as outfile:
+def create_md5sum_out(rawdata_out,GLDS,output_directory='raw_files'):
+    with open(os.path.join(rawdata_out,output_directory,GLDS+'_md5sum.txt'),'w') as outfile:
         outfile.write('#Action\tCheck\tOriginalFile,md5sum -> NewFile,md5sum\n')
         for original,new in zip(config.md5sum['original'],config.md5sum['new']):
             if original[0] != 'remove':

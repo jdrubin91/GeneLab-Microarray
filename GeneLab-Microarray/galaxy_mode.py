@@ -37,7 +37,7 @@ def run(counts_table,metadata,condition1,condition2,padj_cutoff,outliers,html_ma
     #Copies the NASA GeneLab banner to be used in visualization
     copy_logo_command=["scp",os.path.join(config.srcdir,"logos","NASA_GeneLab_banner.jpg"),html_folder]
     subprocess.call(copy_logo_command)
-    copy_logo_command=["scp",os.path.join(config.srcdir,"logos","nasa_logo.png"),html_folder]
+    copy_logo_command=["scp",os.path.join(config.srcdir,"logos","GeneLab_logo.png"),html_folder]
     subprocess.call(copy_logo_command)
 
     #Performs differential expression via limma using custom R scripts
@@ -394,7 +394,7 @@ def differential_visualize(diffExp_file,pval_cut,condition1,condition2,html_main
         <title>GeneLab-Visualize</title>
         <style>
             * {
-                    font-family:Arial, Helvetica, sans-serif;
+                    font-family:Helvetica Neue, Helvetica, sans-serif;
                 }
             img {
                     max-width: 100%;
@@ -423,12 +423,14 @@ def differential_visualize(diffExp_file,pval_cut,condition1,condition2,html_main
                 }
             .figure {
                     border: 1px solid #ddd;
-                    border-radius: 4px;
+                    background-color:#ffffff;
+                    border-radius: 2px;
                     padding: 5px;
                     width: 48%;
+                    margin: 5px;
                 }
             .figure:hover {
-                    box-shadow: 0 0 2px 1px rgba(0, 140, 186, 0.5);
+                    box-shadow: 0 0 5px 2px rgba(0, 140, 186, 0.5);
                         }
             .footer {
                     position: relative;
@@ -443,39 +445,38 @@ def differential_visualize(diffExp_file,pval_cut,condition1,condition2,html_main
             <a target="_blank" href="https://genelab.nasa.gov">
                 <img src="NASA_GeneLab_banner.jpg" alt="GeneLab banner">
             </a>
-            <div class="top-left"><H1>GeneLab-Visualize</H1></div>
         </div>
         <H2>"""+condition1+' vs. '+condition2+"""</H2>
         <H4>There were <a style="font-size: 20" href="Gene_list.html">"""+str(len(scattersigx))+""" significant genes</a> called with p-adj < """+str(pval_cut)+"""</H4>
+
+        <div class="row">
+            <div class="figure" style="float:right">
+                <a href="PCA.html">
+                  <img src="PCA.png" alt="PCA">
+                </a>
+                <p style="padding-left:20px; padding-right:20px; text-align:justify"><b>Figure 1: <a target="_blank" href="https://en.wikipedia.org/wiki/Principal_component_analysis">PCA</a></b> - Principal component analysis (PCA) is a statistical procedure that uses an orthogonal transformation to convert a set of observations of possibly correlated variables into a set of values of linearly uncorrelated variables called principal components.</p>
+            </div>
+            <div class="figure" style="float:left">
+                <a href="Heatmap.html">
+                  <img src="Heatmap.png" alt="Heatmap">
+                </a>
+                <p style="padding-left:20px; padding-right:20px; text-align:justify"><b>Figure 2: <a target="_blank" href="https://en.wikipedia.org/wiki/Heat_map">Heatmap</a></b> - A heatmap is is a graphical representation of data where the individual values contained in a matrix are represented as colors. Only significant genes are plotted. Values are normalized to unit scale (mean=0, variance=1).</p>
+            </div>
+        </div>
 
         <div class="row">
             <div class="figure" style="float:left">
                 <a href="MA_plot.html">
                   <img src="MA_plot.png" alt="MA-plot">
                 </a>
-                <p style="padding-left:20px; padding-right:20px; text-align:justify"><b>Figure 1: <a target="_blank" href="https://en.wikipedia.org/wiki/MA_plot">MA-Plot</a></b> - An MA plot is an application of a Bland-Altman plot for visual representation of genomic data. The plot visualizes the differences between measurements taken in two samples, by transforming the data onto M (log ratio) and A (mean average) scales, then plotting these values. (Red = significant genes)</p>
+                <p style="padding-left:20px; padding-right:20px; text-align:justify"><b>Figure 3: <a target="_blank" href="https://en.wikipedia.org/wiki/MA_plot">MA-Plot</a></b> - An MA plot is an application of a Bland-Altman plot for visual representation of genomic data. The plot visualizes the differences between measurements taken in two samples, by transforming the data onto M (log ratio) and A (mean average) scales, then plotting these values. (Red = significant genes)</p>
             </div>
 
             <div class="figure" style="float:right">
                 <a href="Volcano_plot.html">
                   <img src="Volcano_plot.png" alt="Volcano plot">
                 </a>
-                <p style="padding-left:20px; padding-right:20px; text-align:justify"><b>Figure 2: <a target="_blank" href="https://en.wikipedia.org/wiki/Volcano_plot_(statistics)">Volcano Plot</a></b> - A volcano plot is a type of scatter-plot that is used to quickly identify changes in large data sets composed of replicate data. It plots significance versus fold-change on the y and x axes, respectively. (Red = significant genes)</p>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="figure" style="float:left">
-                <a href="Heatmap.html">
-                  <img src="Heatmap.png" alt="Heatmap">
-                </a>
-                <p style="padding-left:20px; padding-right:20px; text-align:justify"><b>Figure 3: <a target="_blank" href="https://en.wikipedia.org/wiki/Heat_map">Heatmap</a></b> - A heatmap is is a graphical representation of data where the individual values contained in a matrix are represented as colors. Only significant genes are plotted. Values are normalized to unit scale (mean=0, variance=1).</p>
-            </div>
-            <div class="figure" style="float:right">
-                <a href="PCA.html">
-                  <img src="PCA.png" alt="PCA">
-                </a>
-                <p style="padding-left:20px; padding-right:20px; text-align:justify"><b>Figure 4: <a target="_blank" href="https://en.wikipedia.org/wiki/Principal_component_analysis">PCA</a></b> - Principal component analysis (PCA) is a statistical procedure that uses an orthogonal transformation to convert a set of observations of possibly correlated variables into a set of values of linearly uncorrelated variables called principal components.</p>
+                <p style="padding-left:20px; padding-right:20px; text-align:justify"><b>Figure 4: <a target="_blank" href="https://en.wikipedia.org/wiki/Volcano_plot_(statistics)">Volcano Plot</a></b> - A volcano plot is a type of scatter-plot that is used to quickly identify changes in large data sets composed of replicate data. It plots significance versus fold-change on the y and x axes, respectively. (Red = significant genes)</p>
             </div>
         </div>
 
@@ -484,9 +485,8 @@ def differential_visualize(diffExp_file,pval_cut,condition1,condition2,html_main
 
 
         <div class="footer" style="float:right">
-            <a target="_blank" href="https://www.nasa.gov">
-                <img style="float:right;" src="nasa_logo.png" alt="NASA logo">
-            </a>
+            <img style="float:right;width:300px" src="GeneLab_logo.png" alt="GeneLab logo">
+            <p><a style="color:#ff8c00; text-decoration:none;" target="_blank" href="https://www.nasa.gov">www.nasa.gov</a></p>
         </div>
         <div class="footer" style="float:left">
             <address style="color:gray;">

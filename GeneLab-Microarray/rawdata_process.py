@@ -34,16 +34,19 @@ def copy(rawdata_directory):
             #md5sum command to check copied files
             config.get_md5sum(cp_command[2],'new')
 
+            #Get final file extension to determine what decompression to do first
+            extension = file1.split('.')[-1]
+
             #Once copied, unzip/untar/gunzip compressed directories (if there are any)
-            if '.zip' in file1:
+            if 'zip' in extension:
                 unzip_command = ["unzip", "-o", "-qq",out_file_path,"-d",rawdata_out]
                 subprocess.call(unzip_command)
                 remove_command = ["rm", out_file_path]
                 subprocess.call(remove_command)
-            if '.gz' in file1:
+            if 'gz' in extension:
                 gunzip_command = ["gunzip", "-f",out_file_path]
                 subprocess.call(gunzip_command)
-            if '.tar' in file1:
+            if 'tar' in extension:
                 untar_command = ["tar", "-xf", out_file_path, "-C", rawdata_out]
                 subprocess.call(untar_command)
                 remove_command = ["rm", out_file_path]
@@ -51,16 +54,35 @@ def copy(rawdata_directory):
 
     #Sometimes compressed files spit out more compressed files so loop through the files once again to catch those and uncompress them
     for file2 in os.listdir(rawdata_out):
+        extension = file2.split('.')[-1]
         out_file_path = os.path.join(rawdata_out,file2)
-        if '.zip' in file2:
+        if 'zip' in extension:
             unzip_command = ["unzip", "-o", "-qq", out_file_path, "-d", rawdata_out]
             subprocess.call(unzip_command)
             remove_command = ["rm", out_file_path]
             subprocess.call(remove_command)
-        if '.gz' in file2:
+        if 'gz' in extension:
             gunzip_command = ["gunzip", "-f", out_file_path]
             subprocess.call(gunzip_command)
-        if '.tar' in file2:
+        if 'tar' in extension:
+            untar_command = ["tar", "-xf", out_file_path, "-C", rawdata_out]
+            subprocess.call(untar_command)
+            remove_command = ["rm", out_file_path]
+            subprocess.call(remove_command)
+
+    #Sometimes compressed files spit out more compressed files so loop through the files once again to catch those and uncompress them
+    for file2 in os.listdir(rawdata_out):
+        extension = file2.split('.')[-1]
+        out_file_path = os.path.join(rawdata_out,file2)
+        if 'zip' in extension:
+            unzip_command = ["unzip", "-o", "-qq", out_file_path, "-d", rawdata_out]
+            subprocess.call(unzip_command)
+            remove_command = ["rm", out_file_path]
+            subprocess.call(remove_command)
+        if 'gz' in extension:
+            gunzip_command = ["gunzip", "-f", out_file_path]
+            subprocess.call(gunzip_command)
+        if 'tar' in extension:
             untar_command = ["tar", "-xf", out_file_path, "-C", rawdata_out]
             subprocess.call(untar_command)
             remove_command = ["rm", out_file_path]
@@ -155,18 +177,19 @@ def detect_array(GLDS_path):
     return array
 
 #This function simply runs the R script affyNormQC.R specifying the correct inputs
-def qc_and_normalize(rawdata_out,GLDS):
+def qc_and_normalize(rawdata_out,GLDS,input_directory='raw_files'):
     R_script = os.path.join(config.R_dir,'affyNormQC.R')
     R_command = ["Rscript", R_script, 
                     "-n", "rma", 
                     "-o", GLDS+"_microarray_normalized",
                     "--outDir="+rawdata_out, 
                     "--QCDir="+os.path.join(rawdata_out,'QC_reporting'), 
-                    "-i", os.path.join(rawdata_out,'raw_files'),
+                    "-i", os.path.join(rawdata_out,input_directory),
                     "--outType=txt", 
                     "--outputData=TRUE",
                     "--QCoutput=TRUE", 
                     "--GLDS="+GLDS.split('-')[1]]
+    print os.path.join(rawdata_out,input_directory)
     subprocess.call(R_command)
     if not GLDS+'_microarray_normalized.txt' in os.listdir(rawdata_out):
         print "Warning: Normalized expression file missing, some processing steps may have failed"

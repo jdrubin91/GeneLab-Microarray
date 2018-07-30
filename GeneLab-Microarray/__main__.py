@@ -72,24 +72,37 @@ def run():
             print "Working Directory: ", wrkdir
             print "Processing: " + indir + "\nWriting output to: " + outdir
             GLDS = os.path.basename(indir)
-            rawdata_out = os.path.join(outdir,GLDS,'microarray')
-            metadata_out = os.path.join(outdir,GLDS,'metadata')
-            metadata_in = os.path.join(indir,'metadata')
-            rawdata_in = os.path.join(indir,'microarray')
-            if os.path.isdir(metadata_in):
-                metadata_process.clean(metadata_in)
-            else:
-                raise IOError('metadata directory within input not found. See README for expected directory structure.')
+            if 'GLDS' in GLDS:
+                rawdata_out = os.path.join(outdir,GLDS,'microarray')
+                metadata_out = os.path.join(outdir,GLDS,'metadata')
+                metadata_in = os.path.join(indir,'metadata')
+                rawdata_in = os.path.join(indir,'microarray')
+                if os.path.isdir(metadata_in):
+                    metadata_process.clean(metadata_in)
+                else:
+                    raise IOError('metadata directory within input not found. See README for expected directory structure.')
 
-            #Copy rawdata into output
-            if os.path.isdir(rawdata_in):
-                rawdata_process.copy(rawdata_in)
-                rawdata_process.rename(os.path.join(outdir,GLDS))
-                metadata_process.create_md5sum_out(rawdata_out,GLDS)
-                rawdata_process.qc_and_normalize(rawdata_out,GLDS)
-                rawdata_process.annotate(rawdata_out,GLDS)
-            else:
-                raise IOError('microarray directory within input not found. See README for expected directory structure.')
+                #Copy rawdata into output
+                if os.path.isdir(rawdata_in):
+                    rawdata_process.copy(rawdata_in)
+                    rawdata_process.rename(os.path.join(outdir,GLDS))
+                    metadata_process.create_md5sum_out(rawdata_out,GLDS)
+                    rawdata_process.qc_and_normalize(rawdata_out,GLDS)
+                    rawdata_process.annotate(rawdata_out,GLDS)
+                else:
+                    raise IOError('microarray directory within input not found. See README for expected directory structure.')
+            elif 'GSE' in GLDS:
+                rawdata_out = os.path.join(outdir,GLDS,'microarray')
+                metadata_out = os.path.join(outdir,GLDS,'metadata')
+                metadata_in = os.path.join(indir,'metadata')
+                rawdata_in = os.path.join(indir,'microarray')
+                if os.path.isdir(rawdata_in):
+                    rawdata_process.copy(rawdata_in)
+                    metadata_process.create_md5sum_out(rawdata_out,GLDS,output_directory='')
+                    rawdata_process.qc_and_normalize(rawdata_out,GLDS,input_directory='')
+                    rawdata_process.annotate(rawdata_out,GLDS)
+                else:
+                    raise IOError('microarray directory within input not found. See README for expected directory structure.')
 
             print "done."
     elif visualize != False:
