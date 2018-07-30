@@ -1,7 +1,7 @@
-indir = "./GSE-104999/"
-outdir = "../priority_batch"
+indir = "./genelab-genomespace-dev_mount_point-local/GLDS-4/"
+outdir = "test"
 srcdir = "/Users/jonathanrubin/Google_Drive/NASA/home/GeneLab-Microarray/GeneLab-Microarray"
-wrkdir = "/Users/jonathanrubin/Google_Drive/NASA/home/genelab-genomespace-dev_mount_point-local"
+wrkdir = "/Users/jonathanrubin/Google_Drive/NASA/home"
 tempdir = "/Users/jonathanrubin/Google_Drive/NASA/home/GeneLab-Microarray/temp"
 R_dir = "/Users/jonathanrubin/Google_Drive/NASA/home/GeneLab-Microarray/GeneLab-Microarray/R_scripts"
 md5sum = {"original": [], "new": []}

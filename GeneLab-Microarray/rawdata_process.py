@@ -177,19 +177,18 @@ def detect_array(GLDS_path):
     return array
 
 #This function simply runs the R script affyNormQC.R specifying the correct inputs
-def qc_and_normalize(rawdata_out,GLDS,input_directory='raw_files'):
+def qc_and_normalize(rawdata_out,GLDS):
     R_script = os.path.join(config.R_dir,'affyNormQC.R')
     R_command = ["Rscript", R_script, 
                     "-n", "rma", 
                     "-o", GLDS+"_microarray_normalized",
                     "--outDir="+rawdata_out, 
                     "--QCDir="+os.path.join(rawdata_out,'QC_reporting'), 
-                    "-i", os.path.join(rawdata_out,input_directory),
+                    "-i", os.path.join(rawdata_out,'raw_files'),
                     "--outType=txt", 
                     "--outputData=TRUE",
                     "--QCoutput=TRUE", 
                     "--GLDS="+GLDS.split('-')[1]]
-    print os.path.join(rawdata_out,input_directory)
     subprocess.call(R_command)
     if not GLDS+'_microarray_normalized.txt' in os.listdir(rawdata_out):
         print "Warning: Normalized expression file missing, some processing steps may have failed"

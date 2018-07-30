@@ -96,10 +96,13 @@ def run():
                 metadata_out = os.path.join(outdir,GLDS,'metadata')
                 metadata_in = os.path.join(indir,'metadata')
                 rawdata_in = os.path.join(indir,'microarray')
+                if not os.path.exists(metadata_out):
+                    os.makedirs(metadata_out)
                 if os.path.isdir(rawdata_in):
                     rawdata_process.copy(rawdata_in)
-                    metadata_process.create_md5sum_out(rawdata_out,GLDS,output_directory='')
-                    rawdata_process.qc_and_normalize(rawdata_out,GLDS,input_directory='')
+                    rawdata_process.rename(os.path.join(outdir,GLDS))
+                    metadata_process.create_md5sum_out(rawdata_out,GLDS)
+                    rawdata_process.qc_and_normalize(rawdata_out,GLDS)
                     rawdata_process.annotate(rawdata_out,GLDS)
                 else:
                     raise IOError('microarray directory within input not found. See README for expected directory structure.')

@@ -120,8 +120,8 @@ def read_assay(metadata_out):
 
         return assay_dict
     except:
-        print "File Error: No assay file found in ISA metadata. Exiting..."
-        sys.exit(1)
+        print "Warining: No assay file found in ISA metadata. Files will be renamed without considering metadata."
+        return assay_dict
 
 def modify_assay(metadata_out,GLDS,extension):
     for filename in os.listdir(metadata_out):
@@ -146,12 +146,11 @@ def modify_assay(metadata_out,GLDS,extension):
         with open(assay_file,'w') as outfile:
             outfile.write('\r\n'.join(new_assay_file))
     except:
-        print "File Error: No assay file found in ISA metadata. Exiting..."
-        sys.exit(1)
+        print "Warning: No assay file found in ISA metadata. Proceeding without metadata modifications."
 
 #Creates a .txt file with all md5sum output
-def create_md5sum_out(rawdata_out,GLDS,output_directory='raw_files'):
-    with open(os.path.join(rawdata_out,output_directory,GLDS+'_md5sum.txt'),'w') as outfile:
+def create_md5sum_out(rawdata_out,GLDS):
+    with open(os.path.join(rawdata_out,'raw_files',GLDS+'_md5sum.txt'),'w') as outfile:
         outfile.write('#Action\tCheck\tOriginalFile,md5sum -> NewFile,md5sum\n')
         for original,new in zip(config.md5sum['original'],config.md5sum['new']):
             if original[0] != 'remove':
