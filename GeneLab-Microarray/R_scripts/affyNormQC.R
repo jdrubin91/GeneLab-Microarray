@@ -83,7 +83,7 @@ option_list = list(
   make_option(
     "--GLDS", 
     type = "character", 
-    help = "GLDS accession number for plot outputs (ie '21' for GLDS-21)"
+    help = "Full accession number for QC outputs (ie 'GLDS-21' for GLDS-21)"
   )
 )
 
@@ -137,7 +137,7 @@ if (is.null(opt$GLDS)) {
     glAn = FALSE
   }
 } else{
-  glAn = paste('GLDS-', opt$GLDS, sep = '')
+  glAn = opt$GLDS
 }
 
 # Load affy package to read in .CEL files
