@@ -1,5 +1,5 @@
-indir = "./genelab-genomespace-dev_mount_point-local/GLDS-4/"
-outdir = "test"
+indir = "./genelab-genomespace-dev_mount_point-local/GSE-93838/"
+outdir = "priority_batch"
 srcdir = "/Users/jonathanrubin/Google_Drive/NASA/home/GeneLab-Microarray/GeneLab-Microarray"
 wrkdir = "/Users/jonathanrubin/Google_Drive/NASA/home"
 tempdir = "/Users/jonathanrubin/Google_Drive/NASA/home/GeneLab-Microarray/temp"
