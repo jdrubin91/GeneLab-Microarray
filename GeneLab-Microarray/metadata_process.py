@@ -133,16 +133,15 @@ def modify_assay(metadata_out,GLDS,extension):
     try:
         with open(assay_file) as F:
             new_assay_file.append(F.readline().replace('\r','').replace('\n','').replace('^M','')+'\t'+'\t'.join(['"Protocol REF"','"Parameter Value[Raw File]"',
-                '"Term Source REF"','"Term Accession Number"','"Parameter Value[Normalized Counts File]"',
-                '"Term Source REF"','"Term Accession Number"','"Parameter Value[Annotated Normalized Counts File]"',
+                '"Term Source REF"','"Term Accession Number"','"Parameter Value[Processed Data]"',
                 '"Term Source REF"','"Term Accession Number"']))
             for line in F:
                 linelist = line.strip('\n').split('\t')
                 basefilename = linelist[0].split('.')[0].replace('_','-').replace('(','-').replace(')','-').replace(' ','-').replace(GLDS,'').replace('microarray','').replace('--','-').strip('-').strip('"')
                 raw_filename = GLDS + '_' + basefilename + '_microarray_raw.'+extension
-                new_assay_file.append(line.replace('\r','').replace('\n','').replace('^M','')+'\t'+'\t'.join(['"GeneLab data processing protocol"', '""', '""',
-                    '"'+raw_filename+'"','"'+GLDS+'_microarray_normalized.txt"','""', '""',
-                    '"'+GLDS+'_microarray_normalized-annotated.txt"','""', '""']))
+                new_assay_file.append(line.replace('\r','').replace('\n','').replace('^M','')+'\t'+'\t'.join(['"GeneLab data processing protocol"',
+                    '"'+raw_filename+'"','""', '""',
+                    '"'+GLDS+'/microarray/processed_data/"','""', '""',]))
         with open(assay_file,'w') as outfile:
             outfile.write('\r\n'.join(new_assay_file))
     except:

@@ -182,20 +182,20 @@ def qc_and_normalize(rawdata_out,GLDS):
     R_command = ["Rscript", R_script, 
                     "-n", "rma", 
                     "-o", GLDS+"_microarray_normalized",
-                    "--outDir="+rawdata_out, 
+                    "--outDir="+os.path.join(rawdata_out, 'processed_data'), 
                     "--QCDir="+os.path.join(rawdata_out,'QC_reporting'), 
                     "-i", os.path.join(rawdata_out,'raw_files'),
                     "--outType=txt", 
                     "--outputData=TRUE",
                     "--QCoutput=TRUE", 
-                    "--GLDS="+GLDS.split('-')[1]]
+                    "--GLDS="+GLDS]
     subprocess.call(R_command)
     if not GLDS+'_microarray_normalized.txt' in os.listdir(rawdata_out):
         print "Warning: Normalized expression file missing, some processing steps may have failed"
 
 def annotate(rawdata_out,GLDS):
     R_script = os.path.join(config.R_dir,'annotateProbes.R')
-    normalized_expression = os.path.join(rawdata_out,GLDS+"_microarray_normalized.txt")
+    normalized_expression = os.path.join(rawdata_out,'processed_data',GLDS+"_microarray_normalized.txt")
     array_info = os.path.join(rawdata_out,'QC_reporting','summary_report',GLDS+"_arrayInfo.txt")
     R_command = ["Rscript", R_script, 
                     "-i", normalized_expression,
