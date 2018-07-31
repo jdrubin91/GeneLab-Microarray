@@ -227,8 +227,6 @@ if (!file.exists(summDir)){ # Create a summary report directory within qcDir if 
   dir.create(summDir)
 }
 
-cat("\n\nTROUBLESHOOTING:\n",arrInfo,"\n",paste(summDir, "arrayInfo.txt", sep = ""),"\n")
-
 if (glAn != FALSE) {
   write.table(
     arrInfo,
