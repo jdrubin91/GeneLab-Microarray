@@ -297,7 +297,7 @@ if(opt$dupProbes == "topvar") {
   )
   nDups = filt[[2]]$numDupsRemoved # Number of probes removed that map to non-unique gene IDs
   filtID = featureNames(filt[[1]]) # Pulls out the probe IDs
-  cat("Mapping probes IDs to RefSeq IDs...\n")
+  cat("Mapping probes IDs to gene IDs...\n")
   filtRefSeq = lapply(filtID, FUN = mapFun, environ = eval(parse(text =
                                                                    annotEnv))) # Applying mapFun to all non-filtered probe IDs
   noIDCnt = nrow(eset) - sum(!is.na(filtRefSeq)) - nDups
@@ -313,7 +313,7 @@ if(opt$dupProbes == "topvar") {
   
   
 } else if (any(opt$dupProbes %in% c("average", "max"))) {
-  cat("Mapping probes IDs to RefSeq IDs...\n")
+  cat("Mapping probes IDs to gene IDs...\n")
   RefSeq = lapply(rownames(eset), FUN = mapFun, environ = eval(parse(text =
                                                                        annotEnv))) # Applying mapFun to all probe IDs
   noIDCnt = sum(is.na(RefSeq)) # Count unmapped probes
