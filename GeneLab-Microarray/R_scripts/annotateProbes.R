@@ -174,7 +174,8 @@ tryCatch({
     annotPack = tolower(arrVer)
     annotPack = gsub("[[:punct:]]", "", annotPack)
     if (affyST == TRUE) {
-      annotPack = gsub("v[0-9]*$", "transcriptcluster.db", annotPack)
+      annotPack = gsub("v[0-9]*$", "", annotPack)
+      annotPack = paste(annotPack, "transcriptcluster.db", sep = "")
     } else{
       annotPack = paste(annotPack, ".db", sep = "")
     }

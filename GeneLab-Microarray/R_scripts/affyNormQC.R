@@ -188,6 +188,15 @@ tryCatch({
     suppressPackageStartupMessages(require(oligo))
     raw = read.celfiles(filenames = celFiles,
                         sampleNames = sampNames)
+    st = T
+    ver = raw@annotation
+    if (grepl("^pd.",ver)) {
+      # Convert from the pd.* annotation package to the standard array version name
+      ver = gsub("^pd.", "", ver)
+      ver = gsub("\\.","-",ver)
+      ver = gsub("(\\d)(-)(\\d)","\\1_\\3",ver)
+      arrInfo = c("Affymetrix",as.character(ver))
+    }
   })
 }, error = function(e) {
   stop("Unable to read in .CEL files with affy or oligo package", call. = F)
