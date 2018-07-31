@@ -151,19 +151,25 @@ sampNames = gsub(".CEL", "", sampNames)
 sampNames = gsub(".*/", "", sampNames)
 sampNames = gsub("GLDS-\\d*_", "", sampNames)# Extract sample names from the list of .CEL files
 
-cat("Detected .CEL files:\n", celFiles,"\n")
+if (length(celFiles) > 0){
+  cat("Detected .CEL files:\n")
+  for (i in 1:length(celFiles)) {
+    cat("\t",celFiles[i],"\n")
+  }
+  cat("\n")
+} else {
+  stop("No .CEL files detected in the current directory",
+    call. = F)
+}
 
-raw = ReadAffy(filenames = celFiles,
-               sampleNames = sampNames)
-
-# tryCatch({
-#   suppressWarnings(expr = {
-#     raw = ReadAffy(filenames = celFiles,
-#                    sampleNames = sampNames)
-#   })
-# }, error = function(e) {
-#   stop("No .CEL files detected in the current directory", call. = F)
-# })
+tryCatch({
+  suppressWarnings(expr = {
+    raw = ReadAffy(filenames = celFiles,
+                   sampleNames = sampNames)
+  })
+}, error = function(e) {
+  stop("Unable to read in .CEL files with affy package", call. = F)
+})
 
 arrInfo = c("Affymetrix",as.character(raw@cdfName))
 
