@@ -164,7 +164,7 @@ if (length(celFiles) > 0){
 }
 
 tryCatch({
-  tryCatch({
+  useOligo = tryCatch({
     suppressWarnings(expr = {
       raw = ReadAffy(filenames = celFiles,
                      sampleNames = sampNames)
@@ -183,10 +183,19 @@ tryCatch({
       suppressPackageStartupMessages(require(affyPLM))
       st = F
     }
+    return(FALSE)
   }, error = function(e) {
     cat(
       "Could not read in provided .CEL files with affy package. Attempting to read them with oligo package...\n"
     )
+    return(TRUE)
+  })
+}, error = function(e) {
+  stop("Unable to read in .CEL files with affy package", call. = F)
+})
+
+if (useOligo == TRUE) {
+  tryCatch({
     detach_package(affy)
     suppressPackageStartupMessages(require(oligo))
     raw = read.celfiles(filenames = celFiles,
@@ -199,13 +208,11 @@ tryCatch({
       ver = gsub("\\.", "-", ver)
       ver = gsub("(\\d)(-)(\\d)", "\\1_\\3", ver)
     }
-    assign(arrInfo, c("Affymetrix", as.character(ver)), env = globalenv())
+    arrInfo = c("Affymetrix", as.character(ver))
+  }, error = function(e) {
+    stop("Unable to read in .CEL files with affy package", call. = F)
   })
-}, error = function(e) {
-  stop("Unable to read in .CEL files with affy or oligo package", call. = F)
-})
-
-
+}
 
 setwd(relDir) # Return the working directory to direcotry script was called from to enable use of relative paths
 # Create QC output directory
