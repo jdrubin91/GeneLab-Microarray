@@ -170,7 +170,7 @@ tryCatch({
                      sampleNames = sampNames)
     })
     
-    arrInfo = c("Affymetrix",as.character(raw@cdfName))
+    arrInfo = c("Affymetrix", as.character(raw@cdfName))
     
     if (grepl("-st-", raw@cdfName, ignore.case = T)) {
       detach_package(affy)
@@ -184,19 +184,22 @@ tryCatch({
       st = F
     }
   }, error = function(e) {
+    cat(
+      "Could not read in provided .CEL files with affy package. Attempting to read them with oligo package...\n"
+    )
     detach_package(affy)
     suppressPackageStartupMessages(require(oligo))
     raw = read.celfiles(filenames = celFiles,
                         sampleNames = sampNames)
     st = T
     ver = raw@annotation
-    if (grepl("^pd.",ver)) {
+    if (grepl("^pd.", ver)) {
       # Convert from the pd.* annotation package to the standard array version name
       ver = gsub("^pd.", "", ver)
-      ver = gsub("\\.","-",ver)
-      ver = gsub("(\\d)(-)(\\d)","\\1_\\3",ver)
-      arrInfo = c("Affymetrix",as.character(ver))
+      ver = gsub("\\.", "-", ver)
+      ver = gsub("(\\d)(-)(\\d)", "\\1_\\3", ver)
     }
+    assign(arrInfo, c("Affymetrix", as.character(ver)), env = globalenv())
   })
 }, error = function(e) {
   stop("Unable to read in .CEL files with affy or oligo package", call. = F)
@@ -216,6 +219,8 @@ summDir = paste(qcDir, "summary_report/", sep = "")
 if (!file.exists(summDir)){ # Create a summary report directory within qcDir if it does not exist yet
   dir.create(summDir)
 }
+
+cat("\n\nTROUBLESHOOTING:\n",arrInfo,"\n",paste(summDir, "arrayInfo.txt", sep = ""),"\n")
 
 if (glAn != FALSE) {
   write.table(
