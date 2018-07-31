@@ -90,6 +90,9 @@ if (is.null(opt$GLDS)) {
   cat("Warning: No GLDS accession number provided\n")
   if (grepl("GLDS-[0-9]+", aiFH)) {
     glAn = regmatches(aiFH, regexpr("GLDS-[0-9]+", aiFH)) # Attempt to extract the GLDS accession number from the input path
+    cat("Try to guess GLDS accession number... ", glAn,"\n")
+  } else{
+    glAn = FALSE
   }
 } else{
   glAn = opt$GLDS
@@ -296,12 +299,8 @@ if(opt$dupProbes == "topvar") {
   cat("Mapping probes IDs to RefSeq IDs...\n")
   filtRefSeq = lapply(filtID, FUN = mapFun, environ = eval(parse(text =
                                                                    annotEnv))) # Applying mapFun to all non-filtered probe IDs
+  noIDCnt = nrow(eset) - sum(!is.na(filtRefSeq)) - nDups
   
-  cat("\tUnampped probes removed:",
-      nrow(eset) - sum(!is.na(filtRefSeq)) - nDups,
-      "\n")
-  cat("\tDuplicated probes removed:", nDups, "\n\n")
-  cat("Annotated probes remaining:", sum(!is.na(filtRefSeq)), "\n")
   if (sum(!is.na(filtRefSeq)) > length(unique(filtRefSeq[!is.na(filtRefSeq)]))) {
     cat("\n\tWarning: non-unique probe to ID mappings remain \n")
   }
@@ -338,9 +337,6 @@ if(opt$dupProbes == "topvar") {
     normVals = eset[!rmRowTag, ]
     row.names(normVals) = RefSeq[!rmRowTag]
     
-    cat("\tUnmapped probes removed:", noIDCnt, "\n")
-    cat("\tDuplicated probes removed:", nDups, "\n\n")
-    cat("Annotated probes remaining:", nrow(normVals), "\n\n")
     if (nrow(normVals) > length(unique(RefSeq[!rmRowTag]))) {
       cat("\n\tWarning: non-unique probe to ID mappings remain \n")
     }
@@ -368,9 +364,6 @@ if(opt$dupProbes == "topvar") {
     normVals = eset[!rmRowTag, ]
     row.names(normVals) = RefSeq[!rmRowTag]
     
-    cat("\tUnmapped probes removed:", noIDCnt, "\n")
-    cat("\tDuplicated probes removed:", nDups, "\n\n")
-    cat("Annotated probes remaining:", nrow(normVals), "\n\n")
     if (nrow(normVals) > length(unique(RefSeq[!rmRowTag]))) {
       cat("\n\tWarning: non-unique probe to ID mappings remain \n")
     }
@@ -385,19 +378,36 @@ summDir = paste(qcDir, "summary_report/", sep = "")
 if (!file.exists(summDir)){ # Create a summary report directory within qcDir if it does not exist yet
   dir.create(summDir)
 }
+
+cat("\tUnmapped probes removed:", noIDCnt, "\n")
+cat("\tDuplicated probes removed:", nDups, "\n\n")
+cat("Annotated probes remaining:", nrow(normVals), "\n\n")
+
 AR = c(
   AR1,
   paste("Unmapped probes removed:", noIDCnt),
   paste("Duplicated probes removed:", nDups),
   paste("Annotated probes remaining:", nrow(normVals))
 )
-write.table(
-  AR,
-  file = paste(summDir, glAn, "_annotReport.txt", sep = ""),
-  quote = F,
-  col.names = F,
-  row.names = F
-)
+if (glAn != FALSE) {
+  write.table(
+    AR,
+    file = paste(summDir, glAn, "_annotReport.txt", sep = ""),
+    quote = F,
+    col.names = F,
+    row.names = F
+  )
+  cat("Annotation report generated!",paste(summDir, glAn, "_annotReport.txt", sep = ""),"\n")
+} else {
+  write.table(
+    AR,
+    file = paste(summDir,"annotReport.txt", sep = ""),
+    quote = F,
+    col.names = F,
+    row.names = F
+  )
+  cat("Annotation report generated!",paste(summDir,"annotReport.txt", sep = ""),"\n")
+}
 
 # Save filtered expression values
 outFH = opt$output

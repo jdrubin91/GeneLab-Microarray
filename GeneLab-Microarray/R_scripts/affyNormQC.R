@@ -133,6 +133,7 @@ if (is.null(opt$GLDS)) {
   cat("Warning: No GLDS accession number provided\n")
   if (grepl("GLDS-[0-9]+", inPath)) {
     glAn = regmatches(inPath, regexpr("GLDS-[0-9]+", inPath)) # Attempt to extract the GLDS accession number from the input path
+    cat("Try to guess GLDS accession number... ", glAn,"\n")
   } else{
     glAn = FALSE
   }
