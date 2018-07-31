@@ -200,7 +200,8 @@ def annotate(rawdata_out,GLDS):
     R_command = ["Rscript", R_script, 
                     "-i", normalized_expression,
                     "-a", array_info, 
-                    "-o", os.path.join(rawdata_out,GLDS+"_microarray_normalized-annotated")]
+                    "-o", os.path.join(rawdata_out,'processed_data',GLDS+"_microarray_normalized-annotated"),
+                    "--QCDir=" + os.path.join(rawdata_out,'QC_reporting')]
     subprocess.call(R_command)
 
     

@@ -6,7 +6,7 @@ import matplotlib as mpl
 mpl.use('Agg')
 mpl.rcParams['image.cmap'] = 'jet'
 mpl.rcParams.update({'figure.autolayout': True})
-import os, subprocess, config, math, mpld3, warnings, json, pylab
+import os, subprocess, config, math, mpld3, warnings, json, pylab, requests
 warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 import matplotlib.pyplot as plt
 import numpy as np
@@ -221,7 +221,7 @@ def get_matrix(sig_genes,counts_table,limma_output,condition1,condition2):
         counter = 0
         for line in F:
             line = line.strip('\n').split('\t')
-            append_list = map(float,[line[1:][index] for index in indexes])
+            append_list = map(float,[line[index] for index in indexes])
             x_full.append(append_list)
             if counter < 50:
                 x_50.append(append_list)
@@ -1001,16 +1001,31 @@ if __name__ == "__main__":
 
 
 
+    #=========TEST GO=========
+    url = 'http://pantherdb.org/webservices/go/overrep.jsp'
+    form_data = {
+        'input': 'NM_001013370,NM_001040691',
+        'species': "HUMAN",
+        'ontology': "biological_process",
+        'submit': 'submit',
+    }
+    response = requests.post(url, data=form_data)
+    with open('test.html','w') as outfile:
+        outfile.write(response.content)
+    print response.content
+
+
+
     #=========TEST ALL=========
-    counts_table='/Users/jonathanrubin/Google_Drive/NASA/home/processed_GLDS/GLDS-4/microarray/GLDS-4_microarray_normalized-annotated.txt'
-    metadata='/Users/jonathanrubin/Google_Drive/NASA/home/processed_GLDS/GLDS-4/metadata/s_GLDS-4_microarray_metadata.txt'
-    condition1='Spaceflight'
-    condition2='ground'
-    outliers='None'
-    html_folder='/Users/jonathanrubin/Google_Drive/NASA/home/galaxy_test/'
-    html_main='/Users/jonathanrubin/Google_Drive/NASA/home/galaxy_test/html_main.html'
-    padj_cutoff='0.1'
-    run(counts_table,metadata,condition1,condition2,padj_cutoff,outliers,html_main,html_folder)
+    # counts_table='/Users/jonathanrubin/Google_Drive/NASA/home/processed_GLDS/GLDS-4/microarray/GLDS-4_microarray_normalized-annotated.txt'
+    # metadata='/Users/jonathanrubin/Google_Drive/NASA/home/processed_GLDS/GLDS-4/metadata/s_GLDS-4_microarray_metadata.txt'
+    # condition1='Spaceflight'
+    # condition2='ground'
+    # outliers='None'
+    # html_folder='/Users/jonathanrubin/Google_Drive/NASA/home/galaxy_test/'
+    # html_main='/Users/jonathanrubin/Google_Drive/NASA/home/galaxy_test/html_main.html'
+    # padj_cutoff='0.1'
+    # run(counts_table,metadata,condition1,condition2,padj_cutoff,outliers,html_main,html_folder)
 
 
 

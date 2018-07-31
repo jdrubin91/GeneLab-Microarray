@@ -1,14 +1,10 @@
-<tool id="GeneLab-Visualize" name="GeneLab-Visualize" version="0.6.1">
+<tool id="Affymetrix-Normalization" name="Affymetrix-Normalization" version="1.0">
     <description>Visualization tool for generating interactive plots from processed GeneLab data.</description>
     <requirements>
     </requirements>
     <code file="galaxy_tools.py" />
     <command detect_errors="exit_code"><![CDATA[
-        #set $counts_filename = "counts_table.txt"
-        #set $meta_filename = "sample_metadata.txt"
-        ln -s "${counts_table}" "${counts_filename}" &&
-        ln -s "${sample_metadata}" "${meta_filename}" &&
-        GeneLab-Microarray --galaxy '$counts_filename',_,'$meta_filename',_,'$diff_analysis',_,'$condition1',_,'$condition2',_,$padj,_,'$outliers',_,'$html_file',_,'${html_file.extra_files_path}' .
+        RScript ./affyNormQC.R -i '$input' -n '$norm' -o $outfile 
     ]]></command>
     <inputs>
       <param name="counts_table" type="data" format="txt" label="Counts table" help="A txt file containing sample counts for each gene" />
@@ -67,7 +63,7 @@ Other Inputs
     <citations>
         <citation type="bibtex">
         @misc{githubGeneLab-Microarray,
-          author = {Rubin, Jonathan},
+          author = {Mattox, Daniel},
           year = {2018},
           title = {GeneLab-Microarray},
           publisher = {GitHub},
