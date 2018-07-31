@@ -141,7 +141,7 @@ def modify_assay(metadata_out,GLDS,extension):
                 raw_filename = GLDS + '_' + basefilename + '_microarray_raw.'+extension
                 new_assay_file.append(line.replace('\r','').replace('\n','').replace('^M','')+'\t'+'\t'.join(['"GeneLab data processing protocol"',
                     '"'+raw_filename+'"','""', '""',
-                    '"'+GLDS+'/microarray/processed_data/"','""', '""',]))
+                    '"'+GLDS+'/microarray/processed_data/"','""', '""']))
         with open(assay_file,'w') as outfile:
             outfile.write('\r\n'.join(new_assay_file))
     except:

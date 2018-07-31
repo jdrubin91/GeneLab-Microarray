@@ -8,11 +8,15 @@
         #set $meta_filename = "sample_metadata.txt"
         ln -s "${counts_table}" "${counts_filename}" &&
         ln -s "${sample_metadata}" "${meta_filename}" &&
-        GeneLab-Microarray --galaxy '$counts_filename',_,'$meta_filename',_,'$condition1',_,'$condition2',_,$padj,_,'$outliers',_,'$html_file',_,'${html_file.extra_files_path}' .
+        GeneLab-Microarray --galaxy '$counts_filename',_,'$meta_filename',_,'$diff_analysis',_,'$condition1',_,'$condition2',_,$padj,_,'$outliers',_,'$html_file',_,'${html_file.extra_files_path}' .
     ]]></command>
     <inputs>
       <param name="counts_table" type="data" format="txt" label="Counts table" help="A txt file containing sample counts for each gene" />
       <param name="sample_metadata" type="data" format="txt" label="Metadata" help="A txt file containing sample metadata formatted in ISA. (S file needed specifically)" />
+      <param name="diff_analysis" type="select" label="Differential Analysis" help="Type of analysis to determine differential gene expression">
+        <option value="limma" selected="true">Limma (Microarray)</option>
+        <option value="voom">Limma-Voom (RNA-Seq)</option>
+      </param>
       <param name="padj" type="float" value="0.01" label="P-adj" help="Cutoff value to determine significant gene list and for plotting." />
       <param name="condition1" type="select" dynamic_options="get_conditions(sample_metadata.file_name,'Factor Value')" multiple="true" label="Condition1" help="First condition to be compared"/>
       <param name="condition2" type="select" dynamic_options="get_conditions(sample_metadata.file_name,'Factor Value')" multiple="true" label="Condition2" help="Second condition to be compared"/>
@@ -48,37 +52,15 @@ Files required
 
 Other Inputs
 
-1. P-Adj: Adjusted p-value cutoff for generating list of significant genes and also for use with plotting.
+1. Differential Analysis: Determines type of analysis to perform on data to get differential gene expression. (options: Limma (Microarray), Limma-Voom (RNA-Seq))
 
-2. Condition 1: First condition to be compared.
+2. P-Adj: Adjusted p-value cutoff for generating list of significant genes and also for use with plotting.
 
-3. Condition 2: Second condition to be compared. 
+3. Condition 1: First condition to be compared.
 
-4. Remove Outliers: Choose which samples to remove as outliers.
+4. Condition 2: Second condition to be compared. 
 
------
-
-**Command Line Usage**
-        
-Usage:   GeneLab-Microarray --galaxy [args] .
-
-Arguments (',_,' delimited list with the following in order): 
-
-<table>
-counts_table    FILE     Counts table in txt format
-
-metadata        FILE     Sample metadata file in ISA format 
-
-condition1      TXT      Condition 1 to be compared
-
-condition2      TXT      Condition 2 to be compared
-
-p-adj           FLOAT    Adjusted p-value cutoff for gene significance
-
-html_main       FILE     Output main visualization file with graphs
-
-html_folder     FOLDER   Output list of significant genes
-</table>
+5. Remove Outliers: Choose which samples to remove as outliers.
 
 
     ]]></help>

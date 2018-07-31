@@ -29,7 +29,7 @@ from mpld3 import _display
 _display.NumpyEncoder = NumpyEncoder
 
 #The main command that is run when galaxy mode is specified by user.
-def run(counts_table,metadata,condition1,condition2,padj_cutoff,outliers,html_main,html_folder):
+def run(counts_table,metadata,diff_analysis,condition1,condition2,padj_cutoff,outliers,html_main,html_folder):
     #Create folder for secondary html output
     if not os.path.exists(html_folder):
         os.makedirs(html_folder)
@@ -41,7 +41,7 @@ def run(counts_table,metadata,condition1,condition2,padj_cutoff,outliers,html_ma
     subprocess.call(copy_logo_command)
 
     #Performs differential expression via limma using custom R scripts
-    limma_output = limma_differential(counts_table,metadata,condition1,condition2,outliers,html_folder)
+    limma_output = limma_differential(counts_table,metadata,diff_analysis,condition1,condition2,outliers,html_folder)
     print '\n'.join(limma_output.split('\n')[:-1])
 
     #Creates MA and Volcano plots to be used in visualization. Also creates the main html file
@@ -241,24 +241,48 @@ def get_matrix(sig_genes,counts_table,limma_output,condition1,condition2):
 
 
 #Runs differential expression on two conditions that must be within the inputted metadata
-def limma_differential(counts_table,metadata,condition1,condition2,outliers,html_folder):
-    limma_script = os.path.join(config.R_dir,'limmaDiffExp.R')
-    if outliers != 'None':
-        outliers = '_'.join(outliers.split(','))
-        limma_differential_command = ["Rscript", "--vanilla", limma_script, 
-                                        "-d", counts_table, 
-                                        "-i", metadata, 
-                                        "--group1=" + condition1, 
-                                        "--group2=" + condition2, 
-                                        "-r", outliers,
-                                        "-o", os.path.join(html_folder,'limma_out.txt')]
+def limma_differential(counts_table,metadata,diff_analysis,condition1,condition2,outliers,html_folder):
+    print diff_analysis
+    if diff_analysis == 'limma':
+        limma_script = os.path.join(config.R_dir,'limmaDiffExp.R')
+        if outliers != 'None':
+            outliers = '_'.join(outliers.split(','))
+            limma_differential_command = ["Rscript", "--vanilla", limma_script, 
+                                            "-d", counts_table, 
+                                            "-i", metadata, 
+                                            "--group1=" + condition1, 
+                                            "--group2=" + condition2, 
+                                            "-r", outliers,
+                                            "-o", os.path.join(html_folder,'limma_out.txt')]
+        else:
+            limma_differential_command = ["Rscript", "--vanilla", limma_script, 
+                                            "-d", counts_table, 
+                                            "-i", metadata, 
+                                            "--group1=" + condition1,
+                                            "--group2=" + condition2,
+                                            "-o", os.path.join(html_folder,'limma_out.txt')]
+    elif diff_analysis == 'voom':
+        limma_script = os.path.join(config.R_dir,'limmaVoom.R')
+        if outliers != 'None':
+            outliers = '_'.join(outliers.split(','))
+            limma_differential_command = ["Rscript", "--vanilla", limma_script, 
+                                            "-m", counts_table, 
+                                            "-i", metadata, 
+                                            "--group1=" + condition1, 
+                                            "--group2=" + condition2, 
+                                            "-r", outliers,
+                                            "-o", os.path.join(html_folder,'limma_out.txt')]
+        else:
+            limma_differential_command = ["Rscript", "--vanilla", limma_script, 
+                                            "-m", counts_table, 
+                                            "-i", metadata, 
+                                            "--group1=" + condition1,
+                                            "--group2=" + condition2,
+                                            "-o", os.path.join(html_folder,'limma_out.txt')]
     else:
-        limma_differential_command = ["Rscript", "--vanilla", limma_script, 
-                                        "-d", counts_table, 
-                                        "-i", metadata, 
-                                        "--group1=" + condition1,
-                                        "--group2=" + condition2,
-                                        "-o", os.path.join(html_folder,'limma_out.txt')]
+        print "Error: Could not detect type of differential analysis to be performed. Exiting..."
+        sys.exit(1)
+
 
     try:
         output = str(subprocess.check_output(limma_differential_command).decode("utf-8"))

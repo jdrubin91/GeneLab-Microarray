@@ -121,8 +121,8 @@ def run():
         print "done. Output in: " + rawdata_out
     elif galaxy != False:
         import galaxy_mode
-        counts_table,metadata,condition1,condition2,padj_cutoff,outliers,html_main,html_folder = galaxy.split(',_,')
-        galaxy_mode.run(counts_table,metadata,condition1,condition2,padj_cutoff,outliers,html_main,html_folder)
+        counts_table,metadata,diff_analysis,condition1,condition2,padj_cutoff,outliers,html_main,html_folder = galaxy.split(',_,')
+        galaxy_mode.run(counts_table,metadata,diff_analysis,condition1,condition2,padj_cutoff,outliers,html_main,html_folder)
         print "done."
     else:
         print "Error: No mode selected. See help for information on how to run GeneLab-Microarray. Exiting..."
