@@ -122,8 +122,8 @@ tryCatch({
 if(grepl(".txt$",x = inFH) == TRUE){
   eset = read.delim(inFH,header=T,sep = "\t",stringsAsFactors = F)
   colnames(eset) = gsub("\\.","-",colnames(eset)) # Keep the sample names standardized (if data read in as a text file, hyphens are swapped for periods)
-  # rownames(eset) = eset[,1]
-  # eset[,1] = NULL
+  rownames(eset) = eset[,1]
+  eset[,1] = NULL
 }else{
   load(inFH)
 }

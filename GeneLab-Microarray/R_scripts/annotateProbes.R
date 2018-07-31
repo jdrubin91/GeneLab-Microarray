@@ -54,7 +54,7 @@ option_list = list(
   make_option(
     "--GLDS", 
     type = "character", 
-    help = "GLDS accession number for plot outputs (ie '21' for GLDS-21)"
+    help = "Full accession number for QC outputs (ie 'GLDS-21' for GLDS-21)"
   )
 )
 
@@ -76,15 +76,23 @@ if (is.null(opt$input)) {
   stop("At least one argument must be supplied (input file)", call. = FALSE)
 }else { inFH = opt$input }
 
+if (is.null(opt$arrayInfo)) {
+  print_help(opt_parser)
+  stop("Array info file not provided", call. = FALSE)
+}else { 
+  aiFH = opt$arrayInfo
+  # aiFH = "arrayInfo.txt"
+}
+
 if (is.null(opt$GLDS)) {
   # Include GLDS accession number in outputs if provided
   glAn = ''
   cat("Warning: No GLDS accession number provided\n")
-  if (grepl("GLDS-[0-9]+", inFH)) {
-    glAn = regmatches(inFH, regexpr("GLDS-[0-9]+", inFH)) # Attempt to extract the GLDS accession number from the input path
+  if (grepl("GLDS-[0-9]+", aiFH)) {
+    glAn = regmatches(aiFH, regexpr("GLDS-[0-9]+", aiFH)) # Attempt to extract the GLDS accession number from the input path
   }
 } else{
-  glAn = paste('GLDS-', opt$GLDS, sep = '')
+  glAn = opt$GLDS
 }
 
 # Create QC output directory
@@ -92,9 +100,6 @@ qcDir = addSlash(opt$QCDir)
 if (!file.exists(qcDir)){ # Create QC directory if it does not exist yet
   dir.create(qcDir)
 }
-
-# aiFH = "arrayInfo.txt"
-aiFH = opt$arrayInfo
 
 tryCatch({
   aInf = read.delim(aiFH, header = F, stringsAsFactors = F)
@@ -255,8 +260,8 @@ tryCatch({
       sep = "\t",
       stringsAsFactors = F
     )
-    # rownames(eset) = eset[,1]
-    # eset[,1] = NULL
+    rownames(eset) = eset[,1]
+    eset[,1] = NULL
   } else{
     load(inFH)
   }
@@ -401,7 +406,8 @@ colnames(eset) = gsub("\\.","-",colnames(eset)) # Keep the sample names standard
 if (opt$outType == "both") {
   save(eset, file = paste(outFH, ".rda", sep = ""))
   write.table(
-    eset,
+    data.frame("ID" = row.names(eset),eset), # provides the rownames as a labeled column in the saved output
+    row.names = F,
     file = paste(outFH, ".txt", sep = ""),
     sep = "\t",
     quote = F
@@ -412,7 +418,8 @@ if (opt$outType == "both") {
   cat("Success! Annotated data saved to", outFH, "as a .RData file \n")
 } else if (opt$outType == "txt") {
   write.table(
-    eset,
+    data.frame("ID" = row.names(eset),eset), # provides the rownames as a labeled column in the saved output
+    row.names = F,
     file = paste(outFH, ".txt", sep = ""),
     sep = "\t",
     quote = F

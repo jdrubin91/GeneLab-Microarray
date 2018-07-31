@@ -202,7 +202,7 @@ if (glAn != FALSE) {
 } else {
   write.table(
     arrInfo,
-    file = paste("arrayInfo.txt", sep = ""),
+    file = paste(summDir, "arrayInfo.txt", sep = ""),
     quote = F,
     col.names = F,
     row.names = F
@@ -265,7 +265,8 @@ if (opt$outputData == TRUE) {
   if (opt$outType == "both") {
     save(eset, file = paste(outDir, outFH, ".rda", sep = ""))
     write.table(
-      eset,
+      data.frame("ID" = row.names(eset),eset), # provides the rownames as a labeled column in the saved output
+      row.names = F,
       file = paste(outDir, outFH, ".txt", sep = ""),
       sep = "\t",
       quote = F
@@ -276,7 +277,8 @@ if (opt$outputData == TRUE) {
     cat("Success! Normalized data saved to", paste(outDir, outFH, sep=""), "as a .RData file\n\n")
   } else if (opt$outType == "txt") {
     write.table(
-      eset,
+      data.frame("ID" = row.names(eset),eset), # provides the rownames as a labeled column in the saved output
+      row.names = F,
       file = paste(outDir, outFH, ".txt", sep = ""),
       sep = "\t",
       quote = F
