@@ -145,6 +145,7 @@ if (is.null(opt$GLDS)) {
 suppressPackageStartupMessages(require(affy))
 
 # setwd("~/Documents/genelab/rot1/GLDS-4/microarray/")
+
 celFiles = list.celfiles(full.names = TRUE)
 sampNames = gsub("_microarray_.*", "", celFiles)
 sampNames = gsub(".CEL", "", sampNames)
@@ -163,27 +164,36 @@ if (length(celFiles) > 0){
 }
 
 tryCatch({
-  suppressWarnings(expr = {
-    raw = ReadAffy(filenames = celFiles,
-                   sampleNames = sampNames)
+  tryCatch({
+    suppressWarnings(expr = {
+      raw = ReadAffy(filenames = celFiles,
+                     sampleNames = sampNames)
+    })
+    
+    arrInfo = c("Affymetrix",as.character(raw@cdfName))
+    
+    if (grepl("-st-", raw@cdfName, ignore.case = T)) {
+      detach_package(affy)
+      rm(raw)
+      suppressPackageStartupMessages(require(oligo))
+      raw = read.celfiles(filenames = celFiles,
+                          sampleNames = sampNames)
+      st = T
+    } else{
+      suppressPackageStartupMessages(require(affyPLM))
+      st = F
+    }
+  }, error = function(e) {
+    detach_package(affy)
+    suppressPackageStartupMessages(require(oligo))
+    raw = read.celfiles(filenames = celFiles,
+                        sampleNames = sampNames)
   })
 }, error = function(e) {
-  stop("Unable to read in .CEL files with affy package", call. = F)
+  stop("Unable to read in .CEL files with affy or oligo package", call. = F)
 })
 
-arrInfo = c("Affymetrix",as.character(raw@cdfName))
 
-if (grepl("-st-", raw@cdfName, ignore.case = T)) {
-  detach_package(affy)
-  rm(raw)
-  suppressPackageStartupMessages(require(oligo))
-  raw = read.celfiles(filenames = celFiles,
-                      sampleNames = sampNames)
-  st = T
-} else{
-  suppressPackageStartupMessages(require(affyPLM))
-  st = F
-}
 
 setwd(relDir) # Return the working directory to direcotry script was called from to enable use of relative paths
 # Create QC output directory
