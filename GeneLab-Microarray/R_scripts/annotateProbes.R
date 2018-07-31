@@ -166,7 +166,7 @@ tryCatch({
       })
     })
   } else{
-    if (grepl("-st-", arrVer, ignore.case = T)) {
+    if (grepl("-st(-)*", arrVer, ignore.case = T)) {
       affyST = TRUE
     } else{
       affyST = FALSE
