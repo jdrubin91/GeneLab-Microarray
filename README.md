@@ -170,8 +170,8 @@ Briefly, the batch.txt file expects the first line to begin with '#' followed by
 
 ```
 #Directory=/opt/genelab-genomespace-dev_mount_point/
-GLDS#     Copied    Normalize/QC
-GLDS-4    False     False
+GLDS#     Copied    ArrayType    Normalize/QC    Annotated
+GLDS-4    False     False        False           False
 ```
 
 GeneLab-Microarray will overwrite the specified batch.txt file changing booleans to True or Skipped when the specific step is finished. An example of a batch.txt file can be found within the `batch/` folder
