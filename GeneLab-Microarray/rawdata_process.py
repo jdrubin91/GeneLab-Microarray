@@ -163,7 +163,7 @@ def detect_array(GLDS_path):
                     "--outDir="+rawdata_out, 
                     "--QCDir="+os.path.join(rawdata_out,'QC_reporting'), 
                     "-i", os.path.join(rawdata_out,'raw_files'),
-                    "--GLDS="+GLDS.split('-')[1]]
+                    "--GLDS="+GLDS]
     subprocess.call(R_command)
 
     array_info = os.path.join(rawdata_out,'QC_reporting','summary_report',GLDS+'_arrayInfo.txt')
