@@ -188,6 +188,7 @@ def qc_and_normalize(rawdata_out,GLDS):
                     "--outType=txt", 
                     "--outputData=TRUE",
                     "--QCoutput=TRUE", 
+                    "--QCpackage=R",
                     "--GLDS="+GLDS]
     subprocess.call(R_command)
     if not GLDS+'_microarray_normalized.txt' in os.listdir(rawdata_out):

@@ -6,7 +6,7 @@ import matplotlib as mpl
 mpl.use('Agg')
 mpl.rcParams['image.cmap'] = 'jet'
 mpl.rcParams.update({'figure.autolayout': True})
-import os, subprocess, config, math, mpld3, warnings, json, pylab, requests
+import os, subprocess, config, math, mpld3, warnings, json, pylab
 warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 import matplotlib.pyplot as plt
 import numpy as np
@@ -643,11 +643,265 @@ def differential_visualize(diffExp_file,pval_cut,condition1,condition2,html_main
         tr:nth-child(even) {
             background-color: #dddddd;
         }
+        button {
+            background-color: white;
+            color: black;
+            border: 2px solid #555555;
+            padding: 10px 25px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            -webkit-transition-duration: 0.4s; /* Safari */
+            transition-duration: 0.4s;
+
+        }
+        button:hover {
+            background-color: #555555;
+            color: white;
+        }
+        select {
+            padding: 16px 20px;
+            border: none;
+            border-radius: 4px;
+            background-color: #f1f1f1;
+            font-size: 16px;
+        }
         </style>
     </head>
     <body style="width:900px; margin:0 auto;">
         <h1>List of Significant Genes</h1>
         <b><a href="index.html">Back</a></b>
+        <br><br>
+        <form action="https://biodbnet-abcc.ncifcrf.gov/db/db2dbRes.php" target="_blank" method="POST" onsubmit='return validateForm(this)'>
+            <input type="hidden" name="idList" 
+                value="""+'"')
+        for gene_name in [row[0] for row in sig_genes]:
+            sigGenes_file.write(gene_name+"\n")
+        sigGenes_file.write('"' + """
+                        />
+            <div style="float:left; width: 48%">
+              <b>Input:</b><select id='input' name='input' title='input'>
+                <option  value='Affy GeneChip Array'>Affy GeneChip Array</option>
+                <option  value='Affy ID'>Affy ID</option>
+                <option  value='Affy Transcript Cluster ID'>Affy Transcript Cluster ID</option>
+                <option  value='Agilent ID'>Agilent ID</option>
+                <option  value='Biocarta Pathway Name'>Biocarta Pathway Name</option>
+                <option  value='CodeLink ID'>CodeLink ID</option>
+                <option  value='dbSNP ID'>dbSNP ID</option>
+                <option  value='DrugBank Drug ID'>DrugBank Drug ID</option>
+                <option  value='DrugBank Drug Name'>DrugBank Drug Name</option>
+                <option  value='EC Number'>EC Number</option>
+                <option  value='Ensembl Gene ID'>Ensembl Gene ID</option>
+                <option  value='Ensembl Protein ID'>Ensembl Protein ID</option>
+                <option  value='Ensembl Transcript ID'>Ensembl Transcript ID</option>
+                <option  value='EST Accession'>EST Accession</option>
+                <option  value='FlyBase Gene ID'>FlyBase Gene ID</option>
+                <option  value='GenBank Nucleotide Accession'>GenBank Nucleotide Accession</option>
+                <option  value='GenBank Protein Accession'>GenBank Protein Accession</option>
+                <option  value='Gene ID'>Gene ID</option>
+                <option  value='Gene Symbol'>Gene Symbol</option>
+                <option  value='Gene Symbol and Synonyms'>Gene Symbol and Synonyms</option>
+                <option  value='Gene Symbol ORF'>Gene Symbol ORF</option>
+                <option  value='GI Number'>GI Number</option>
+                <option  value='GO ID'>GO ID</option>
+                <option  value='GSEA Standard Name'>GSEA Standard Name</option>
+                <option  value='H-Inv Locus ID'>H-Inv Locus ID</option>
+                <option  value='H-Inv Protein ID'>H-Inv Protein ID</option>
+                <option  value='H-Inv Transcript ID'>H-Inv Transcript ID</option>
+                <option  value='HGNC ID'>HGNC ID</option>
+                <option  value='HMDB Metabolite'>HMDB Metabolite</option>
+                <option  value='HomoloGene ID'>HomoloGene ID</option>
+                <option  value='Illumina ID'>Illumina ID</option>
+                <option  value='InterPro ID'>InterPro ID</option>
+                <option  value='IPI ID'>IPI ID</option>
+                <option  value='KEGG Compound ID'>KEGG Compound ID</option>
+                <option  value='KEGG Compound Name'>KEGG Compound Name</option>
+                <option  value='KEGG Disease ID'>KEGG Disease ID</option>
+                <option  value='KEGG Drug ID'>KEGG Drug ID</option>
+                <option  value='KEGG Drug Name'>KEGG Drug Name</option>
+                <option  value='KEGG Gene ID'>KEGG Gene ID</option>
+                <option  value='KEGG Pathway ID'>KEGG Pathway ID</option>
+                <option  value='MaizeGDB ID'>MaizeGDB ID</option>
+                <option  value='MGI ID'>MGI ID</option>
+                <option  value='MIM ID'>MIM ID</option>
+                <option  value='miRBase ID'>miRBase ID</option>
+                <option  value='miRBase Mature miRNA Acc'>miRBase Mature miRNA Acc</option>
+                <option  value='NCIPID Pathway Name'>NCIPID Pathway Name</option>
+                <option  value='Organism Scientific Name'>Organism Scientific Name</option>
+                <option  value='PDB ID'>PDB ID</option>
+                <option  value='Pfam ID'>Pfam ID</option>
+                <option  value='PharmGKB ID'>PharmGKB ID</option>
+                <option  value='Reactome Pathway Name'>Reactome Pathway Name</option>
+                <option  value='RefSeq Genomic Accession'>RefSeq Genomic Accession</option>
+                <option selected value='RefSeq mRNA Accession'>RefSeq mRNA Accession</option>
+                <option  value='RefSeq Protein Accession'>RefSeq Protein Accession</option>
+                <option  value='SGD ID'>SGD ID</option>
+                <option  value='TAIR ID'>TAIR ID</option>
+                <option  value='Taxon ID'>Taxon ID</option>
+                <option  value='UniGene ID'>UniGene ID</option>
+                <option  value='UniProt Accession'>UniProt Accession</option>
+                <option  value='UniProt Entry Name'>UniProt Entry Name</option>
+                <option  value='UniProt Protein Name'>UniProt Protein Name</option>
+                <option  value='UniSTS ID'>UniSTS ID</option>
+              </select>
+            </div>
+            <div style="float:right; width: 48%">
+              <b>Output:</b><select id='outputs' title='outputs' name='outputs[]'> 
+                <option  value='Affy ID'>Affy ID</option>
+                <option  value='Agilent ID'>Agilent ID</option>
+                <option  value='Allergome Code'>Allergome Code</option>
+                <option  value='ApiDB_CryptoDB ID'>ApiDB_CryptoDB ID</option>
+                <option  value='Biocarta Pathway Name'>Biocarta Pathway Name</option>
+                <option  value='BioCyc ID'>BioCyc ID</option>
+                <option  value='CCDS ID'>CCDS ID</option>
+                <option  value='Chromosomal Location'>Chromosomal Location</option>
+                <option  value='CleanEx ID'>CleanEx ID</option>
+                <option  value='CodeLink ID'>CodeLink ID</option>
+                <option  value='COSMIC ID'>COSMIC ID</option>
+                <option  value='CPDB Protein Interactor'>CPDB Protein Interactor</option>
+                <option  value='CTD Disease Info'>CTD Disease Info</option>
+                <option  value='CTD Disease Name'>CTD Disease Name</option>
+                <option  value='CYGD ID'>CYGD ID</option>
+                <option  value='dbSNP ID'>dbSNP ID</option>
+                <option  value='dictyBase ID'>dictyBase ID</option>
+                <option  value='DIP ID'>DIP ID</option>
+                <option  value='DisProt ID'>DisProt ID</option>
+                <option  value='DrugBank Drug ID'>DrugBank Drug ID</option>
+                <option  value='DrugBank Drug Info'>DrugBank Drug Info</option>
+                <option  value='DrugBank Drug Name'>DrugBank Drug Name</option>
+                <option  value='EC Number'>EC Number</option>
+                <option  value='EchoBASE ID'>EchoBASE ID</option>
+                <option  value='EcoGene ID'>EcoGene ID</option>
+                <option  value='Ensembl Biotype'>Ensembl Biotype</option>
+                <option  value='Ensembl Gene ID'>Ensembl Gene ID</option>
+                <option  value='Ensembl Gene Info'>Ensembl Gene Info</option>
+                <option  value='Ensembl Protein ID'>Ensembl Protein ID</option>
+                <option  value='Ensembl Transcript ID'>Ensembl Transcript ID</option>
+                <option  value='FlyBase Gene ID'>FlyBase Gene ID</option>
+                <option  value='FlyBase Protein ID'>FlyBase Protein ID</option>
+                <option  value='FlyBase Transcript ID'>FlyBase Transcript ID</option>
+                <option  value='GAD Disease Info'>GAD Disease Info</option>
+                <option  value='GAD Disease Name'>GAD Disease Name</option>
+                <option  value='GenBank Nucleotide Accession'>GenBank Nucleotide Accession</option>
+                <option  value='GenBank Nucleotide GI'>GenBank Nucleotide GI</option>
+                <option  value='GenBank Protein Accession'>GenBank Protein Accession</option>
+                <option  value='GenBank Protein GI'>GenBank Protein GI</option>
+                <option  value='Gene Info'>Gene Info</option>
+                <option selected value='Gene Symbol'>Gene Symbol</option>
+                <option  value='Gene Symbol and Synonyms'>Gene Symbol and Synonyms</option>
+                <option  value='Gene Symbol ORF'>Gene Symbol ORF</option>
+                <option  value='Gene Synonyms'>Gene Synonyms</option>
+                <option  value='GeneFarm ID'>GeneFarm ID</option>
+                <option  value='GO - Biological Process'>GO - Biological Process</option>
+                <option  value='GO - Cellular Component'>GO - Cellular Component</option>
+                <option  value='GO - Molecular Function'>GO - Molecular Function</option>
+                <option  value='GO ID'>GO ID</option>
+                <option  value='GSEA Standard Name'>GSEA Standard Name</option>
+                <option  value='H-Inv Locus ID'>H-Inv Locus ID</option>
+                <option  value='HAMAP ID'>HAMAP ID</option>
+                <option  value='HGNC ID'>HGNC ID</option>
+                <option  value='HMDB Metabolite'>HMDB Metabolite</option>
+                <option  value='Homolog - All Ens Gene ID'>Homolog - All Ens Gene ID</option>
+                <option  value='Homolog - All Ens Protein ID'>Homolog - All Ens Protein ID</option>
+                <option  value='Homolog - All Gene ID'>Homolog - All Gene ID</option>
+                <option  value='Homolog - Human Ens Gene ID'>Homolog - Human Ens Gene ID</option>
+                <option  value='Homolog - Human Ens Protein ID'>Homolog - Human Ens Protein ID</option>
+                <option  value='Homolog - Human Gene ID'>Homolog - Human Gene ID</option>
+                <option  value='Homolog - Mouse Ens Gene ID'>Homolog - Mouse Ens Gene ID</option>
+                <option  value='Homolog - Mouse Ens Protein ID'>Homolog - Mouse Ens Protein ID</option>
+                <option  value='Homolog - Mouse Gene ID'>Homolog - Mouse Gene ID</option>
+                <option  value='Homolog - Rat Ens Gene ID'>Homolog - Rat Ens Gene ID</option>
+                <option  value='Homolog - Rat Ens Protein ID'>Homolog - Rat Ens Protein ID</option>
+                <option  value='Homolog - Rat Gene ID'>Homolog - Rat Gene ID</option>
+                <option  value='HomoloGene ID'>HomoloGene ID</option>
+                <option  value='HPA ID'>HPA ID</option>
+                <option  value='HPRD ID'>HPRD ID</option>
+                <option  value='HPRD Protein Complex'>HPRD Protein Complex</option>
+                <option  value='HPRD Protein Interactor'>HPRD Protein Interactor</option>
+                <option  value='Illumina ID'>Illumina ID</option>
+                <option  value='IMGT/GENE-DB ID'>IMGT/GENE-DB ID</option>
+                <option  value='InterPro ID'>InterPro ID</option>
+                <option  value='IPI ID'>IPI ID</option>
+                <option  value='KEGG Disease ID'>KEGG Disease ID</option>
+                <option  value='KEGG Gene ID'>KEGG Gene ID</option>
+                <option  value='KEGG Orthology ID'>KEGG Orthology ID</option>
+                <option  value='KEGG Pathway ID'>KEGG Pathway ID</option>
+                <option  value='KEGG Pathway Info'>KEGG Pathway Info</option>
+                <option  value='KEGG Pathway Title'>KEGG Pathway Title</option>
+                <option  value='LegioList ID'>LegioList ID</option>
+                <option  value='Leproma ID'>Leproma ID</option>
+                <option  value='Locus Tag'>Locus Tag</option>
+                <option  value='MaizeGDB ID'>MaizeGDB ID</option>
+                <option  value='MEROPS ID'>MEROPS ID</option>
+                <option  value='MGC(ZGC/XGC) ID'>MGC(ZGC/XGC) ID</option>
+                <option  value='MGC(ZGC/XGC) Image ID'>MGC(ZGC/XGC) Image ID</option>
+                <option  value='MGC(ZGC/XGC) Info'>MGC(ZGC/XGC) Info</option>
+                <option  value='MGI ID'>MGI ID</option>
+                <option  value='MIM ID'>MIM ID</option>
+                <option  value='MIM Info'>MIM Info</option>
+                <option  value='miRBase ID'>miRBase ID</option>
+                <option  value='NCIPID Pathway Name'>NCIPID Pathway Name</option>
+                <option  value='NCIPID Protein Complex'>NCIPID Protein Complex</option>
+                <option  value='NCIPID Protein Interactor'>NCIPID Protein Interactor</option>
+                <option  value='NCIPID PTM'>NCIPID PTM</option>
+                <option  value='Orphanet ID'>Orphanet ID</option>
+                <option  value='PANTHER ID'>PANTHER ID</option>
+                <option  value='Paralog - Ens Gene ID'>Paralog - Ens Gene ID</option>
+                <option  value='PBR ID'>PBR ID</option>
+                <option  value='PDB ID'>PDB ID</option>
+                <option  value='PeroxiBase ID'>PeroxiBase ID</option>
+                <option  value='Pfam ID'>Pfam ID</option>
+                <option  value='PharmGKB Drug Info'>PharmGKB Drug Info</option>
+                <option  value='PharmGKB Gene ID'>PharmGKB Gene ID</option>
+                <option  value='PIR ID'>PIR ID</option>
+                <option  value='PIRSF ID'>PIRSF ID</option>
+                <option  value='PptaseDB ID'>PptaseDB ID</option>
+                <option  value='PRINTS ID'>PRINTS ID</option>
+                <option  value='ProDom ID'>ProDom ID</option>
+                <option  value='PROSITE ID'>PROSITE ID</option>
+                <option  value='PseudoCAP ID'>PseudoCAP ID</option>
+                <option  value='PubMed ID'>PubMed ID</option>
+                <option  value='Reactome ID'>Reactome ID</option>
+                <option  value='Reactome Pathway Name'>Reactome Pathway Name</option>
+                <option  value='REBASE ID'>REBASE ID</option>
+                <option  value='RefSeq Genomic Accession'>RefSeq Genomic Accession</option>
+                <option  value='RefSeq Genomic GI'>RefSeq Genomic GI</option>
+                <option  value='RefSeq mRNA Accession'>RefSeq mRNA Accession</option>
+                <option  value='RefSeq ncRNA Accession'>RefSeq ncRNA Accession</option>
+                <option  value='RefSeq Nucleotide GI'>RefSeq Nucleotide GI</option>
+                <option  value='RefSeq Protein Accession'>RefSeq Protein Accession</option>
+                <option  value='RefSeq Protein GI'>RefSeq Protein GI</option>
+                <option  value='Rfam ID'>Rfam ID</option>
+                <option  value='RGD ID'>RGD ID</option>
+                <option  value='SGD ID'>SGD ID</option>
+                <option  value='SMART ID'>SMART ID</option>
+                <option  value='STRING Protein Interactor'>STRING Protein Interactor</option>
+                <option  value='TAIR ID'>TAIR ID</option>
+                <option  value='Taxon ID'>Taxon ID</option>
+                <option  value='TCDB ID'>TCDB ID</option>
+                <option  value='TIGRFAMs ID'>TIGRFAMs ID</option>
+                <option  value='TubercuList ID'>TubercuList ID</option>
+                <option  value='UCSC ID'>UCSC ID</option>
+                <option  value='UniGene ID'>UniGene ID</option>
+                <option  value='UniProt Accession'>UniProt Accession</option>
+                <option  value='UniProt Entry Name'>UniProt Entry Name</option>
+                <option  value='UniProt Info'>UniProt Info</option>
+                <option  value='UniProt Protein Name'>UniProt Protein Name</option>
+                <option  value='UniSTS ID'>UniSTS ID</option>
+                <option  value='VectorBase Gene ID'>VectorBase Gene ID</option>
+                <option  value='VEGA Gene ID'>VEGA Gene ID</option>
+                <option  value='VEGA Protein ID'>VEGA Protein ID</option>
+                <option  value='VEGA Transcript ID'>VEGA Transcript ID</option>
+                <option  value='WormBase Gene ID'>WormBase Gene ID</option>
+                <option  value='WormPep Protein ID'>WormPep Protein ID</option>
+                <option  value='XenBase Gene ID'>XenBase Gene ID</option>
+                <option  value='ZFIN ID'>ZFIN ID</option>
+                </select>
+            </div>
+            <br><br>
+            <button type="submit">Convert Annotations (bioDBnet)</button>
+        </form>
     <div>
         <div style="float: middle; width: 100%; padding-top:20px">
             <table> 
@@ -1002,30 +1256,30 @@ if __name__ == "__main__":
 
 
     #=========TEST GO=========
-    url = 'http://pantherdb.org/webservices/go/overrep.jsp'
-    form_data = {
-        'input': 'NM_001013370,NM_001040691',
-        'species': "HUMAN",
-        'ontology': "biological_process",
-        'submit': 'submit',
-    }
-    response = requests.post(url, data=form_data)
-    with open('test.html','w') as outfile:
-        outfile.write(response.content)
-    print response.content
+    # url = 'http://pantherdb.org/webservices/go/overrep.jsp'
+    # form_data = {
+    #     'input': 'NM_001013370,NM_001040691',
+    #     'species': "HUMAN",
+    #     'ontology': "biological_process",
+    #     'submit': 'submit',
+    # }
+    # response = requests.post(url, data=form_data)
+    # with open('test.html','w') as outfile:
+    #     outfile.write(response.content)
+    # print response.content
 
 
 
     #=========TEST ALL=========
-    # counts_table='/Users/jonathanrubin/Google_Drive/NASA/home/processed_GLDS/GLDS-4/microarray/GLDS-4_microarray_normalized-annotated.txt'
-    # metadata='/Users/jonathanrubin/Google_Drive/NASA/home/processed_GLDS/GLDS-4/metadata/s_GLDS-4_microarray_metadata.txt'
-    # condition1='Spaceflight'
-    # condition2='ground'
-    # outliers='None'
-    # html_folder='/Users/jonathanrubin/Google_Drive/NASA/home/galaxy_test/'
-    # html_main='/Users/jonathanrubin/Google_Drive/NASA/home/galaxy_test/html_main.html'
-    # padj_cutoff='0.1'
-    # run(counts_table,metadata,condition1,condition2,padj_cutoff,outliers,html_main,html_folder)
+    counts_table='/Users/jonathanrubin/Google_Drive/NASA/home/processed_GLDS/GLDS-4/microarray/GLDS-4_microarray_normalized-annotated.txt'
+    metadata='/Users/jonathanrubin/Google_Drive/NASA/home/processed_GLDS/GLDS-4/metadata/s_GLDS-4_microarray_metadata.txt'
+    condition1='Spaceflight'
+    condition2='ground'
+    outliers='None'
+    html_folder='/Users/jonathanrubin/Google_Drive/NASA/home/galaxy_test/'
+    html_main='/Users/jonathanrubin/Google_Drive/NASA/home/galaxy_test/html_main.html'
+    padj_cutoff='0.1'
+    run(counts_table,metadata,condition1,condition2,padj_cutoff,outliers,html_main,html_folder)
 
 
 
