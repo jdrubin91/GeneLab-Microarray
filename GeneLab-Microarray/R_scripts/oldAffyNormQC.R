@@ -486,6 +486,7 @@ if (opt$outputData == TRUE) {
     cat("Post normalization QC steps...\n")
     # Post-normalization QC
     
+    # Density distributions
     png(
       paste(qcDir, glAn, '_normDensityDistributions.png', sep = ''),
       width = 800,
