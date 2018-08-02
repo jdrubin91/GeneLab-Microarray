@@ -96,6 +96,7 @@ def rename(GLDS_path):
     GLDS = os.path.basename(GLDS_path)
     assay_dict = metadata_process.read_assay(metadata_out)
     final_rawdata_out = os.path.join(rawdata_out,'raw_files')
+    extension = ''
 
     #Make the 'raw_files' directory if it doesn't already exist
     if not os.path.isdir(final_rawdata_out):
@@ -150,7 +151,8 @@ def rename(GLDS_path):
             #     config.md5sum['new'].append(('Removed','N/A'))
 
     #Add appropriate columns and filenames to the assay file in ISA metadata
-    metadata_process.modify_assay(metadata_out,GLDS,extension)
+    if len(extension) != 0:
+        metadata_process.modify_assay(metadata_out,GLDS,extension)
 
 #A function to simply detect the array type. Outputs into the 'QC_reporting' directory. Assumes the input is already within 'raw_files'. This means that the rename
 #function has already been called.
