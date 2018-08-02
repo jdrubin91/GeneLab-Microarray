@@ -191,7 +191,7 @@ def qc_and_normalize(rawdata_out,GLDS):
                     "--QCpackage=R",
                     "--GLDS="+GLDS]
     subprocess.call(R_command)
-    if not GLDS+'_microarray_normalized.txt' in os.listdir(rawdata_out):
+    if not GLDS+'_microarray_normalized.txt' in os.listdir(rawdata_out,'processed_data'):
         print "Warning: Normalized expression file missing, some processing steps may have failed"
 
 def annotate(rawdata_out,GLDS):
