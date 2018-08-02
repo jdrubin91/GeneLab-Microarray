@@ -32,77 +32,69 @@ alias md5sum='md5 -r'
 ```
 
 <H4 id="R">R</H4>
-And to finish installation, open an R session and run the following commands:
+And to finish installation, open an R session and run the following commands (note: you should only need to run the 'Primary package' installation commands, we provide the dependencies in case installing it this way doesn't work):
 
 ```
 install.packages("optparse")
 source("http://bioconductor.org/biocLite.R")
 
-## affy dependencies:
-biocLite("zlibbioc")
-biocLite("Biobase")
 # Primary package:
 biocLite("affy")
+ ## affy dependencies:
+ biocLite("zlibbioc")
+ biocLite("Biobase")
 
-## affyPLM dependencies:
-biocLite("S4Vectors")
-biocLite("IRanges")
-biocLite("XVector")
-biocLite("Biostrings")
 # Primary package:
 biocLite("affyPLM")
+ ## affyPLM dependencies:
+ biocLite("S4Vectors")
+ biocLite("IRanges")
+ biocLite("XVector")
+ biocLite("Biostrings")
 
-## oligo dependencies:
-biocLite("bit")
-biocLite("ff")
-biocLite("bitops")
-biocLite("RCurl")
-biocLite("GenomicRanges")
-biocLite("matrixStats")
-biocLite("Rcpp")
-biocLite("bit64")
-biocLite("digest")
-biocLite("RSQLite")
 # Primary package:
 biocLite("oligo")
+ ## oligo dependencies:
+ biocLite("bit")
+ biocLite("ff")
+ biocLite("bitops")
+ biocLite("RCurl")
+ biocLite("GenomicRanges")
+ biocLite("matrixStats")
+ biocLite("Rcpp")
+ biocLite("bit64")
+ biocLite("digest")
+ biocLite("RSQLite")
 
-## genefilter dependencies:
-biocLite("XML")
 # Primary package:
 biocLite("genefilter")
-
-# Annotation packages
-biocLite("mogene10sttranscriptcluster.db")
-biocLite("moe430a.db")
-biocLite("drosophila2.db")
-biocLite("hgu133plus2.db")
-biocLite("ath1121501.db")
-biocLite("yeast2.db")
-biocLite("hugene10sttranscriptcluster.db")
-biocLite("rat2302.db")
+ ## genefilter dependencies:
+ biocLite("XML")
 
 # Primary package:
 biocLite("limma")
 
-## arrayQualityMetrics dependencies:
-biocLite("hexbin")
-biocLite("jsonlite")
-biocLite("openssl")
-biocLite("stringi")
-biocLite("reshape2")
-biocLite("Cairo")
-# dependencies list incomplete
-
 # Primary package:
 biocLite("arrayQualityMetrics")
+ ## arrayQualityMetrics dependencies:
+ biocLite("hexbin")
+ biocLite("jsonlite")
+ biocLite("openssl")
+ biocLite("stringi")
+ biocLite("reshape2")
+ biocLite("Cairo")
+ # dependencies list incomplete
+
+
 
 ```
-**Note - These packages should be the only commands needed to run to install all packages, the rest of the biocLite() commands are dependencies for these packages and in some cases may need to be installed individually
 
 <H4 id="Python">Python</H4>
 Python packages are installed automatically when installing GeneLab-Microarray using pip. But for documentation purposes, these are the packages (with version numbers) that are known to work:
 
-
+matplotlib - v2.2.2
+mpld3 - v
+sklearn - 
 
 Once the above steps are completed without error, you should be able to call GeneLab-Microarray from any directory. Try:
 
@@ -150,6 +142,15 @@ Example:
 ```
 GeneLab-Microarray --visualize flight_geneKO,flight_noKO,0.1 /opt/jdrubin/batch_out/GLDS-4/
 ```
+
+<H3 id="GalaxyMode">Galaxy Mode</H3>
+Galaxy mode is a special module specifically designed for use within galaxy. This mode can be run in the command line but its output will be the exact same as the visualization mode. For completeness, details on how to run this mode on the command line are provided here. Galaxy mode takes a single list of inputs separated by a custom delimiter (`,_,`). The command within galaxy is run as follows:
+
+```
+GeneLab-Microarray --galaxy '$counts_filename',_,'$meta_filename',_,'$diff_analysis',_,'$condition1',_,'$condition2',_,$padj,_,'$outliers',_,'$html_file',_,'${html_file.extra_files_path}' .
+```
+
+These inputs are provided by the user and formatted specifically to be used within Galaxy but those same inputs could be provided within the command line (the visualization mode accomplishes this same task).
 
 <H2 id="Directory">Directory Structure</H2>
 GeneLab-Microarray expects directories to be in a specific structure. A parent directory with GLDS-# followed by two subdirectories (where one is named metadata and the other microarray) each of which contain zipped archives with either raw microarray data or ISA formatted metadata. For example:
