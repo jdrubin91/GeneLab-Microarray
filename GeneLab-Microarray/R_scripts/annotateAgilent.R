@@ -16,7 +16,8 @@ option_list = list(
   make_option(
     c("-g", "--gpl"), 
     type = "character", 
-    help = "Path to the file containing custom array annotation information"
+    default = "search",
+    help = "Set to 'search' to automatically look for a GPL file in the same directory as the input, otherwise provide a path to the file containing custom array annotation information, containing column names but no additional header"
   ),
   make_option(
     c("-o", "--output"),
@@ -66,3 +67,36 @@ if (is.null(opt$input)) {
   print_help(opt_parser)
   stop("At least one argument must be supplied (input file)", call. = FALSE)
 }else { inFH = opt$input }
+
+norm = opt$normalization
+outFH = opt$outFile
+if (!is.null(opt$gpl)){
+  if (opt$gpl == "search") {
+    cat("Looking in the 'input' directory for a GPL file...\n")
+    inDir = gsub("(/)((\\w)*\\.(\\w)*)$", "\\1", inFH) # Strip the filename away from the directory path to the input file
+    files = dir(inDir)
+    files = files[grepl("^GPL[[:digit:]]*", files)]
+    if (length(files) == 1) {
+      annotFH = files[1]
+      cat("\t",annotFH,"identified as an annotation file\n")
+    }
+  }
+  annotFH = opt$gpl # annotFH = "GPL10094-20413.txt"
+}
+
+# Read in annotation file
+tryCatch({
+  annot = read.delim(annotFH,header = T, stringsAsFactors = F)
+}, error = function(e) {
+  stop(paste("Unable to read in ",annotFH, sep = ""),
+       call. = F)
+})
+
+
+
+
+
+
+
+
+
