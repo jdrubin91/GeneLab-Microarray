@@ -157,10 +157,10 @@ GeneLab-Microarray expects directories to be in a specific structure. A parent d
 
 ```
 GLDS-#/
-  metadata/
-    metadata_ISA.zip
-  microarray/
-    microarray_raw.tar
+|-metadata/
+  |--metadata_ISA.zip
+|-microarray/
+  |--microarray_raw.tar
 ```
 
 
