@@ -42,13 +42,13 @@ def run(batch_file):
                 if os.path.isdir(rawdata_in):
                     rawdata_process.copy(rawdata_in)
                     rawdata_process.rename(os.path.join(config.outdir,GLDS))
+                    metadata_process.create_md5sum_out(rawdata_out,GLDS)
+                    batch_list[i][1] = 'True'
                 else:
                     print "microarray directory within " + GLDS + " not found, skipping..."
                     copy, array, norm_qc, annotate = ['Skipped' for j in range(4)]
                     batch_list[i] = [GLDS, copy, array, norm_qc, annotate]
 
-                metadata_process.create_md5sum_out(rawdata_out,GLDS)
-                batch_list[i][1] = 'True'
                 update_batch(parent_dir,header,batch_file,batch_list)
                 print "done"
             elif copy != 'True':
