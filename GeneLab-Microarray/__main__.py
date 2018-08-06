@@ -113,12 +113,15 @@ def detect_2channel(infile):
                     metadata_process.create_md5sum_out(rawdata_out,GLDS)
                     array = rawdata_process.detect_array(GLDS_path)
                     if array == 'Affymetrix':
+                        print "Array type is Affymetrix"
                         rawdata_process.qc_and_normalize(rawdata_out,GLDS)
                         rawdata_process.annotate(rawdata_out,GLDS)
                     elif array == 'TwoColor':
+                        print "Array type is two-channel"
                         rawdata_process.TwoColorNormQC(rawdata_out,GLDS)
                         rawdata_process.annotateTwoColor(rawdata_out,GLDS)
                     else:
+                        print "Array cannot be properly detected, assuming Agilent format"
                         rawdata_process.sChAgilNormQC(rawdata_out,GLDS)
                         rawdata_process.annotateAgilent(rawdata_out,GLDS)
                 else:
