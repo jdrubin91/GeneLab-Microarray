@@ -138,6 +138,9 @@ def detect_2channel(infile):
                     rawdata_process.rename(os.path.join(outdir,GLDS))
                     metadata_process.create_md5sum_out(rawdata_out,GLDS)
                     array = rawdata_process.detect_array(GLDS_path)
+                    if array == 'Pae_G1a':
+                        rawdata_process.qc_and_normalize(rawdata_out,GLDS)
+                        rawdata_process.annotatePae_G1a(rawdata_out,GLDS)
                     if array == 'Affymetrix':
                         rawdata_process.qc_and_normalize(rawdata_out,GLDS)
                         rawdata_process.annotate(rawdata_out,GLDS)

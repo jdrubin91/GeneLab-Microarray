@@ -3,7 +3,7 @@ __author__ = 'Jonathan Rubin'
 import os, config, metadata_process, rawdata_process
 
 def run(batch_file):
-    compatible_arrays = ['Affymetrix','Agilent']
+    compatible_arrays = ['Affymetrix','Pae_G1a','Agilent']
     batch_list = list()
     with open(batch_file) as F:
         parent_dir = F.readline().strip('\n').split('=')[1]
@@ -61,6 +61,9 @@ def run(batch_file):
                             rawdata_process.rename(os.path.join(config.outdir,GLDS))
                             metadata_process.create_md5sum_out(rawdata_out,GLDS)
                             array = rawdata_process.detect_array(GLDS_path)
+                            if array == 'Pae_G1a':
+                                rawdata_process.qc_and_normalize(rawdata_out,GLDS)
+                                rawdata_process.annotatePae_G1a(rawdata_out,GLDS)
                             if array == 'Affymetrix':
                                 rawdata_process.qc_and_normalize(rawdata_out,GLDS)
                                 rawdata_process.annotate(rawdata_out,GLDS)
