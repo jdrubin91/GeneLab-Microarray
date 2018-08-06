@@ -95,6 +95,7 @@ def detect_2channel(infile):
             print "Working Directory: ", wrkdir
             print "Processing: " + indir + "\nWriting output to: " + outdir
             GLDS = os.path.basename(indir)
+            GLDS_path = os.path.join(outdir,GLDS)
             if 'GLDS' in GLDS:
                 rawdata_out = os.path.join(outdir,GLDS,'microarray')
                 metadata_out = os.path.join(outdir,GLDS,'metadata')
