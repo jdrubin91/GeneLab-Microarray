@@ -148,7 +148,7 @@ def rename(GLDS_path):
             # if sample_in_first_column or sample_in_other_column:
             try:
                 print ' '.join(move_command)
-                config.get_md5sum(move_command[1],'original',action='rename')
+                config.get_md5sum(move_command[1].strip("'"),'original',action='rename')
                 # print ' '.join(move_command)
                 with open(os.devnull,'w') as FNULL:
                     subprocess.check_call(' '.join(move_command),shell=True,stdout=FNULL, stderr=subprocess.STDOUT)
