@@ -146,7 +146,7 @@ def rename(GLDS_path):
                     subprocess.check_call(move_command,stdout=FNULL, stderr=subprocess.STDOUT)
                 config.get_md5sum(new_md5sum_file,'new')
             except subprocess.CalledProcessError:
-                config.md5sum['new'].append(('Move Error',move_command))
+                config.md5sum['new'].append(('Move Error',' '.join(move_command)))
 
     #Add appropriate columns and filenames to the assay file in ISA metadata
     if len(extension) != 0:
