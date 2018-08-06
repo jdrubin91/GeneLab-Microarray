@@ -70,7 +70,7 @@ def clean(metadata_directory):
         isa = filename.split('_')[0]
         newfilename = isa + '_' + GLDS + '_microarray_metadata.txt'
         if not os.path.exists(os.path.join(metadata_out,newfilename)):
-            move_command = ["mv","'"+ os.path.join(metadata_out,filename)+"'",os.path.join(metadata_out,newfilename)]
+            move_command = ["mv",os.path.join(metadata_out,filename).replace(' ','\\ '),os.path.join(metadata_out,newfilename)]
             print ' '.join(move_command)
             try:
                 with open(os.devnull,'w') as FNULL:
