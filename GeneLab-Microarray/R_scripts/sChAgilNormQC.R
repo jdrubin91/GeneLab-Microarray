@@ -117,8 +117,7 @@ if (is.null(opt$GLDS)) {
 suppressPackageStartupMessages(library("limma"))
 
 inFiles = dir(inPath)
-#inFiles = inFiles[grepl("_raw.txt$",inFiles)]
-inFiles = inFiles[grepl("^GSM(\\d)*",inFiles)]
+inFiles = inFiles[grepl("_raw.txt$",inFiles)]
 
 if (length(inFiles) > 0){
   cat("Detected raw files:\n")
