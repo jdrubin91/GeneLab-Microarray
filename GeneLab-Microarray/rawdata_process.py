@@ -171,10 +171,10 @@ def detect_array(GLDS_path):
         with open(array_info) as F:
             array = F.readline().strip('\n')
     else:
-        2channel = False
+        twocolor = False
         for infile in os.listdir(os.path.join(rawdata_out,'raw_files')):
-            2channel = config.detect_2channel(infile)
-        if 2channel:
+            twocolor = config.detect_2channel(infile)
+        if twocolor:
             array='TwoColor'
         else:
             array='Agilent'
