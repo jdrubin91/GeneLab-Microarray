@@ -141,13 +141,14 @@ def rename(GLDS_path):
                 #If the filename isn't in the metadata, just remove special characters and append appropriate information
                 if not sample_in_first_column and not sample_in_other_column:
                     new_filename = filename.replace('_','-').replace('(','-').replace(')','-').replace(' ','-').replace(GLDS,'').replace('microarray','').replace('--','-').strip('-').split('.')[0]
-                    move_command = ["mv","'"+os.path.join(rawdata_out,filename).replace(' ','\\ ')+"'", os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_raw.'+extension)]
-                    new_md5sum_file = os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_raw.'+extension)
+                    move_command = ["mv","'"+os.path.join(rawdata_out,filename).replace(' ','\\ ')+"'", os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_other.'+extension)]
+                    new_md5sum_file = os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_other.'+extension)
 
             #Execute the command if the file was in metadata - catch whether the file already exists and don't output an error
             # if sample_in_first_column or sample_in_other_column:
             try:
                 config.get_md5sum(move_command[1],'original',action='rename')
+                print ' '.join(move_command)
                 with open(os.devnull,'w') as FNULL:
                     subprocess.check_call(' '.join(move_command),shell=True,stdout=FNULL, stderr=subprocess.STDOUT)
                 config.get_md5sum(new_md5sum_file,'new')
