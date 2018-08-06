@@ -1,6 +1,6 @@
 __author__ = 'Jonathan Rubin'
 
-import os, sys, subprocess, config, metadata_process
+import os, sys, subprocess, config, metadata_process,shlex
 from difflib import SequenceMatcher
 
 #Finds similarity between two strings a, b. Not currently used but here in case it's needed (JDR 7/5/18)
@@ -125,7 +125,7 @@ def rename(GLDS_path):
                     if key in filename:
                         sample_in_first_column = True
                         sample_name = key.replace(' ','-').replace('_','-').replace('(','-').replace(')','-').replace(GLDS,'').replace('microarray','').replace('--','-').strip('-')
-                        move_command = ["mv", os.path.join(rawdata_out,filename).replace(' ','\\ '), os.path.join(final_rawdata_out,GLDS+'_'+sample_name+'_microarray_raw.'+extension)]
+                        move_command = ["mv", shlex.quote(os.path.join(rawdata_out,filename).replace(' ','\\ ')), os.path.join(final_rawdata_out,GLDS+'_'+sample_name+'_microarray_raw.'+extension)]
                         new_md5sum_file = os.path.join(final_rawdata_out,GLDS+'_'+sample_name+'_microarray_raw.'+extension)
 
                 #If the first column does not correspond to any filenames, look in other columns. Still rename as first column without special characters
@@ -135,13 +135,13 @@ def rename(GLDS_path):
                             if item == filename and item != '':
                                 sample_in_other_column = True
                                 new_filename = key.replace('_','-').replace('(','-').replace(')','-').replace(' ','-').replace(GLDS,'').replace('microarray','').replace('--','-').strip('-')
-                                move_command = ["mv",os.path.join(rawdata_out,filename).replace(' ','\\ '), os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_raw.'+extension)]
+                                move_command = ["mv",shlex.quote(os.path.join(rawdata_out,filename).replace(' ','\\ ')), os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_raw.'+extension)]
                                 new_md5sum_file = os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_raw.'+extension)
 
                 #If the filename isn't in the metadata, just remove special characters and append appropriate information
                 if not sample_in_first_column and not sample_in_other_column:
                     new_filename = filename.replace('_','-').replace('(','-').replace(')','-').replace(' ','-').replace(GLDS,'').replace('microarray','').replace('--','-').strip('-').split('.')[0]
-                    move_command = ["mv", os.path.join(rawdata_out,filename).replace(' ','\\ '), os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_raw.'+extension)]
+                    move_command = ["mv",shlex.quote(os.path.join(rawdata_out,filename).replace(' ','\\ ')), os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_raw.'+extension)]
                     new_md5sum_file = os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_raw.'+extension)
 
             #Execute the command if the file was in metadata - catch whether the file already exists and don't output an error
@@ -149,7 +149,7 @@ def rename(GLDS_path):
             try:
                 config.get_md5sum(move_command[1],'original',action='rename')
                 with open(os.devnull,'w') as FNULL:
-                    subprocess.check_call(' '.join(move_command),shell=True,stdout=FNULL, stderr=subprocess.STDOUT)
+                    subprocess.check_call(move_command,stdout=FNULL, stderr=subprocess.STDOUT)
                 config.get_md5sum(new_md5sum_file,'new')
             except subprocess.CalledProcessError:
                 config.md5sum['new'].append(('Move Error',' '.join(move_command)))
@@ -198,6 +198,7 @@ def sChAgilNormQC(rawdata_out,GLDS):
                     "-o", os.path.join(rawdata_out,'processed_data',GLDS+"_microarray_normalized"),
                     "-t", 'txt',
                     "--QCDir="+os.path.join(rawdata_out,'QC_reporting'),
+                    "--QCpackage=R",
                     "--GLDS="+GLDS]
     subprocess.call(R_command)
 
