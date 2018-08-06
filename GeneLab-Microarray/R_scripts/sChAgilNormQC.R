@@ -130,10 +130,11 @@ if (length(inFiles) > 0){
        call. = F)
 }
 
-sampNames = gsub(".*_microarray_","",inFiles)
-sampNames = gsub("_raw.*","",sampNames)
+sampNames = gsub("_microarray","",inFiles)
+sampNames = gsub("_raw*","",sampNames)
 sampNames = gsub(".txt$","",sampNames)
-sampNames = gsub("GLDS-\\d*_", "", sampNames) # Extract sample names from the list of files
+sampNames = gsub("GLDS-\\d*_", "", sampNames)
+sampNames = gsub("_", "", sampNames) # Extract sample names from the list of files
 
 raw = read.maimages(
   files = inFiles,

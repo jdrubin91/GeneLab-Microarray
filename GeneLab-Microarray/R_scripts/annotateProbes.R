@@ -122,7 +122,8 @@ arrayNames = c(
   "ATH1-121501",
   "HuGene-1_0-st-v1",
   "Yeast_2",
-  "Rat230_2"
+  "Rat230_2",
+  "Pae_G1a"
 )
 
 arrPackages = c(
@@ -133,7 +134,8 @@ arrPackages = c(
   "ath1121501.db",
   "hugene10sttranscriptcluster.db",
   "yeast2.db",
-  "rat2302.db"
+  "rat2302.db",
+  "paeg1a "
 )
 
 # Call the appropriate annotation package
