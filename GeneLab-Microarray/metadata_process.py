@@ -70,7 +70,7 @@ def clean(metadata_directory):
         newfilename = isa + '_' + GLDS + '_microarray_metadata.txt'
         if not os.path.exists(os.path.join(metadata_out,newfilename)):
             config.get_md5sum(os.path.join(metadata_out,filename),'original',action='rename')
-            move_command = ["mv","'"+os.path.join(metadata_out,filename).replace(' ','\\ ')+"'",os.path.join(metadata_out,newfilename)]
+            move_command = ["mv","'"+os.path.join(metadata_out,filename)+"'",os.path.join(metadata_out,newfilename)]
             try:
                 with open(os.devnull,'w') as FNULL:
                     subprocess.check_call(' '.join(move_command), shell=True,stdout=FNULL, stderr=subprocess.STDOUT)
