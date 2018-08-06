@@ -113,12 +113,12 @@ def rename(GLDS_path):
             sample_in_first_column = False
             sample_in_other_column = False
             extension = filename.split('.')[-1]
-            
+
             #If the filename is an annotation type, don't include 'raw' in filename
             if '.adf.' in filename or 'GPL' in filename:
-                new_filename = filename.replace('_','-').replace('(','-').replace(')','-').replace(' ','-').replace(GLDS,'').replace('microarray','').replace('--','-').strip('-').split('.')[0]
+                new_filename = filename.replace('_','-').replace('(','-').replace(')','-').replace(' ','-').replace(GLDS,'').replace('microarray','').replace('--','-').replace('.adf','-adf').strip('-').split('.')[0]
                 move_command = ["mv", os.path.join(rawdata_out,filename).replace(' ','\\ '), os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_annotation.'+extension)]
-                new_md5sum_file = os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_raw.'+extension)
+                new_md5sum_file = os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_annotation.'+extension)
             else:
                 for key in assay_dict:
                     #If the first column does correspond well, then assume the first column is the sample name and rename accordingly
