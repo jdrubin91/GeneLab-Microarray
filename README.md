@@ -125,13 +125,17 @@ GeneLab-Microarray --batch --process /opt/jdrubin/GeneLab-Microarray/batch/batch
 ```
 
 <H3 id="VisualizationMode">Visualization Mode</H3>
-The visualization mode for GeneLab-Microarray is specified with the -v/--visualize flag and takes as input a comma separated list of factor values followed by an adjusted p-value cutoff (for plotting purposes). The visualization mode will output an html file with interactive graphs and a png file with identical graphs that can be used for publication. Similar to other modes, an output directory must be specified as a positional argument at the end (in this case this is also the input directory). Visualize mode assumes the input data has been processed using GeneLab-Microarray (looks for specific filenames within specific directories).
+The visualization mode for GeneLab-Microarray is specified with the -v/--visualize flag and takes as input a comma separated list of factor values (multiple factor values can be specified with an underscore delimiter) followed by an adjusted p-value cutoff (for plotting purposes), and optionally a list of outliers (delimited by underscores). The visualization mode will output an html file with interactive graphs and a png file with identical graphs that can be used for publication. This mode can be run in two ways: First, if the data is structured as specified by this package, the output directory can be used as the input directory and this package will automatically look for input files in specific places. Alternatively, a user can specify a counts table (using the -c option) and a metadata 's' file (using the -m option). When using it this way, the final GLDS directory will simply be the output directory (i.e. can be any directory)
 
 
-
-Example:
+Example (data processed using GeneLab-Microarray):
 ```
-GeneLab-Microarray --visualize flight,ground,0.1 /opt/jdrubin/batch_out/GLDS-4/
+GeneLab-Microarray --visualize 'flight,ground,0.1' /opt/jdrubin/batch_out/GLDS-4/
+```
+
+Example (counts and metadata file specified by user):
+```
+GeneLab-Microarray -c /opt/jdrubin/batch_out/GLDS-4/processed_data/GLDS-4_microarray_normalized-annotated.txt -m /opt/jdrubin/batch_out/GLDS-4/processed_data/s_GLDS-4_microarray_metadata.txt --visualize 'flight,ground,0.1' /opt/jdrubin/batch_out/GLDS-4/
 ```
 
 The visualization mode can also do comparisons with multiple factor values which are specified with underscore delimiters.
@@ -140,7 +144,16 @@ The visualization mode can also do comparisons with multiple factor values which
 
 Example:
 ```
-GeneLab-Microarray --visualize flight_geneKO,flight_noKO,0.1 /opt/jdrubin/batch_out/GLDS-4/
+GeneLab-Microarray --visualize 'flight_geneKO,flight_noKO,0.1' /opt/jdrubin/batch_out/GLDS-4/
+```
+
+
+Finally, visualization mode can take as inputs a list of outliers.
+
+
+Example:
+```
+GeneLab-Microarray --visualize 'flight_geneKO,flight_noKO,0.1,GSM1234_GSM5678' /opt/jdrubin/batch_out/GLDS-4/
 ```
 
 <H3 id="GalaxyMode">Galaxy Mode</H3>
