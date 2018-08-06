@@ -146,7 +146,7 @@ def rename(GLDS_path):
                     subprocess.check_call(move_command,stdout=FNULL, stderr=subprocess.STDOUT)
                 config.get_md5sum(new_md5sum_file,'new')
             except subprocess.CalledProcessError:
-                config.md5sum['new'].append(('Move Error','N/A'))
+                config.md5sum['new'].append(('Move Error',move_command))
 
     #Add appropriate columns and filenames to the assay file in ISA metadata
     if len(extension) != 0:
@@ -188,8 +188,8 @@ def TwoColorNormQC(rawdata_out,GLDS):
 def sChAgilNormQC(rawdata_out,GLDS):
     R_script = os.path.join(config.R_dir,'sChAgilNormQC.R')
     R_command = ["Rscript", R_script,
-                    "-i",os.path.join(rawdata_out,'raw_files'),
-                    "-o", os.path.join(rawdata_out,'processed_files',GLDS+"_microarray_normalized"),
+                    "-i", os.path.join(rawdata_out,'raw_files'),
+                    "-o", os.path.join(rawdata_out,'processed_data',GLDS+"_microarray_normalized"),
                     "-t", 'txt',
                     "--QCDir="+os.path.join(rawdata_out,'QC_reporting'),
                     "--GLDS="+GLDS]
