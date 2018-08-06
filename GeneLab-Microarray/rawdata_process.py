@@ -149,7 +149,7 @@ def rename(GLDS_path):
             try:
                 config.get_md5sum(move_command[1],'original',action='rename')
                 with open(os.devnull,'w') as FNULL:
-                    subprocess.check_call(move_command,stdout=FNULL, stderr=subprocess.STDOUT)
+                    subprocess.check_call(' '.join(move_command),shell=True,stdout=FNULL, stderr=subprocess.STDOUT)
                 config.get_md5sum(new_md5sum_file,'new')
             except subprocess.CalledProcessError:
                 config.md5sum['new'].append(('Move Error',' '.join(move_command)))
