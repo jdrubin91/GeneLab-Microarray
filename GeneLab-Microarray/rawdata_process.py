@@ -173,7 +173,7 @@ def detect_array(GLDS_path):
     else:
         twocolor = False
         for infile in os.listdir(os.path.join(rawdata_out,'raw_files')):
-            twocolor = config.detect_2channel(infile)
+            twocolor = config.detect_2channel(os.path.join(rawdata_out,'raw_files',infile))
         if twocolor:
             array='TwoColor'
         else:
