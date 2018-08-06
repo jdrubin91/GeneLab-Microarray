@@ -141,7 +141,7 @@ def rename(GLDS_path):
             #Execute the command if the file was in metadata - catch whether the file already exists and don't output an error
             # if sample_in_first_column or sample_in_other_column:
             try:
-                config.get_md5sum(move_command[1].strip("'"),'original',action='rename')
+                config.get_md5sum(move_command[1],'original',action='rename')
                 print ' '.join(move_command)
                 with open(os.devnull,'w') as FNULL:
                     subprocess.check_call(move_command,stdout=FNULL, stderr=subprocess.STDOUT)
