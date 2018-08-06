@@ -142,7 +142,7 @@ def rename(GLDS_path):
             # if sample_in_first_column or sample_in_other_column:
             try:
                 config.get_md5sum(move_command[1].strip("'"),'original',action='rename')
-                print move_command
+                print ' '.join(move_command)
                 with open(os.devnull,'w') as FNULL:
                     subprocess.check_call(move_command,stdout=FNULL, stderr=subprocess.STDOUT)
                 config.get_md5sum(new_md5sum_file,'new')
