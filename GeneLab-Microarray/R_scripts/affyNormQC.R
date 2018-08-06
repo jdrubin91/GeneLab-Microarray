@@ -160,7 +160,7 @@ suppressPackageStartupMessages(require(affy))
 # setwd("~/Documents/genelab/rot1/GLDS-4/microarray/")
 
 celFiles = list.celfiles(full.names = TRUE)
-sampNames = gsub("_microarray_.*", "", celFiles)
+sampNames = gsub("_microarray", "", celFiles)
 sampNames = gsub(".CEL", "", sampNames)
 sampNames = gsub(".*/", "", sampNames)
 sampNames = gsub("GLDS-\\d*_", "", sampNames)# Extract sample names from the list of .CEL files

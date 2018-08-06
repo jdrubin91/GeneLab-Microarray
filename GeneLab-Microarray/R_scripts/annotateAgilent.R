@@ -34,7 +34,7 @@ option_list = list(
     c("-g", "--geneIDs"), 
     type = "character", 
     default = "GB_ACC",
-    help = "Column name in the provided annotation file for the column containing the desired gene IDs to use to link to the probe IDs (default: 'GB_ACC')"
+    help = "Column name in the provided annotation file for the column containing the desired gene IDs to use to link to the probe IDs (default: 'GB_ACC'). Note, if there spaces in the column name, replace them with periods (ie RefSeq Transcript ID --> RefSeq.Transcript.ID"
   ),
   make_option(
     c("-o", "--output"),
