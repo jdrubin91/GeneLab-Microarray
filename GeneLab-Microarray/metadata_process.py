@@ -69,13 +69,14 @@ def clean(metadata_directory):
         config.get_md5sum(os.path.join(metadata_out,filename),'original',action='rename')
         isa = filename.split('_')[0]
         newfilename = isa + '_' + GLDS + '_microarray_metadata.txt'
-        move_command = ["mv", os.path.join(metadata_out,filename),os.path.join(metadata_out,newfilename)]
-        try:
-            with open(os.devnull,'w') as FNULL:
-                subprocess.check_call(move_command,stdout=FNULL, stderr=subprocess.STDOUT)
-            config.get_md5sum(os.path.join(metadata_out,newfilename),'new')
-        except subprocess.CalledProcessError:
-            config.md5sum['new'].append(('Move Error',' '.join(move_command)))
+        if not os.path.exists(os.path.join(metadata_out,newfilename)):
+            move_command = ["mv", os.path.join(metadata_out,filename),os.path.join(metadata_out,newfilename)]
+            try:
+                with open(os.devnull,'w') as FNULL:
+                    subprocess.check_call(move_command,stdout=FNULL, stderr=subprocess.STDOUT)
+                config.get_md5sum(os.path.join(metadata_out,newfilename),'new')
+            except subprocess.CalledProcessError:
+                config.md5sum['new'].append(('Move Error','N/A'))
 
     #Modify the investigation file to account for sample and assay renaming
     modify_i(GLDS,os.path.join(metadata_out,'i_' + GLDS + '_microarray_metadata.txt'))

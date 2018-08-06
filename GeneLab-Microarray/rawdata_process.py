@@ -107,7 +107,7 @@ def rename(GLDS_path):
 
     #Loop through the raw data files 
     for filename in os.listdir(rawdata_out):
-        if filename != 'raw_files' and filename != 'QC_reporting' and filename != 'processed_data' and 'normalized' not in filename:
+        if not os.path.isdir(os.path.join(rawdata_out,filename)):
 
             #Boolean to detect whether the first column corresponds well to the filenames
             sample_in_first_column = False
