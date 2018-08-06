@@ -113,30 +113,36 @@ def rename(GLDS_path):
             sample_in_first_column = False
             sample_in_other_column = False
             extension = filename.split('.')[-1]
-            for key in assay_dict:
-
-                #If the first column does correspond well, then assume the first column is the sample name and rename accordingly
-                if key in filename:
-                    sample_in_first_column = True
-                    sample_name = key.replace(' ','-').replace('_','-').replace('(','-').replace(')','-').replace(GLDS,'').replace('microarray','').replace('--','-').strip('-')
-                    move_command = ["mv", os.path.join(rawdata_out,filename).replace(' ','\\ '), os.path.join(final_rawdata_out,GLDS+'_'+sample_name+'_microarray_raw.'+extension)]
-                    new_md5sum_file = os.path.join(final_rawdata_out,GLDS+'_'+sample_name+'_microarray_raw.'+extension)
-
-            #If the first column does not correspond to any filenames, look in other columns. Still rename as first column without special characters
-            if not sample_in_first_column:
-                for key in assay_dict:
-                    for item in assay_dict[key]:
-                        if item == filename and item != '':
-                            sample_in_other_column = True
-                            new_filename = key.replace('_','-').replace('(','-').replace(')','-').replace(' ','-').replace(GLDS,'').replace('microarray','').replace('--','-').strip('-')
-                            move_command = ["mv",os.path.join(rawdata_out,filename).replace(' ','\\ '), os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_raw.'+extension)]
-                            new_md5sum_file = os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_raw.'+extension)
-
-            #If the filename isn't in the metadata, just remove special characters and append appropriate information
-            if not sample_in_first_column and not sample_in_other_column:
+            
+            #If the filename is an annotation type, don't include 'raw' in filename
+            if '.adf.' in filename or 'GPL' in filename:
                 new_filename = filename.replace('_','-').replace('(','-').replace(')','-').replace(' ','-').replace(GLDS,'').replace('microarray','').replace('--','-').strip('-').split('.')[0]
-                move_command = ["mv", os.path.join(rawdata_out,filename).replace(' ','\\ '), os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_raw.'+extension)]
+                move_command = ["mv", os.path.join(rawdata_out,filename).replace(' ','\\ '), os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_annotation.'+extension)]
                 new_md5sum_file = os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_raw.'+extension)
+            else:
+                for key in assay_dict:
+                    #If the first column does correspond well, then assume the first column is the sample name and rename accordingly
+                    if key in filename:
+                        sample_in_first_column = True
+                        sample_name = key.replace(' ','-').replace('_','-').replace('(','-').replace(')','-').replace(GLDS,'').replace('microarray','').replace('--','-').strip('-')
+                        move_command = ["mv", os.path.join(rawdata_out,filename).replace(' ','\\ '), os.path.join(final_rawdata_out,GLDS+'_'+sample_name+'_microarray_raw.'+extension)]
+                        new_md5sum_file = os.path.join(final_rawdata_out,GLDS+'_'+sample_name+'_microarray_raw.'+extension)
+
+                #If the first column does not correspond to any filenames, look in other columns. Still rename as first column without special characters
+                if not sample_in_first_column:
+                    for key in assay_dict:
+                        for item in assay_dict[key]:
+                            if item == filename and item != '':
+                                sample_in_other_column = True
+                                new_filename = key.replace('_','-').replace('(','-').replace(')','-').replace(' ','-').replace(GLDS,'').replace('microarray','').replace('--','-').strip('-')
+                                move_command = ["mv",os.path.join(rawdata_out,filename).replace(' ','\\ '), os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_raw.'+extension)]
+                                new_md5sum_file = os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_raw.'+extension)
+
+                #If the filename isn't in the metadata, just remove special characters and append appropriate information
+                if not sample_in_first_column and not sample_in_other_column:
+                    new_filename = filename.replace('_','-').replace('(','-').replace(')','-').replace(' ','-').replace(GLDS,'').replace('microarray','').replace('--','-').strip('-').split('.')[0]
+                    move_command = ["mv", os.path.join(rawdata_out,filename).replace(' ','\\ '), os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_raw.'+extension)]
+                    new_md5sum_file = os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_raw.'+extension)
 
             #Execute the command if the file was in metadata - catch whether the file already exists and don't output an error
             # if sample_in_first_column or sample_in_other_column:
