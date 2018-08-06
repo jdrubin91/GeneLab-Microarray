@@ -66,10 +66,10 @@ def clean(metadata_directory):
 
     #Rename all metadata files to a standard naming convention
     for filename in os.listdir(metadata_out):
-        config.get_md5sum(os.path.join(metadata_out,filename),'original',action='rename')
         isa = filename.split('_')[0]
         newfilename = isa + '_' + GLDS + '_microarray_metadata.txt'
         if not os.path.exists(os.path.join(metadata_out,newfilename)):
+            config.get_md5sum(os.path.join(metadata_out,filename),'original',action='rename')
             move_command = ["mv",os.path.join(metadata_out,filename).replace(' ','\\ '),os.path.join(metadata_out,newfilename)]
             print ' '.join(move_command)
             try:
