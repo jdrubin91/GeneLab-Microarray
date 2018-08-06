@@ -189,7 +189,7 @@ def sChAgilNormQC(rawdata_out,GLDS):
     R_script = os.path.join(config.R_dir,'sChAgilNormQC.R')
     R_command = ["Rscript", R_script,
                     "-i",os.path.join(rawdata_out,'raw_files'),
-                    "-o", os.path.join(rawdata_out,'processed_files'),
+                    "-o", os.path.join(rawdata_out,'processed_files',GLDS+"_microarray_normalized"),
                     "-t", 'txt',
                     "--QCDir="+os.path.join(rawdata_out,'QC_reporting'),
                     "--GLDS="+GLDS]
@@ -221,7 +221,7 @@ def annotateAgilent(rawdata_out,GLDS):
     normalized_expression = os.path.join(rawdata_out,'processed_data',GLDS+"_microarray_normalized.txt")
     R_command = ["Rscript", R_script,
                     "-i", normalized_expression,
-                    "--gpl=search",
+                    "--gplDir="+os.path.join(rawdata_out,'raw_files'),
                     "-o", os.path.join(rawdata_out,'processed_data',GLDS+"_microarray_normalized-annotated"),
                     "-t", 'txt',
                     "--QCDir=" + os.path.join(rawdata_out,'QC_reporting'),

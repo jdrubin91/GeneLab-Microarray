@@ -242,8 +242,8 @@ def get_matrix(sig_genes,counts_table,limma_output,condition1,condition2):
 
 #Runs differential expression on two conditions that must be within the inputted metadata
 def limma_differential(counts_table,metadata,diff_analysis,condition1,condition2,outliers,html_folder):
-    print diff_analysis
     if diff_analysis == 'limma':
+        print "Analyzing using Limma (Microarray)..."
         limma_script = os.path.join(config.R_dir,'limmaDiffExp.R')
         if outliers != 'None':
             outliers = '_'.join(outliers.split(','))
@@ -262,6 +262,7 @@ def limma_differential(counts_table,metadata,diff_analysis,condition1,condition2
                                             "--group2=" + condition2,
                                             "-o", os.path.join(html_folder,'limma_out.txt')]
     elif diff_analysis == 'voom':
+        print "Analyzing using Limma-Voom (RNA-Seq)..."
         limma_script = os.path.join(config.R_dir,'limmaVoom.R')
         if outliers != 'None':
             outliers = '_'.join(outliers.split(','))
@@ -466,9 +467,7 @@ def differential_visualize(diffExp_file,pval_cut,condition1,condition2,html_main
     </head>
     <body style="width:900px; margin:0 auto;">
         <div class="banner">
-            <a target="_blank" href="https://genelab.nasa.gov">
-                <img src="NASA_GeneLab_banner.jpg" alt="GeneLab banner">
-            </a>
+            <img src="NASA_GeneLab_banner.jpg" alt="GeneLab banner">
         </div>
         <H2>"""+condition1+' vs. '+condition2+"""</H2>
         <H4>There were <a style="font-size: 20" href="Gene_list.html">"""+str(len(scattersigx))+""" significant genes</a> called with p-adj < """+str(pval_cut)+"""</H4>
@@ -509,7 +508,9 @@ def differential_visualize(diffExp_file,pval_cut,condition1,condition2,html_main
 
 
         <div class="footer" style="float:right">
-            <img style="float:right;width:300px" src="GeneLab_logo.png" alt="GeneLab logo">
+            <a target="_blank" href="https://genelab.nasa.gov">
+                <img style="float:right;width:300px" src="GeneLab_logo.png" alt="GeneLab logo">
+            </a>
             <p><a style="color:#ff8c00; text-decoration:none;" target="_blank" href="https://www.nasa.gov">www.nasa.gov</a></p>
         </div>
         <div class="footer" style="float:left">

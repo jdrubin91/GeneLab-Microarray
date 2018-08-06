@@ -58,7 +58,7 @@ def run():
         outfile.write('batch = "' + str(batch) + '"\n')
         outfile.write('visualize = "' + str(visualize) + '"\n')
         outfile.write('output = str()\n')
-        outfile.write('microarray_out="microarray"')
+        outfile.write('microarray_out="microarray"\n')
         outfile.write("""def get_md5sum(filepath,key,action=False):
     import os, subprocess
     if not action:
@@ -79,7 +79,7 @@ def detect_2channel(infile):
             if 'rMedianSignal' in line or 'rBGMedianSignal' in line:
                 is2channel = True
                 return is2channel
-    retrun is2channel\n""")
+    return is2channel\n""")
 
 
     #Either run batch module or just run the processing steps on a single dataset
@@ -173,7 +173,7 @@ def detect_2channel(infile):
         html_main = os.path.join(outdir,'GeneLab-Visualize_'+condition1+'-'+condition2+'_pval<'+padj_cutoff,'results.html')
         html_folder = os.path.join(outdir,'GeneLab-Visualize_'+condition1+'-'+condition2+'_pval<'+padj_cutoff)
         galaxy_mode.run(counts,metadata,diff,condition1,condition2,padj_cutoff,outliers,html_main,html_folder)
-        print "done. Output in: " + rawdata_out
+        print "done. Output in: " + outdir
     elif galaxy != False:
         import galaxy_mode
         counts_table,metadata,diff_analysis,condition1,condition2,padj_cutoff,outliers,html_main,html_folder = galaxy.split(',_,')
