@@ -3,7 +3,7 @@ __author__ = 'Jonathan Rubin'
 import os, config, metadata_process, rawdata_process
 
 def run(batch_file):
-    compatible_arrays = ['Affymetrix']
+    compatible_arrays = ['Affymetrix','Agilent']
     batch_list = list()
     with open(batch_file) as F:
         parent_dir = F.readline().strip('\n').split('=')[1]
@@ -20,7 +20,8 @@ def run(batch_file):
         if 'False' in batch_list[i]:
             GLDS, copy, array, norm_qc, annotate = batch_list[i]
             GLDS_path = os.path.join(config.outdir,GLDS)
-            rawdata_out = os.path.join(config.outdir,GLDS,'microarray')
+            config.microarray_out='microarray'
+            rawdata_out = os.path.join(config.outdir,GLDS,config.microarray_out)
             metadata_out = os.path.join(config.outdir,GLDS,'metadata')
 
             #Copy module, copies and unzips both metadata and raw data. If precise directories are not found,
@@ -50,15 +51,27 @@ def run(batch_file):
                     rawdata_process.rename(os.path.join(config.outdir,GLDS))
                     metadata_process.create_md5sum_out(rawdata_out,GLDS)
                     batch_list[i][1] = 'True'
-                # elif 'microarray' in os.listdir(GLDS_path):
-                #     for folder in os.listdir(GLDS_path):
-                #         if 'microarray' in folder:
-                #             rawdata_in = os.path.join(parent_dir,GLDS,folder)
-                #             rawdata_out = os.path.join(config.outdir,GLDS,folder)
-                #             rawdata_process.copy(rawdata_in)
-                #             rawdata_process.rename(os.path.join(config.outdir,GLDS))
-                #             metadata_process.create_md5sum_out(rawdata_out,GLDS)
-                #     batch_list[i][1] = 'True'
+                elif True in ['microarray' in x for x in os.listdir(GLDS_path)]:
+                    for folder in os.listdir(GLDS_path):
+                        if 'microarray' in folder:
+                            config.microarray_out = folder
+                            rawdata_in = os.path.join(parent_dir,GLDS,folder)
+                            rawdata_out = os.path.join(config.outdir,GLDS,folder)
+                            rawdata_process.copy(rawdata_in)
+                            rawdata_process.rename(os.path.join(config.outdir,GLDS))
+                            metadata_process.create_md5sum_out(rawdata_out,GLDS)
+                            array = rawdata_process.detect_array(GLDS_path)
+                            if array == 'Affymetrix':
+                                rawdata_process.qc_and_normalize(rawdata_out,GLDS)
+                                rawdata_process.annotate(rawdata_out,GLDS)
+                            elif array == 'TwoColor':
+                                rawdata_process.TwoColorNormQC(rawdata_out,GLDS)
+                                rawdata_process.annotateTwoColor(rawdata_out,GLDS)
+                            else:
+                                rawdata_process.sChAgilNormQC(rawdata_out,GLDS)
+                                rawdata_process.annotateAgilent(rawdata_out,GLDS)
+                    copy, norm_qc, annotate = ['Multi' for j in range(3)]
+                    batch_list[i][1] = [GLDS, copy, array, norm_qc, annotate]
                 else:
                     print "microarray directory within " + GLDS + " not found, skipping..."
                     copy, array, norm_qc, annotate = ['Skipped' for j in range(4)]
@@ -94,7 +107,12 @@ def run(batch_file):
             #Performs normalization and qc pre- and post-normalization
             if norm_qc == 'False':
                 print "Performing QC, normalization, and post-normalization QC on data for " + GLDS + "..."
-                rawdata_process.qc_and_normalize(rawdata_out,GLDS)
+                if array == 'Affymetrix':
+                    rawdata_process.qc_and_normalize(rawdata_out,GLDS)
+                elif array == 'TwoColor':
+                    rawdata_process.TwoColorNormQC(rawdata_out,GLDS)
+                else:
+                    rawdata_process.sChAgilNormQC(rawdata_out,GLDS)
                 batch_list[i][3] = 'True'
                 update_batch(parent_dir,header,batch_file,batch_list)
                 print "done"
@@ -104,7 +122,12 @@ def run(batch_file):
             #Annotates probeIDs with gene names. Autodetection of array annotation package is attempted but if it fails then return 'Skipped'.
             if annotate == 'False':
                 print "Annotating probe IDs with gene names for " + GLDS + "..."
-                rawdata_process.annotate(rawdata_out,GLDS)
+                if array == 'Affymetrix':
+                    rawdata_process.annotate(rawdata_out,GLDS)
+                elif array == 'TwoColor':
+                    rawdata_process.annotateTwoColor(rawdata_out,GLDS)
+                else:
+                    rawdata_process.annotateAgilent(rawdata_out,GLDS)
                 for file1 in os.listdir(rawdata_out,'processed_files'):
                     if 'annotated' in file1:
                         annotate = 'True'

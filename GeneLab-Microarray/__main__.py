@@ -58,6 +58,7 @@ def run():
         outfile.write('batch = "' + str(batch) + '"\n')
         outfile.write('visualize = "' + str(visualize) + '"\n')
         outfile.write('output = str()\n')
+        outfile.write('microarray_out="microarray"')
         outfile.write("""def get_md5sum(filepath,key,action=False):
     import os, subprocess
     if not action:
@@ -70,7 +71,15 @@ def run():
         md5sum[key].append((action,os.path.basename(os.path.normpath(filepath)),md5sum_character))
 def write_output(output_file,output):
     with open(output_file,'a') as F:
-        F.write(output)\n""")
+        F.write(output)
+def detect_2channel(infile):
+    is2channel = False
+    with open(infile,'r') as F:
+        for line in F:
+            if 'rMedianSignal' in line or 'rBGMedianSignal' in line:
+                is2channel = True
+                return is2channel
+    retrun is2channel\n""")
 
 
     #Either run batch module or just run the processing steps on a single dataset
@@ -101,8 +110,16 @@ def write_output(output_file,output):
                     rawdata_process.copy(rawdata_in)
                     rawdata_process.rename(os.path.join(outdir,GLDS))
                     metadata_process.create_md5sum_out(rawdata_out,GLDS)
-                    rawdata_process.qc_and_normalize(rawdata_out,GLDS)
-                    rawdata_process.annotate(rawdata_out,GLDS)
+                    array = rawdata_process.detect_array(GLDS_path)
+                    if array == 'Affymetrix':
+                        rawdata_process.qc_and_normalize(rawdata_out,GLDS)
+                        rawdata_process.annotate(rawdata_out,GLDS)
+                    elif array == 'TwoColor':
+                        rawdata_process.TwoColorNormQC(rawdata_out,GLDS)
+                        rawdata_process.annotateTwoColor(rawdata_out,GLDS)
+                    else:
+                        rawdata_process.sChAgilNormQC(rawdata_out,GLDS)
+                        rawdata_process.annotateAgilent(rawdata_out,GLDS)
                 else:
                     raise IOError('microarray directory within input not found. See README for expected directory structure.')
             elif 'GSE' in GLDS:
@@ -116,8 +133,16 @@ def write_output(output_file,output):
                     rawdata_process.copy(rawdata_in)
                     rawdata_process.rename(os.path.join(outdir,GLDS))
                     metadata_process.create_md5sum_out(rawdata_out,GLDS)
-                    rawdata_process.qc_and_normalize(rawdata_out,GLDS)
-                    rawdata_process.annotate(rawdata_out,GLDS)
+                    array = rawdata_process.detect_array(GLDS_path)
+                    if array == 'Affymetrix':
+                        rawdata_process.qc_and_normalize(rawdata_out,GLDS)
+                        rawdata_process.annotate(rawdata_out,GLDS)
+                    elif array == 'TwoColor':
+                        rawdata_process.TwoColorNormQC(rawdata_out,GLDS)
+                        rawdata_process.annotateTwoColor(rawdata_out,GLDS)
+                    else:
+                        rawdata_process.sChAgilNormQC(rawdata_out,GLDS)
+                        rawdata_process.annotateAgilent(rawdata_out,GLDS)
                 else:
                     raise IOError('microarray directory within input not found. See README for expected directory structure.')
 

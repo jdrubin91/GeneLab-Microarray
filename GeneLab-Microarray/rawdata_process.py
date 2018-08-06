@@ -30,7 +30,7 @@ def unzip(out_file_path,rawdata_out):
 def copy(rawdata_directory):
     #Find name of GLDS number
     GLDS = os.path.basename(os.path.dirname(rawdata_directory))
-    rawdata_out = os.path.join(config.outdir,GLDS,'microarray')
+    rawdata_out = os.path.join(config.outdir,GLDS,config.microarray_out)
 
     #Make appropriate output directory
     if not os.path.exists(rawdata_out):
@@ -95,7 +95,7 @@ def copy(rawdata_directory):
 def rename(GLDS_path):
     #First get all the proper paths according to specifications
     metadata_out = os.path.join(GLDS_path,'metadata')
-    rawdata_out = os.path.join(GLDS_path,'microarray')
+    rawdata_out = os.path.join(GLDS_path,config.microarray_out)
     GLDS = os.path.basename(GLDS_path)
     assay_dict = metadata_process.read_assay(metadata_out)
     final_rawdata_out = os.path.join(rawdata_out,'raw_files')
@@ -156,7 +156,7 @@ def rename(GLDS_path):
 #function has already been called.
 def detect_array(GLDS_path):
     GLDS = os.path.basename(GLDS_path)
-    rawdata_out = os.path.join(GLDS_path,'microarray')
+    rawdata_out = os.path.join(GLDS_path,config.microarray_out)
     R_script = os.path.join(config.R_dir,'affyNormQC.R')
     R_command = ["Rscript", R_script, 
                     "--arrayInfoOnly=TRUE",
@@ -171,10 +171,18 @@ def detect_array(GLDS_path):
         with open(array_info) as F:
             array = F.readline().strip('\n')
     else:
-        print "Warning: Array detection failed for " + GLDS + " - arrayInfo.txt file missing. Skipping..."
-        array = 'Skipped'
+        2channel = False
+        for infile in os.listdir(os.path.join(rawdata_out,'raw_files')):
+            2channel = config.detect_2channel(infile)
+        if 2channel:
+            array='TwoColor'
+        else:
+            array='Agilent'
 
     return array
+
+def TwoColorNormQC(rawdata_out,GLDS):
+    print "This is a placeholder. TwoColor not finished."
 
 #Function for normalizing and performing QC on agilent arrays
 def sChAgilNormQC(rawdata_out,GLDS):
@@ -186,7 +194,6 @@ def sChAgilNormQC(rawdata_out,GLDS):
                     "--QCDir="+os.path.join(rawdata_out,'QC_reporting'),
                     "--GLDS="+GLDS]
     subprocess.call(R_command)
-
 
 #This function simply runs the R script affyNormQC.R specifying the correct inputs
 def qc_and_normalize(rawdata_out,GLDS):
@@ -205,6 +212,20 @@ def qc_and_normalize(rawdata_out,GLDS):
     subprocess.call(R_command)
     if not GLDS+'_microarray_normalized.txt' in os.listdir(os.path.join(rawdata_out,'processed_data')):
         print "Warning: Normalized expression file missing, some processing steps may have failed"
+
+def annotateTwoColor(rawdata_out,GLDS):
+    print "This is a placeholder. TwoColor not finished."
+
+def annotateAgilent(rawdata_out,GLDS):
+    R_script = os.path.join(config.R_dir,'annotateAgilent.R')
+    normalized_expression = os.path.join(rawdata_out,'processed_data',GLDS+"_microarray_normalized.txt")
+    R_command = ["Rscript", R_script,
+                    "-i", normalized_expression,
+                    "--gpl=search",
+                    "-o", os.path.join(rawdata_out,'processed_data',GLDS+"_microarray_normalized-annotated"),
+                    "-t", 'txt',
+                    "--QCDir=" + os.path.join(rawdata_out,'QC_reporting'),
+                    "--GLDS="+GLDS]
 
 def annotate(rawdata_out,GLDS):
     R_script = os.path.join(config.R_dir,'annotateProbes.R')
