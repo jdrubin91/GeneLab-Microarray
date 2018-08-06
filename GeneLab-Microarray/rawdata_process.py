@@ -235,6 +235,8 @@ def annotateAgilent(rawdata_out,GLDS):
                     "-t", 'txt',
                     "--QCDir=" + os.path.join(rawdata_out,'QC_reporting'),
                     "--GLDS="+GLDS]
+    subprocess.call(R_command)
+
 
 def annotatePae_G1a(rawdata_out,GLDS):
     R_script = os.path.join(config.R_dir,'annotateAgilent.R')
@@ -248,6 +250,7 @@ def annotatePae_G1a(rawdata_out,GLDS):
                     "-t", 'txt',
                     "--QCDir=" + os.path.join(rawdata_out,'QC_reporting'),
                     "--GLDS="+GLDS]
+    subprocess.call(R_command)
 
 
 def annotate(rawdata_out,GLDS):
