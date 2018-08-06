@@ -99,7 +99,7 @@ if (!is.null(opt$annotation)){
       inDir = opt$gplDir
     }
     files = dir(inDir)
-    files = files[grepl("^GPL[[:digit:]]*", files)]
+    files = files[grepl("GPL[[:digit:]]*", files)]
     if (length(files) == 1) {
       annotFH = files[1]
       cat("\t",annotFH,"identified as an annotation file\n")
