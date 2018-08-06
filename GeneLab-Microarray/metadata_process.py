@@ -31,9 +31,6 @@ def clean(metadata_directory):
             zip_filename = os.path.basename(metadata_zip)
 
             #Check md5sum of original zip file
-            # md5sum_command = ["md5sum",metadata_zip]
-            # original_md5sum = subprocess.check_output(md5sum_command).split(' ')[0].encode("utf-8")
-            # config.md5sum["original"].append((zip_filename,original_md5sum))
             config.get_md5sum(metadata_zip,'original',action='copy')
 
             #Copy the last modified metadata
@@ -48,9 +45,6 @@ def clean(metadata_directory):
             subprocess.call(unzip_command)
 
             #Verify md5sum for 'new' file
-            # md5sum_command = ["md5sum",os.path.join(metadata_out,zip_filename)]
-            # new_md5sum = subprocess.check_output(md5sum_command).split(' ')[0].encode("utf-8")
-            # config.md5sum["new"].append((zip_filename,new_md5sum))
             config.get_md5sum(os.path.join(metadata_out,zip_filename),'new')
 
             #Execute unzipping and zip removal commands
@@ -76,8 +70,12 @@ def clean(metadata_directory):
         isa = filename.split('_')[0]
         newfilename = isa + '_' + GLDS + '_microarray_metadata.txt'
         move_command = ["mv", os.path.join(metadata_out,filename),os.path.join(metadata_out,newfilename)]
-        subprocess.call(move_command)
-        config.get_md5sum(os.path.join(metadata_out,newfilename),'new')
+        try:
+            with open(os.devnull,'w') as FNULL:
+                subprocess.check_call(move_command,stdout=FNULL, stderr=subprocess.STDOUT)
+            config.get_md5sum(os.path.join(metadata_out,newfilename),'new')
+        except subprocess.CalledProcessError:
+            config.md5sum['new'].append(('Move Error','N/A'))
 
     #Modify the investigation file to account for sample and assay renaming
     modify_i(GLDS,os.path.join(metadata_out,'i_' + GLDS + '_microarray_metadata.txt'))

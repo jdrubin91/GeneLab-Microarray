@@ -44,6 +44,21 @@ def run(batch_file):
                     rawdata_process.rename(os.path.join(config.outdir,GLDS))
                     metadata_process.create_md5sum_out(rawdata_out,GLDS)
                     batch_list[i][1] = 'True'
+                elif os.path.isdir(os.path.join(parent_dir,GLDS,'micoarray')):
+                    rawdata_in = os.path.join(parent_dir,GLDS,'micoarray')
+                    rawdata_process.copy(rawdata_in)
+                    rawdata_process.rename(os.path.join(config.outdir,GLDS))
+                    metadata_process.create_md5sum_out(rawdata_out,GLDS)
+                    batch_list[i][1] = 'True'
+                # elif 'microarray' in os.listdir(GLDS_path):
+                #     for folder in os.listdir(GLDS_path):
+                #         if 'microarray' in folder:
+                #             rawdata_in = os.path.join(parent_dir,GLDS,folder)
+                #             rawdata_out = os.path.join(config.outdir,GLDS,folder)
+                #             rawdata_process.copy(rawdata_in)
+                #             rawdata_process.rename(os.path.join(config.outdir,GLDS))
+                #             metadata_process.create_md5sum_out(rawdata_out,GLDS)
+                #     batch_list[i][1] = 'True'
                 else:
                     print "microarray directory within " + GLDS + " not found, skipping..."
                     copy, array, norm_qc, annotate = ['Skipped' for j in range(4)]
@@ -90,7 +105,10 @@ def run(batch_file):
             if annotate == 'False':
                 print "Annotating probe IDs with gene names for " + GLDS + "..."
                 rawdata_process.annotate(rawdata_out,GLDS)
-                batch_list[i][4] = 'True'
+                for file1 in os.listdir(rawdata_out,'processed_files'):
+                    if 'annotated' in file1:
+                        annotate = 'True'
+                batch_list[i][4] = annotate
                 update_batch(parent_dir,header,batch_file,batch_list)
                 print "done"
 

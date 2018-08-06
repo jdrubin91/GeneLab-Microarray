@@ -7,6 +7,25 @@ from difflib import SequenceMatcher
 def similar(a, b):
     return SequenceMatcher(None, a, b).ratio()
 
+#Function that simply unzips/decompresses an archive based on its extension. If a 'tar' or 'zip' archive,
+#also remove it to save space.
+def unzip(out_file_path,rawdata_out):
+    extension=out_file_path.split('.')[-1]
+    if 'zip' in extension:
+        unzip_command = ["unzip", "-o", "-qq",out_file_path,"-d",rawdata_out]
+        subprocess.call(unzip_command)
+        remove_command = ["rm", out_file_path]
+        subprocess.call(remove_command)
+    if 'gz' in extension:
+        gunzip_command = ["gunzip", "-f",out_file_path]
+        subprocess.call(gunzip_command)
+    if 'tar' in extension:
+        untar_command = ["tar", "-xf", out_file_path, "-C", rawdata_out]
+        subprocess.call(untar_command)
+        remove_command = ["rm", out_file_path]
+        subprocess.call(remove_command)
+
+
 #Copies most recent metadata and all raw data and then unzips, and removes compressed files
 def copy(rawdata_directory):
     #Find name of GLDS number
@@ -17,9 +36,12 @@ def copy(rawdata_directory):
     if not os.path.exists(rawdata_out):
         os.makedirs(rawdata_out)
 
+
     #Now search the microarray folder for raw data files (this part could be done in a smarter way...)
+    raw_files = 0
     for file1 in os.listdir(rawdata_directory):
-        if 'raw' in file1 or 'RAW' in file1 or 'Raw' in file1 or 'CEL' in file1 or not 'processed' in file1:
+        if not 'processed' in file1:
+            raw_files += 1
             out_file_path = os.path.join(rawdata_out,file1)
 
             #Command for copying the raw files to desired output
@@ -29,66 +51,47 @@ def copy(rawdata_directory):
             config.get_md5sum(cp_command[1],'original',action='copy')
 
             #Then execute the copy command to copy raw files to output directory
-            subprocess.call(cp_command)
+            config.output = config.output + str(subprocess.check_output(cp_command).decode("utf-8"))
 
             #md5sum command to check copied files
             config.get_md5sum(cp_command[2],'new')
 
-            #Get final file extension to determine what decompression to do first
-            extension = file1.split('.')[-1]
+            #Once copied, unzip/untar/gunzip compressed directories (if there are any)
+            unzip(out_file_path,rawdata_out)
+
+
+    #If there are no files without the word 'processed' in them, then grab all files and unzip them.
+    if raw_files == 0:
+        for file1 in os.listdir(rawdata_directory):
+            out_file_path = os.path.join(rawdata_out,file1)
+
+            #Command for copying the raw files to desired output
+            cp_command = ["cp", os.path.join(rawdata_directory,file1),out_file_path]
+
+            #md5sum command to check original files
+            config.get_md5sum(cp_command[1],'original',action='copy')
+
+            #Then execute the copy command to copy raw files to output directory
+            config.output = config.output + str(subprocess.check_output(cp_command).decode("utf-8"))
+
+            #md5sum command to check copied files
+            config.get_md5sum(cp_command[2],'new')
 
             #Once copied, unzip/untar/gunzip compressed directories (if there are any)
-            if 'zip' in extension:
-                unzip_command = ["unzip", "-o", "-qq",out_file_path,"-d",rawdata_out]
-                subprocess.call(unzip_command)
-                remove_command = ["rm", out_file_path]
-                subprocess.call(remove_command)
-            if 'gz' in extension:
-                gunzip_command = ["gunzip", "-f",out_file_path]
-                subprocess.call(gunzip_command)
-            if 'tar' in extension:
-                untar_command = ["tar", "-xf", out_file_path, "-C", rawdata_out]
-                subprocess.call(untar_command)
-                remove_command = ["rm", out_file_path]
-                subprocess.call(remove_command)
+            unzip(out_file_path,rawdata_out)
+
 
     #Sometimes compressed files spit out more compressed files so loop through the files once again to catch those and uncompress them
     for file2 in os.listdir(rawdata_out):
-        extension = file2.split('.')[-1]
         out_file_path = os.path.join(rawdata_out,file2)
-        if 'zip' in extension:
-            unzip_command = ["unzip", "-o", "-qq", out_file_path, "-d", rawdata_out]
-            subprocess.call(unzip_command)
-            remove_command = ["rm", out_file_path]
-            subprocess.call(remove_command)
-        if 'gz' in extension:
-            gunzip_command = ["gunzip", "-f", out_file_path]
-            subprocess.call(gunzip_command)
-        if 'tar' in extension:
-            untar_command = ["tar", "-xf", out_file_path, "-C", rawdata_out]
-            subprocess.call(untar_command)
-            remove_command = ["rm", out_file_path]
-            subprocess.call(remove_command)
+        unzip(out_file_path,rawdata_out)
 
     #Sometimes compressed files spit out more compressed files so loop through the files once again to catch those and uncompress them
     for file2 in os.listdir(rawdata_out):
-        extension = file2.split('.')[-1]
         out_file_path = os.path.join(rawdata_out,file2)
-        if 'zip' in extension:
-            unzip_command = ["unzip", "-o", "-qq", out_file_path, "-d", rawdata_out]
-            subprocess.call(unzip_command)
-            remove_command = ["rm", out_file_path]
-            subprocess.call(remove_command)
-        if 'gz' in extension:
-            gunzip_command = ["gunzip", "-f", out_file_path]
-            subprocess.call(gunzip_command)
-        if 'tar' in extension:
-            untar_command = ["tar", "-xf", out_file_path, "-C", rawdata_out]
-            subprocess.call(untar_command)
-            remove_command = ["rm", out_file_path]
-            subprocess.call(remove_command)
+        unzip(out_file_path,rawdata_out)
 
-#This function renames all raw data files in a specified GLDS_path
+#This function renames all raw data files in a specified GLDS_path and copies them into a 'raw_files' directory
 def rename(GLDS_path):
     #First get all the proper paths according to specifications
     metadata_out = os.path.join(GLDS_path,'metadata')
@@ -144,11 +147,6 @@ def rename(GLDS_path):
                 config.get_md5sum(new_md5sum_file,'new')
             except subprocess.CalledProcessError:
                 config.md5sum['new'].append(('Move Error','N/A'))
-            # elif not os.path.isdir(os.path.join(rawdata_out,filename)):
-            #     remove_command = ["rm",os.path.join(rawdata_out,filename)]
-            #     config.get_md5sum(os.path.join(rawdata_out,filename),'original',action='remove')
-            #     subprocess.call(remove_command)
-            #     config.md5sum['new'].append(('Removed','N/A'))
 
     #Add appropriate columns and filenames to the assay file in ISA metadata
     if len(extension) != 0:
@@ -177,6 +175,18 @@ def detect_array(GLDS_path):
         array = 'Skipped'
 
     return array
+
+#Function for normalizing and performing QC on agilent arrays
+def sChAgilNormQC(rawdata_out,GLDS):
+    R_script = os.path.join(config.R_dir,'sChAgilNormQC.R')
+    R_command = ["Rscript", R_script,
+                    "-i",os.path.join(rawdata_out,'raw_files'),
+                    "-o", os.path.join(rawdata_out,'processed_files'),
+                    "-t", 'txt',
+                    "--QCDir="+os.path.join(rawdata_out,'QC_reporting'),
+                    "--GLDS="+GLDS]
+    subprocess.call(R_command)
+
 
 #This function simply runs the R script affyNormQC.R specifying the correct inputs
 def qc_and_normalize(rawdata_out,GLDS):
