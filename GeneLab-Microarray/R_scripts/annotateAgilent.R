@@ -97,11 +97,12 @@ if (!is.null(opt$annotation)){
     } else {
       cat("Looking in",opt$gplDir,"for a GPL file...\n")
       inDir = opt$gplDir
+      inDir = addSlash(inDir)
     }
     files = dir(inDir)
     files = files[grepl("GPL[[:digit:]]*", files)]
     if (length(files) == 1) {
-      annotFH = files[1]
+      annotFH = paste(inDir,files[1],sep="")
       cat("\t",annotFH,"identified as an annotation file\n")
     } else if (length(files) == 0) {
       stop(paste("No GPL file found in ",inDir,"\n",sep=""),
