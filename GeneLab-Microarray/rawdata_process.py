@@ -145,11 +145,8 @@ def rename(GLDS_path):
                     new_md5sum_file = os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_other.'+extension)
 
             #Execute the command if the file was in metadata - catch whether the file already exists and don't output an error
-            # if sample_in_first_column or sample_in_other_column:
             try:
-                print ' '.join(move_command)
                 config.get_md5sum(move_command[1].strip("'"),'original',action='rename')
-                # print ' '.join(move_command)
                 with open(os.devnull,'w') as FNULL:
                     subprocess.check_call(' '.join(move_command),shell=True,stdout=FNULL, stderr=subprocess.STDOUT)
                 config.get_md5sum(new_md5sum_file,'new')
