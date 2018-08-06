@@ -227,7 +227,7 @@ if (!is.null(useOligo)){
 }
 
 
-setwd(relDir) # Return the working directory to direcotry script was called from to enable use of relative paths
+setwd(relDir) # Return the working directory to directory script was called from to enable use of relative paths
 # Create QC output directory
 qcDir = addSlash(opt$QCDir)
 if (!file.exists(qcDir)){ # Create QC directory if it does not exist yet

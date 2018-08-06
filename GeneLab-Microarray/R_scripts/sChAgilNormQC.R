@@ -22,6 +22,12 @@ option_list = list(
   #   help = "Normalization method [rma (default, full rma), quantile (no background correction), background (no quant. normalization), log2 (no quant. norm. or background correction)"
   # ),
   make_option(
+    "--QCpackage",
+    type = "character",
+    default = "aqm",
+    help = "Package used to generate QC plots: aqm (generate html report with arrayQualityMetrics package,default), R (use standard R plotting options to generate QC plots as .png files. Figures may not maintain proper formatting for datasets with many samples)"
+  ),
+  make_option(
     c("-o", "--outFile"),
     type = "character",
     default = "expValues",
@@ -58,6 +64,7 @@ opt = parse_args(opt_parser)
 norm = opt$normalization
 outFH = opt$outFile
 QCout = opt$QCoutput
+QCpack = opt$QCpackage # QCpack = "R"
 
 
 addSlash = function(string) {
@@ -70,12 +77,27 @@ addSlash = function(string) {
   return(string)
 }
 
+detach_package = function(pkg, character.only = FALSE) {
+  if (!character.only)
+  {
+    pkg <- deparse(substitute(pkg))
+  }
+  search_item <- paste("package", pkg, sep = ":")
+  while (search_item %in% search())
+  {
+    detach(search_item,
+           unload = TRUE,
+           character.only = TRUE)
+  }
+}
+
 if (is.null(opt$input)){
   print_help(opt_parser)
   stop("No path to input directory provided. Please look over the available options", call. = F)
 }else{
   inPath = opt$input
-  #setwd(inPath)
+  # inPath = "/Users/dmattox/Documents/genelab/rot1/GLDS-41/microarray"
+  # setwd(inPath)
 }
 
 if (is.null(opt$GLDS)) {
@@ -93,18 +115,26 @@ if (is.null(opt$GLDS)) {
 
 # Load packages
 suppressPackageStartupMessages(library("limma"))
-suppressPackageStartupMessages(library("arrayQualityMetrics"))
-
-# inPath = "~/Documents/genelab/rot1/GLDS-41/microarray/"
-# setwd(inPath)
 
 inFiles = dir(inPath)
-inFiles = inFiles[grepl("_raw.txt$",inFiles)]
+#inFiles = inFiles[grepl("_raw.txt$",inFiles)]
+inFiles = inFiles[grepl("^GSM(\\d)*",inFiles)]
 
-targets = data.frame(FileName = inFiles)
-row.names(targets) = gsub(".*_microarray_","",targets$FileName)
-row.names(targets) = gsub("_raw.*","",row.names(targets))
-row.names(targets) = gsub(".txt$","",row.names(targets))
+if (length(inFiles) > 0){
+  cat("Detected raw files:\n")
+  for (i in 1:length(inFiles)) {
+    cat("\t",inFiles[i],"\n")
+  }
+  cat("\n")
+} else {
+  stop("No raw files detected in the current directory",
+       call. = F)
+}
+
+sampNames = gsub(".*_microarray_","",inFiles)
+sampNames = gsub("_raw.*","",sampNames)
+sampNames = gsub(".txt$","",sampNames)
+sampNames = gsub("GLDS-\\d*_", "", sampNames) # Extract sample names from the list of files
 
 raw = read.maimages(
   files = inFiles,
@@ -116,7 +146,7 @@ raw = read.maimages(
     Gb = "gBGMedianSignal"
   ),
   annotation = "FeatureNum",
-  names = row.names(targets)
+  names = sampNames
 )
 
 # Pre-normalization QC step
@@ -124,26 +154,151 @@ qcDir = addSlash(opt$QCDir)
 if (!file.exists(qcDir)){ # Create QC directory if it does not exist yet
   dir.create(qcDir)
 }
+
 if(QCout == T) {
-  # Load in QC package
-  suppressPackageStartupMessages(require(arrayQualityMetrics))
-  
   cat("Performing intial QC\n")
-  
-  rawData = new("ExpressionSet", exprs = as.matrix(raw)) # Generate a temprory expression set object for performing quality control
-  suppressWarnings(
-    arrayQualityMetrics(
-      expressionset = rawData,
-      outdir = paste(qcDir, "raw_report", sep = ""),
-      force = T,
-      do.logtransform = T
+  if (QCpack == "aqm"){
+    
+    # Load in QC package
+    suppressPackageStartupMessages(require(arrayQualityMetrics))
+    suppressPackageStartupMessages(require(oligo))
+    
+    rawData = new("ExpressionSet", exprs = as.matrix(raw)) # Generate a temprory expression set object for performing quality control
+    suppressWarnings(
+      arrayQualityMetrics(
+        expressionset = rawData,
+        outdir = paste(qcDir, "raw_report", sep = ""),
+        force = T,
+        do.logtransform = T
+      )
     )
-  )
-  rm(rawData)
+    rm(rawData)
+    detach_package(oligo)
+  } else if (QCpack == "R") {
+    # Create a directory to hold figures from the raw QC step
+    rawDir = paste(qcDir, "raw_report/", sep = "")
+    if (!file.exists(rawDir)){ # Create a raw report directory within qcDir if it does not exist yet
+      dir.create(rawDir)
+    }
+    
+    # Prepare plotting options
+    toMatch = c(8,183,31,45,51,100,101,118,128,139,147,183,254,421,467,477,
+                483,493,498,503,508,535,552,575,635,655)
+    color = grDevices::colors()[rep(toMatch,10)] # Create a library of colors for plotting
+    
+    # Intensity distributions of the pm probes from each microarray on the same graph
+    cat("\tGenerating initial distribution plots")
+    mypms = as.matrix(raw)
+    png(
+      paste(rawDir, glAn, '_rawDensityDistributions.png', sep = ''),
+      width = 800,
+      height = 800
+    )
+    ylims = c(0, .8)
+    xlims = c(0, 20)
+    for (i in 1:ncol(mypms)) {
+      cat(".")
+      if (i == 1) {
+        plot(
+          density(log2(mypms[, i])),
+          ylim = ylims,
+          xlim = xlims,
+          xlab = 'log2(Raw Intensities)',
+          main = paste(glAn, ' Raw intensity distributions', sep = ''),
+          col = color[i]
+        )
+        par(new = T)
+      } else{
+        plot(
+          density(log2(mypms[, i])),
+          ylim = ylims,
+          xlim = xlims,
+          axes = F,
+          xlab = '',
+          ylab = '',
+          main = '',
+          col = color[i]
+        )
+        par(new = T)
+      }
+    }
+    legend(
+      16,
+      0.8,
+      col = color[1:length(inFiles)],
+      legend = sampNames
+      ,
+      pch = 15,
+      bty = "n",
+      cex = 0.9,
+      pt.cex = 0.8,
+      y.intersp = 0.8
+    )
+    garbage <- dev.off()
+    cat("\n")
+    
+    # Boxplots
+    png(paste(rawDir, glAn, '_rawBoxplot.png', sep = ''),
+        width = 800,
+        height = 400)
+    par(mar = c(7, 5, 1, 1))
+    boxplot(
+      log2(mypms),
+      las = 2,
+      outline = FALSE,
+      col = color[1:length(inFiles)],
+      main = paste(glAn, " Raw intensities", sep = ""),
+      names = sampNames
+    )
+    mtext(
+      text = "log2 Intensity",
+      side = 2,
+      line = 2.5,
+      las = 0
+    )
+    garbage <- dev.off()
+    
+    # PCA
+    cat("\tPerforming PCA of raw data...\n")
+    rawPCA = prcomp(mypms)
+    png(paste(rawDir, glAn, '_rawPCA.png', sep = ''),
+        width = 800,
+        height = 800)
+    plot(
+      rawPCA$rotation[, 1],
+      rawPCA$rotation[, 2],
+      col = color[1:length(inFiles)],
+      pch = 16,
+      xlab = paste(
+        "PC1, ",
+        round(summary(rawPCA)$importance["Proportion of Variance", 1] * 100, digits = 1),
+        "% of variance",
+        sep = ""
+      ),
+      ylab = paste(
+        "PC2, ",
+        round(summary(rawPCA)$importance["Proportion of Variance", 2] * 100, digits = 1),
+        "% of variance",
+        sep = ""
+      ),
+      main = paste(glAn, " PCA of raw data", sep = "")
+    )
+    text(
+      rawPCA$rotation[, 1],
+      rawPCA$rotation[, 2],
+      labels = sampNames,
+      cex = 1,
+      pos = 3
+    )
+    garbage <- dev.off()
+  } else {
+    warning("\n--QCpackage option was not recognized and quality control is not being performed.\n", call. = F)
+  }
+  
 }
 
 # Normalize data
-cat("Normalizing data single channel Agilent microarray data...\n")
+cat("Normalizing single channel Agilent microarray data...\n")
 cat("\tBackground correcting\n")
 
 normVals = backgroundCorrect(raw, method = "normexp", verbose = F)
@@ -187,17 +342,132 @@ if (outType == "both") {
 # Post-normalization QC step
 if(QCout == T) {
   cat("Performing post-normalization QC\n")
-  
-  normalizedData = new("ExpressionSet", exprs = as.matrix(eset)) # Generate a temprory expression set object for performing quality control
-  suppressWarnings(
-    arrayQualityMetrics(
-      expressionset = normalizedData,
-      outdir = paste(qcDir, "normalized_report", sep = ""),
-      force = T,
-      do.logtransform = T
+  if (QCpack == "aqm"){
+    suppressPackageStartupMessages(require(oligo))
+    
+    normalizedData = new("ExpressionSet", exprs = as.matrix(eset)) # Generate a temprory expression set object for performing quality control
+    suppressWarnings(
+      arrayQualityMetrics(
+        expressionset = normalizedData,
+        outdir = paste(qcDir, "normalized_report", sep = ""),
+        force = T,
+        do.logtransform = T
+      )
     )
-  )
-  rm(normalizedData)
+    rm(normalizedData)
+  } else if (QCpack == "R") {
+    # Create a directory to hold figures from the normalized QC step
+    normDir = paste(qcDir, "normalized_report/", sep = "")
+    if (!file.exists(normDir)){ # Create a raw report directory within qcDir if it does not exist yet
+      dir.create(normDir)
+    }
+    
+    # Density distributions
+    png(
+      paste(normDir, glAn, '_normDensityDistributions.png', sep = ''),
+      width = 800,
+      height = 800
+    )
+    ylims = c(0, .8)
+    xlims = c(0, 20)
+    for (i in 1:ncol(eset)) {
+      if (i == 1) {
+        plot(
+          density(eset[, i]),
+          ylim = ylims,
+          xlim = xlims,
+          xlab = 'Normalized expression values[log2]',
+          main = paste(glAn, ' Normalized expression distributions', sep = ''),
+          col = color[i]
+        )
+        par(new = T)
+      } else{
+        plot(
+          density(eset[, i]),
+          ylim = ylims,
+          xlim = xlims,
+          axes = F,
+          xlab = '',
+          ylab = '',
+          main = '',
+          col = color[i]
+        )
+        par(new = T)
+      }
+    }
+    legend(
+      13,
+      0.8,
+      col = color[1:length(inFiles)],
+      legend = sampNames
+      ,
+      pch = 15,
+      bty = "n",
+      cex = 0.9,
+      pt.cex = 0.8,
+      y.intersp = 0.8
+    )
+    garbage <- dev.off()
+    
+    # Boxplots
+    png(
+      paste(normDir, glAn, '_normBoxplot.png', sep = ''),
+      width = 800,
+      height = 400
+    )
+    par(mar = c(7, 5, 1, 1))
+    boxplot(
+      eset,
+      las = 2,
+      outline = FALSE,
+      col = color[1:length(inFiles)],
+      main = paste(glAn, " Normalized intensities", sep = ""),
+      names = sampNames
+    )
+    mtext(
+      text = "log2 Intensity",
+      side = 2,
+      line = 2.5,
+      las = 0
+    )
+    garbage <- dev.off()
+    
+    # PCA
+    cat("\tPerforming PCA of normalized data...\n")
+    normPCA = prcomp(eset)
+    png(paste(normDir, glAn, '_normPCA.png', sep = ''),
+        width = 800,
+        height = 800)
+    plot(
+      normPCA$rotation[, 1],
+      normPCA$rotation[, 2],
+      col = color[1:length(inFiles)],
+      pch = 16,
+      xlab = paste(
+        "PC1, ",
+        round(summary(normPCA)$importance["Proportion of Variance", 1] * 100, digits = 1),
+        "% of variance",
+        sep = ""
+      ),
+      ylab = paste(
+        "PC2, ",
+        round(summary(normPCA)$importance["Proportion of Variance", 2] * 100, digits = 1),
+        "% of variance",
+        sep = ""
+      ),
+      main = paste(glAn, " PCA of normalized data", sep = "")
+    )
+    text(
+      normPCA$rotation[, 1],
+      normPCA$rotation[, 2],
+      labels = sampNames,
+      cex = 1,
+      pos = 3
+    )
+    garbage <- dev.off()
+  } else {
+    
+  }
 }
 
 
