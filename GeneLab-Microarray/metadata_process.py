@@ -76,7 +76,7 @@ def clean(metadata_directory):
                     subprocess.check_call(move_command,stdout=FNULL, stderr=subprocess.STDOUT)
                 config.get_md5sum(os.path.join(metadata_out,newfilename),'new')
             except subprocess.CalledProcessError:
-                config.md5sum['new'].append(('Move Error','N/A'))
+                config.md5sum['new'].append(('Move Error',' '.join(move_command)))
 
     #Modify the investigation file to account for sample and assay renaming
     modify_i(GLDS,os.path.join(metadata_out,'i_' + GLDS + '_microarray_metadata.txt'))
