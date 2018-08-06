@@ -119,7 +119,22 @@ if (!is.null(opt$annotation)){
 
 # Read in annotation file
 tryCatch({
-  annot = read.delim(annotFH,header = T, stringsAsFactors = F)
+  annot = read.delim(annotFH, header = T, stringsAsFactors = F)
+  if (grepl("^#",annot[1,1]) | grepl("^!",annot[1,1])) {
+    cat("Extra header lines detected. Attempting to read this file in again without these lines but if this fails, consider manually trimming lines above the column names in the GPL file\n")
+    skipCnt = 0
+    for (i in 1:nrow(annot)) {
+      if (grepl("^#",annot[i,1]) | grepl("^!",annot[i,1])) {
+        # Looks for the last line that begins with an # or ! and assumes the next line below it contains the column names
+        skipCnt = i
+      } else {
+        break()
+      }
+    }
+    if ((skipCnt > 0) & (skipCnt < nrow(annot))){
+      annot = read.delim(annotFH, header = T, stringsAsFactors = F, skip = (skipCnt + 1)) # skipCnt + 1 because of the first line being read as a header the first time
+    }
+  }
 }, error = function(e) {
   stop(paste("Unable to read in ",annotFH, sep = ""),
        call. = F)
