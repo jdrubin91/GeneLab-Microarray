@@ -54,6 +54,7 @@ def run(batch_file):
                 elif True in ['microarray' in x for x in os.listdir(os.path.join(parent_dir,GLDS))]:
                     for folder in os.listdir(GLDS_path):
                         if 'microarray' in folder:
+                            print folder
                             config.microarray_out = folder
                             rawdata_in = os.path.join(parent_dir,GLDS,folder)
                             rawdata_out = os.path.join(config.outdir,GLDS,folder)
@@ -81,7 +82,7 @@ def run(batch_file):
                                     if 'annotated' in file1:
                                         annotate = 'True'
                     copy, norm_qc = ['Multi' for j in range(2)]
-                    print copy
+                    print batch_list[i]
                     batch_list[i][1] = [GLDS, copy, array, norm_qc, annotate]
                 else:
                     print "microarray directory within " + GLDS + " not found, skipping..."
