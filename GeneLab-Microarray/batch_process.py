@@ -39,9 +39,6 @@ def run(batch_file):
                     batch_list[i] = [GLDS, copy, array, norm_qc, annotate]
 
                 #Copy rawdata into output
-                print os.listdir(os.path.join(parent_dir,GLDS))
-                print ['microarray' in x for x in os.listdir(os.path.join(parent_dir,GLDS))]
-                print True in ['microarray' in x for x in os.listdir(os.path.join(parent_dir,GLDS))]
                 rawdata_in = os.path.join(parent_dir,GLDS,'microarray')
                 if os.path.isdir(rawdata_in):
                     rawdata_process.copy(rawdata_in)
@@ -55,7 +52,7 @@ def run(batch_file):
                     metadata_process.create_md5sum_out(rawdata_out,GLDS)
                     batch_list[i][1] = 'True'
                 elif True in ['microarray' in x for x in os.listdir(os.path.join(parent_dir,GLDS))]:
-                    for folder in os.listdir(GLDS_path):
+                    for folder in os.listdir(os.path.join(parent_dir,GLDS)):
                         if 'microarray' in folder:
                             print folder
                             config.microarray_out = folder
