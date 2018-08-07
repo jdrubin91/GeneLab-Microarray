@@ -29,23 +29,28 @@ def run(batch_file):
             if copy == 'False':
                 print "Copying files for " + GLDS + "..."
                 config.md5sum = {"original": [], "new": []}
-                #Process metadata
-                metadata_in = os.path.join(parent_dir,GLDS,'metadata')
-                if os.path.isdir(metadata_in) and 'GSE' not in GLDS:
-                    metadata_process.clean(metadata_in)
-                else:
-                    print "metadata directory within " + GLDS + " not found, skipping..."
-                    copy, array, norm_qc, annotate = ['Skipped' for j in range(4)]
-                    batch_list[i] = [GLDS, copy, array, norm_qc, annotate]
-
-                #Copy rawdata into output
+                
+                #Copy rawdata and metadata into output
                 rawdata_in = os.path.join(parent_dir,GLDS,'microarray')
+                metadata_in = os.path.join(parent_dir,GLDS,'metadata')
                 if os.path.isdir(rawdata_in):
+                    if os.path.isdir(metadata_in) and 'GSE' not in GLDS:
+                        metadata_process.clean(metadata_in)
+                    else:
+                        print "metadata directory within " + GLDS + " not found, skipping..."
+                        copy, array, norm_qc, annotate = ['Skipped' for j in range(4)]
+                    batch_list[i] = [GLDS, copy, array, norm_qc, annotate]
                     rawdata_process.copy(rawdata_in)
                     rawdata_process.rename(os.path.join(config.outdir,GLDS))
                     metadata_process.create_md5sum_out(rawdata_out,GLDS)
                     batch_list[i][1] = 'True'
                 elif os.path.isdir(os.path.join(parent_dir,GLDS,'micoarray')):
+                    if os.path.isdir(metadata_in) and 'GSE' not in GLDS:
+                        metadata_process.clean(metadata_in)
+                    else:
+                        print "metadata directory within " + GLDS + " not found, skipping..."
+                    copy, array, norm_qc, annotate = ['Skipped' for j in range(4)]
+                    batch_list[i] = [GLDS, copy, array, norm_qc, annotate]
                     rawdata_in = os.path.join(parent_dir,GLDS,'micoarray')
                     rawdata_process.copy(rawdata_in)
                     rawdata_process.rename(os.path.join(config.outdir,GLDS))
@@ -57,6 +62,12 @@ def run(batch_file):
                             config.microarray_out = folder
                             rawdata_in = os.path.join(parent_dir,GLDS,folder)
                             rawdata_out = os.path.join(config.outdir,GLDS,folder)
+                            if os.path.isdir(metadata_in) and 'GSE' not in GLDS:
+                                metadata_process.clean(metadata_in)
+                            else:
+                                print "metadata directory within " + GLDS + " not found, skipping..."
+                                copy, array, norm_qc, annotate = ['Skipped' for j in range(4)]
+                                batch_list[i] = [GLDS, copy, array, norm_qc, annotate]
                             rawdata_process.copy(rawdata_in)
                             rawdata_process.rename(os.path.join(config.outdir,GLDS))
                             metadata_process.create_md5sum_out(rawdata_out,GLDS)
