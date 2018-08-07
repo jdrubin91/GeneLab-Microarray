@@ -64,10 +64,10 @@ def run(batch_file):
                             if array == 'Pae_G1a':
                                 rawdata_process.qc_and_normalize(rawdata_out,GLDS)
                                 rawdata_process.annotatePae_G1a(rawdata_out,GLDS)
-                            if array == 'PrimeView':
+                            elif array == 'PrimeView':
                                 rawdata_process.qc_and_normalize(rawdata_out,GLDS)
                                 rawdata_process.annotatePrimeView(rawdata_out,GLDS)
-                            if array == 'Affymetrix':
+                            elif array == 'Affymetrix':
                                 rawdata_process.qc_and_normalize(rawdata_out,GLDS)
                                 rawdata_process.annotate(rawdata_out,GLDS)
                             elif array == 'TwoColor':
@@ -76,7 +76,11 @@ def run(batch_file):
                             else:
                                 rawdata_process.sChAgilNormQC(rawdata_out,GLDS)
                                 rawdata_process.annotateAgilent(rawdata_out,GLDS)
-                    copy, norm_qc, annotate = ['Multi' for j in range(3)]
+                            if os.path.exists(os.path.join(rawdata_out,'processed_data')):
+                                for file1 in os.listdir(os.path.join(rawdata_out,'processed_data')):
+                                    if 'annotated' in file1:
+                                        annotate = 'True'
+                    copy, norm_qc = ['Multi' for j in range(2)]
                     batch_list[i][1] = [GLDS, copy, array, norm_qc, annotate]
                 else:
                     print "microarray directory within " + GLDS + " not found, skipping..."
@@ -130,9 +134,9 @@ def run(batch_file):
                 print "Annotating probe IDs with gene names for " + GLDS + "..."
                 if array == 'Pae_G1a':
                     rawdata_process.annotatePae_G1a(rawdata_out,GLDS)
-                if array == 'PrimeView':
+                elif array == 'PrimeView':
                     rawdata_process.annotatePrimeView(rawdata_out,GLDS)
-                if array == 'Affymetrix':
+                elif array == 'Affymetrix':
                     rawdata_process.annotate(rawdata_out,GLDS)
                 elif array == 'TwoColor':
                     rawdata_process.annotateTwoColor(rawdata_out,GLDS)
@@ -154,5 +158,6 @@ def update_batch(parent_dir,header,batch_file,batch_list):
         outfile.write('#Directory='+parent_dir+'\n')
         outfile.write(header)
         for linelist in batch_list:
+            print linelist, '\t'.join(linelist)+'\n'
             outfile.write('\t'.join(linelist)+'\n')
         
