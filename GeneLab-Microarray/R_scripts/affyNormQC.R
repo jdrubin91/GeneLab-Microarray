@@ -163,7 +163,9 @@ celFiles = list.celfiles(full.names = TRUE)
 sampNames = gsub("_microarray", "", celFiles)
 sampNames = gsub(".CEL", "", sampNames)
 sampNames = gsub(".*/", "", sampNames)
-sampNames = gsub("GLDS-\\d*_", "", sampNames)# Extract sample names from the list of .CEL files
+sampNames = gsub("GLDS-\\d*_", "", sampNames)
+sampNames = gsub("raw", "", sampNames)
+sampNames = gsub("_", "", sampNames) # Extract sample names from the list of .CEL files
 
 if (length(celFiles) > 0){
   cat("Detected .CEL files:\n")

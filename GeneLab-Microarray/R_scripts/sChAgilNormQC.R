@@ -96,7 +96,7 @@ if (is.null(opt$input)){
   stop("No path to input directory provided. Please look over the available options", call. = F)
 }else{
   inPath = opt$input
-  # inPath = "/Users/dmattox/Documents/genelab/rot1/GLDS-41/microarray"
+  # inPath = "/Users/dmattox/Documents/genelab/rot1/GLDS-41/microarray/raw_data"
   # setwd(inPath)
 }
 
@@ -130,12 +130,13 @@ if (length(inFiles) > 0){
        call. = F)
 }
 
-sampNames = gsub("_microarray","",inFiles)
-sampNames = gsub("_raw*","",sampNames)
-sampNames = gsub(".txt$","",sampNames)
+sampNames = gsub("microarray","",inFiles)
+sampNames = gsub(".txt","",sampNames)
 sampNames = gsub(".*/", "", sampNames)
 sampNames = gsub("GLDS-\\d*_", "", sampNames)
-sampNames = gsub("_", "", sampNames) # Extract sample names from the list of files
+sampNames = gsub("raw", "", sampNames)
+sampNames = gsub("_", "", sampNames) # Extract sample names from the list of .CEL files
+
 
 raw = read.maimages(
   files = inFiles,
