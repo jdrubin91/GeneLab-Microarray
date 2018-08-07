@@ -54,7 +54,6 @@ def run(batch_file):
                 elif True in ['microarray' in x for x in os.listdir(os.path.join(parent_dir,GLDS))]:
                     for folder in os.listdir(os.path.join(parent_dir,GLDS)):
                         if 'microarray' in folder:
-                            print folder
                             config.microarray_out = folder
                             rawdata_in = os.path.join(parent_dir,GLDS,folder)
                             rawdata_out = os.path.join(config.outdir,GLDS,folder)
@@ -112,7 +111,7 @@ def run(batch_file):
                     norm_qc, annotate = ['Skipped' for j in range(2)]
                     batch_list[i] = batch_list[i][:2]+[array,norm_qc,annotate]
                     update_batch(parent_dir,header,batch_file,batch_list)
-            elif array != 'True' and array != 'Skipped':
+            elif array != 'True' and array != 'Skipped' and array != 'Multi':
                 print "Warning: Array was not detected for " + GLDS + ". If this was not desired, check batch file and make sure this GLDS was set to 'False'."
 
             #Performs normalization and qc pre- and post-normalization
@@ -127,7 +126,7 @@ def run(batch_file):
                 batch_list[i][3] = 'True'
                 update_batch(parent_dir,header,batch_file,batch_list)
                 print "done"
-            elif norm_qc != 'True' and norm_qc != 'Skipped':
+            elif norm_qc != 'True' and norm_qc != 'Skipped' and norm_qc != 'Multi':
                 print "Warning: QC and normalization not performed for " + GLDS + ". If this was not desired, check batch file and make sure this GLDS was set to 'False'."
 
             #Annotates probeIDs with gene names. Autodetection of array annotation package is attempted but if it fails then return 'Skipped'.

@@ -67,7 +67,7 @@ def clean(metadata_directory):
     #Rename all metadata files to a standard naming convention
     for filename in os.listdir(metadata_out):
         isa = filename.split('_')[0]
-        newfilename = isa + '_' + GLDS + '_microarray_metadata.txt'
+        newfilename = isa + '_' + GLDS + '_'+config.microarray_out+'_metadata.txt'
         if not os.path.exists(os.path.join(metadata_out,newfilename)):
             config.get_md5sum(os.path.join(metadata_out,filename),'original',action='rename')
             move_command = ["mv","'"+os.path.join(metadata_out,filename)+"'",os.path.join(metadata_out,newfilename)]
@@ -79,7 +79,7 @@ def clean(metadata_directory):
                 config.md5sum['new'].append(('Move Error',' '.join(move_command)))
 
     #Modify the investigation file to account for sample and assay renaming
-    modify_i(GLDS,os.path.join(metadata_out,'i_' + GLDS + '_microarray_metadata.txt'))
+    modify_i(GLDS,os.path.join(metadata_out,'i_' + GLDS + '_'+config.microarray_out+'_metadata.txt'))
 
 
 
@@ -93,9 +93,9 @@ def modify_i(GLDS,i_file):
     with open(i_file,'w') as outfile:
         for line in lines:
             if 'Study File Name' in line:
-                line = 'Study File Name\t"s_'+GLDS+'_microarray_metadata.txt"\n'
+                line = 'Study File Name\t"s_'+GLDS+'_'+config.microarray_out+'_metadata.txt"\n'
             if 'Study Assay File Name' in line:
-                line = 'Study Assay File Name\t"a_'+GLDS+'_microarray_metadata.txt"\n'
+                line = 'Study Assay File Name\t"a_'+GLDS+'_'+config.microarray_out+'_metadata.txt"\n'
             outfile.write(line)
 
 
@@ -105,7 +105,7 @@ def modify_i(GLDS,i_file):
 def read_assay(metadata_out):
     #Loop through metadata files, find the assay file (starts with 'a_')
     for filename in os.listdir(metadata_out):
-        if 'a_' in filename[:2]:
+        if 'a_' in filename[:2] and config.microarray_out in filename:
             assay_file = os.path.join(metadata_out,filename)
 
     #Create an assay dictionary where the key is the name of the sample file
