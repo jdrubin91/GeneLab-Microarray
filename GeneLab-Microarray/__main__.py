@@ -92,7 +92,7 @@ def detect_2channel(infile):
             print "Single processing mode specified\nInput directory: " + indir + "\nWriting output to: " + outdir
             GLDS = os.path.basename(indir)
             with open(os.path.join(tempdir,'temp_batch.txt'),'w') as outfile:
-                outfile.write("""#Directory="""+os.path.dirname(indir)+"""\nGLDS#\tCopied\tArrayType\tNormalize/QC\tAnnotated\n"""+GLDS+"""\tFalse\tFalse\tFalse\tFalse""")
+                outfile.write("#Directory="+os.path.dirname(indir)+"\nGLDS#\tCopied\tArrayType\tNormalize/QC\tAnnotated\n"+GLDS+"\tFalse\tFalse\tFalse\tFalse")
                 sys.exit(1)
             batch_process.run(os.path.join(tempdir,'temp_batch.txt'))
             print "done."
