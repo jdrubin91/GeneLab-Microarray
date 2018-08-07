@@ -81,6 +81,7 @@ def run(batch_file):
                                     if 'annotated' in file1:
                                         annotate = 'True'
                     copy, norm_qc = ['Multi' for j in range(2)]
+                    print copy
                     batch_list[i][1] = [GLDS, copy, array, norm_qc, annotate]
                 else:
                     print "microarray directory within " + GLDS + " not found, skipping..."
@@ -158,6 +159,5 @@ def update_batch(parent_dir,header,batch_file,batch_list):
         outfile.write('#Directory='+parent_dir+'\n')
         outfile.write(header)
         for linelist in batch_list:
-            print linelist, '\t'.join(linelist)+'\n'
             outfile.write('\t'.join(linelist)+'\n')
         
