@@ -122,9 +122,10 @@ def run(batch_file):
                     rawdata_process.annotateTwoColor(rawdata_out,GLDS)
                 else:
                     rawdata_process.annotateAgilent(rawdata_out,GLDS)
-                for file1 in os.listdir(os.path.join(rawdata_out,'processed_data')):
-                    if 'annotated' in file1:
-                        annotate = 'True'
+                if os.path.exists(os.path.join(rawdata_out,'processed_data')):
+                    for file1 in os.listdir(os.path.join(rawdata_out,'processed_data')):
+                        if 'annotated' in file1:
+                            annotate = 'True'
                 batch_list[i][4] = annotate
                 update_batch(parent_dir,header,batch_file,batch_list)
                 print "done"
