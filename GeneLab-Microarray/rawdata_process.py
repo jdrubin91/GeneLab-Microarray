@@ -178,6 +178,8 @@ def detect_array(GLDS_path):
             arraytype = F.readline().strip('\n')
             if 'Pae_G1a' in arraytype:
                 array = 'Pae_G1a'
+            elif 'PrimeView' in arraytype:
+                array = 'PrimeView'
     else:
         twocolor = False
         for infile in os.listdir(os.path.join(rawdata_out,'raw_files')):
@@ -247,6 +249,19 @@ def annotatePae_G1a(rawdata_out,GLDS):
                     "-o", os.path.join(rawdata_out,'processed_data',GLDS+"_microarray_normalized-annotated"),
                     "-g", 'Representative.Public.ID',
                     "-p", 'Probe.Set.ID',
+                    "-t", 'txt',
+                    "--QCDir=" + os.path.join(rawdata_out,'QC_reporting'),
+                    "--GLDS="+GLDS]
+    subprocess.call(R_command)
+
+def annotatePrimeView(rawdata_out,GLDS):
+    R_script = os.path.join(config.R_dir,'annotateAgilent.R')
+    normalized_expression = os.path.join(rawdata_out,'processed_data',GLDS+"_microarray_normalized.txt")
+    R_command = ["Rscript", "--no-save", "--no-restore", R_script,
+                    "-i", normalized_expression,
+                    "--gplDir="+config.R_dir,
+                    "-o", os.path.join(rawdata_out,'processed_data',GLDS+"_microarray_normalized-annotated"),
+                    "-g", 'RefSeq.Transcript.ID',
                     "-t", 'txt',
                     "--QCDir=" + os.path.join(rawdata_out,'QC_reporting'),
                     "--GLDS="+GLDS]

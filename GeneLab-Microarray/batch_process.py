@@ -3,7 +3,7 @@ __author__ = 'Jonathan Rubin'
 import os, config, metadata_process, rawdata_process
 
 def run(batch_file):
-    compatible_arrays = ['Affymetrix','Pae_G1a','Agilent']
+    compatible_arrays = ['Affymetrix','Pae_G1a','Agilent','PrimeView']
     batch_list = list()
     with open(batch_file) as F:
         parent_dir = F.readline().strip('\n').split('=')[1]
@@ -31,7 +31,7 @@ def run(batch_file):
                 config.md5sum = {"original": [], "new": []}
                 #Process metadata
                 metadata_in = os.path.join(parent_dir,GLDS,'metadata')
-                if os.path.isdir(metadata_in):
+                if os.path.isdir(metadata_in) and 'GSE' not in GLDS:
                     metadata_process.clean(metadata_in)
                 else:
                     print "metadata directory within " + GLDS + " not found, skipping..."
@@ -60,6 +60,22 @@ def run(batch_file):
                             rawdata_process.copy(rawdata_in)
                             rawdata_process.rename(os.path.join(config.outdir,GLDS))
                             metadata_process.create_md5sum_out(rawdata_out,GLDS)
+                            array = rawdata_process.detect_array(GLDS_path)
+                            if array == 'Pae_G1a':
+                                rawdata_process.qc_and_normalize(rawdata_out,GLDS)
+                                rawdata_process.annotatePae_G1a(rawdata_out,GLDS)
+                            if array == 'PrimeView':
+                                rawdata_process.qc_and_normalize(rawdata_out,GLDS)
+                                rawdata_process.annotatePrimeView(rawdata_out,GLDS)
+                            if array == 'Affymetrix':
+                                rawdata_process.qc_and_normalize(rawdata_out,GLDS)
+                                rawdata_process.annotate(rawdata_out,GLDS)
+                            elif array == 'TwoColor':
+                                rawdata_process.TwoColorNormQC(rawdata_out,GLDS)
+                                rawdata_process.annotateTwoColor(rawdata_out,GLDS)
+                            else:
+                                rawdata_process.sChAgilNormQC(rawdata_out,GLDS)
+                                rawdata_process.annotateAgilent(rawdata_out,GLDS)
                     copy, norm_qc, annotate = ['Multi' for j in range(3)]
                     batch_list[i][1] = [GLDS, copy, array, norm_qc, annotate]
                 else:
@@ -97,9 +113,7 @@ def run(batch_file):
             #Performs normalization and qc pre- and post-normalization
             if norm_qc == 'False':
                 print "Performing QC, normalization, and post-normalization QC on data for " + GLDS + "..."
-                if array == 'Pae_G1a':
-                    rawdata_process.qc_and_normalize(rawdata_out,GLDS)
-                if array == 'Affymetrix':
+                if array == 'Pae_G1a' or array == 'PrimeView' or array == 'Affymetrix':
                     rawdata_process.qc_and_normalize(rawdata_out,GLDS)
                 elif array == 'TwoColor':
                     rawdata_process.TwoColorNormQC(rawdata_out,GLDS)
@@ -116,6 +130,8 @@ def run(batch_file):
                 print "Annotating probe IDs with gene names for " + GLDS + "..."
                 if array == 'Pae_G1a':
                     rawdata_process.annotatePae_G1a(rawdata_out,GLDS)
+                if array == 'PrimeView':
+                    rawdata_process.annotatePrimeView(rawdata_out,GLDS)
                 if array == 'Affymetrix':
                     rawdata_process.annotate(rawdata_out,GLDS)
                 elif array == 'TwoColor':
