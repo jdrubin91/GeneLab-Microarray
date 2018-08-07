@@ -51,6 +51,7 @@ def run(batch_file):
                     rawdata_process.rename(os.path.join(config.outdir,GLDS))
                     metadata_process.create_md5sum_out(rawdata_out,GLDS)
                     batch_list[i][1] = 'True'
+                print os.listdir(os.path.join(parent_dir,GLDS))
                 elif True in ['microarray' in x for x in os.listdir(os.path.join(parent_dir,GLDS))]:
                     for folder in os.listdir(GLDS_path):
                         if 'microarray' in folder:
@@ -82,9 +83,7 @@ def run(batch_file):
                                     if 'annotated' in file1:
                                         annotate = 'True'
                     copy, norm_qc = ['Multi' for j in range(2)]
-                    print batch_list[i]
-                    batch_list[i][1] = [GLDS, copy, array, norm_qc, annotate]
-                    print batch_list[i]
+                    batch_list[i] = [GLDS, copy, array, norm_qc, annotate]
                 else:
                     print "microarray directory within " + GLDS + " not found, skipping..."
                     copy, array, norm_qc, annotate = ['Skipped' for j in range(4)]
