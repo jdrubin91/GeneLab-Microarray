@@ -51,7 +51,7 @@ def run(batch_file):
                     rawdata_process.rename(os.path.join(config.outdir,GLDS))
                     metadata_process.create_md5sum_out(rawdata_out,GLDS)
                     batch_list[i][1] = 'True'
-                elif True in ['microarray' in x for x in os.listdir(GLDS_path)]:
+                elif True in ['microarray' in x for x in os.listdir(os.path.join(parent_dir,GLDS))]:
                     for folder in os.listdir(GLDS_path):
                         if 'microarray' in folder:
                             config.microarray_out = folder
