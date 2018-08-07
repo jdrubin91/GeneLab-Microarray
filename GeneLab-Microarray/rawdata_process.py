@@ -245,7 +245,7 @@ def annotatePae_G1a(rawdata_out,GLDS):
     normalized_expression = os.path.join(rawdata_out,'processed_data',GLDS+"_microarray_normalized.txt")
     R_command = ["Rscript", "--no-save", "--no-restore", R_script,
                     "-i", normalized_expression,
-                    "--gplDir="+config.R_dir,
+                    "--annotation="+os.path.join(config.R_dir,'Pae_G1a_GPL.txt'),
                     "-o", os.path.join(rawdata_out,'processed_data',GLDS+"_microarray_normalized-annotated"),
                     "-g", 'Representative.Public.ID',
                     "-p", 'Probe.Set.ID',
@@ -259,7 +259,7 @@ def annotatePrimeView(rawdata_out,GLDS):
     normalized_expression = os.path.join(rawdata_out,'processed_data',GLDS+"_microarray_normalized.txt")
     R_command = ["Rscript", "--no-save", "--no-restore", R_script,
                     "-i", normalized_expression,
-                    "--gplDir="+config.R_dir,
+                    "--annotation="+os.path.join(config.R_dir,'GLDS-125_microarray_GPL15207-14509.txt'),
                     "-o", os.path.join(rawdata_out,'processed_data',GLDS+"_microarray_normalized-annotated"),
                     "-g", 'RefSeq.Transcript.ID',
                     "-t", 'txt',
