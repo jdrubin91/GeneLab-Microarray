@@ -245,8 +245,8 @@ def annotatePae_G1a(rawdata_out,GLDS):
                     "-i", normalized_expression,
                     "--gplDir="+config.R_dir,
                     "-o", os.path.join(rawdata_out,'processed_data',GLDS+"_microarray_normalized-annotated"),
-                    "-g", 'RefSeq.Transcript.ID',
-                    "-p", 'ID',
+                    "-g", 'Representative.Public.ID',
+                    "-p", 'Probe.Set.ID',
                     "-t", 'txt',
                     "--QCDir=" + os.path.join(rawdata_out,'QC_reporting'),
                     "--GLDS="+GLDS]
