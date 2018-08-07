@@ -94,7 +94,7 @@ def detect_2channel(infile):
             GLDS_path = os.path.join(outdir,GLDS)
             if 'GLDS' in GLDS:
                 with open(os.path.join(tempdir,'temp_batch.txt'),'w') as outfile:
-                    outfile.write("""#Directory="""+indir+"""\nGLDS#\tCopied\tArrayType\tNormalize/QC\tAnnotated\n"""+GLDS+"""\tFalse\tFalse\tFalse\tFalse""")
+                    outfile.write("""#Directory="""+os.path.dirname(indir)+"""\nGLDS#\tCopied\tArrayType\tNormalize/QC\tAnnotated\n"""+GLDS+"""\tFalse\tFalse\tFalse\tFalse""")
                 batch_process.run(os.path.join(tempdir,'temp_batch.txt'))
                 # rawdata_out = os.path.join(outdir,GLDS,'microarray')
                 # metadata_out = os.path.join(outdir,GLDS,'metadata')
