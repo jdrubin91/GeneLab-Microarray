@@ -313,6 +313,12 @@ normVals = normalizeBetweenArrays(normVals, method = "quantile")
 eset = normVals$E
 row.names(eset) = normVals$genes[[1]]
 
+# Create output directory if it does not exist yet
+outDir = gsub("(/)(\\w)*$", "\\1", outFH) # Strip the filename away from the directory path to the input file
+if (!file.exists(outDir)){ # Create the output directory if it does not exist yet
+  dir.create(outDir)
+}
+
 outType = opt$outType
 if (outType == "both") {
   save(eset, file = paste(outFH, ".rda", sep = ""))
