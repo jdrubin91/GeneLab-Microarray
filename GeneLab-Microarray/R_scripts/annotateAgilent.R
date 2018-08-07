@@ -93,7 +93,7 @@ if (!is.null(opt$annotation)){
   if (opt$annotation == "search") {
     if (is.null(opt$gplDir)) {
       cat("Looking in the 'input' directory for a GPL file...\n")
-      inDir = gsub("(/)((\\w)*\\.(\\w)*)$", "\\1", inFH) # Strip the filename away from the directory path to the input file
+      inDir = gsub("(/)[^/]*$", "\\1", inFH) # Strip the filename away from the directory path to the input file
     } else {
       cat("Looking in",opt$gplDir,"for a GPL file...\n")
       inDir = opt$gplDir
