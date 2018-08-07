@@ -1,4 +1,4 @@
-<tool id="GeneLab-Visualize" name="GeneLab-Visualize" version="0.6.1">
+<tool id="GeneLab-Visualize" name="GeneLab-Visualize" version="0.6.2">
     <description>Visualization tool for generating interactive plots from processed GeneLab data.</description>
     <requirements>
     </requirements>

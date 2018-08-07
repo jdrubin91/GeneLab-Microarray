@@ -31,9 +31,6 @@ def clean(metadata_directory):
             zip_filename = os.path.basename(metadata_zip)
 
             #Check md5sum of original zip file
-            # md5sum_command = ["md5sum",metadata_zip]
-            # original_md5sum = subprocess.check_output(md5sum_command).split(' ')[0].encode("utf-8")
-            # config.md5sum["original"].append((zip_filename,original_md5sum))
             config.get_md5sum(metadata_zip,'original',action='copy')
 
             #Copy the last modified metadata
@@ -48,9 +45,6 @@ def clean(metadata_directory):
             subprocess.call(unzip_command)
 
             #Verify md5sum for 'new' file
-            # md5sum_command = ["md5sum",os.path.join(metadata_out,zip_filename)]
-            # new_md5sum = subprocess.check_output(md5sum_command).split(' ')[0].encode("utf-8")
-            # config.md5sum["new"].append((zip_filename,new_md5sum))
             config.get_md5sum(os.path.join(metadata_out,zip_filename),'new')
 
             #Execute unzipping and zip removal commands
@@ -72,12 +66,17 @@ def clean(metadata_directory):
 
     #Rename all metadata files to a standard naming convention
     for filename in os.listdir(metadata_out):
-        config.get_md5sum(os.path.join(metadata_out,filename),'original',action='rename')
         isa = filename.split('_')[0]
         newfilename = isa + '_' + GLDS + '_microarray_metadata.txt'
-        move_command = ["mv", os.path.join(metadata_out,filename),os.path.join(metadata_out,newfilename)]
-        subprocess.call(move_command)
-        config.get_md5sum(os.path.join(metadata_out,newfilename),'new')
+        if not os.path.exists(os.path.join(metadata_out,newfilename)):
+            config.get_md5sum(os.path.join(metadata_out,filename),'original',action='rename')
+            move_command = ["mv","'"+os.path.join(metadata_out,filename)+"'",os.path.join(metadata_out,newfilename)]
+            try:
+                with open(os.devnull,'w') as FNULL:
+                    subprocess.check_call(' '.join(move_command), shell=True,stdout=FNULL, stderr=subprocess.STDOUT)
+                config.get_md5sum(os.path.join(metadata_out,newfilename),'new')
+            except subprocess.CalledProcessError:
+                config.md5sum['new'].append(('Move Error',' '.join(move_command)))
 
     #Modify the investigation file to account for sample and assay renaming
     modify_i(GLDS,os.path.join(metadata_out,'i_' + GLDS + '_microarray_metadata.txt'))
@@ -106,7 +105,7 @@ def modify_i(GLDS,i_file):
 def read_assay(metadata_out):
     #Loop through metadata files, find the assay file (starts with 'a_')
     for filename in os.listdir(metadata_out):
-        if 'a_' in filename[:2]:
+        if 'a_' in filename[:2] and config.microarray_out in filename:
             assay_file = os.path.join(metadata_out,filename)
 
     #Create an assay dictionary where the key is the name of the sample file
@@ -120,8 +119,8 @@ def read_assay(metadata_out):
 
         return assay_dict
     except:
-        print "File Error: No assay file found in ISA metadata. Exiting..."
-        sys.exit(1)
+        print "Warining: No assay file found in ISA metadata. Files will be renamed without considering metadata."
+        return assay_dict
 
 def modify_assay(metadata_out,GLDS,extension):
     for filename in os.listdir(metadata_out):
@@ -133,21 +132,19 @@ def modify_assay(metadata_out,GLDS,extension):
     try:
         with open(assay_file) as F:
             new_assay_file.append(F.readline().replace('\r','').replace('\n','').replace('^M','')+'\t'+'\t'.join(['"Protocol REF"','"Parameter Value[Raw File]"',
-                '"Term Source REF"','"Term Accession Number"','"Parameter Value[Normalized Counts File]"',
-                '"Term Source REF"','"Term Accession Number"','"Parameter Value[Annotated Normalized Counts File]"',
+                '"Term Source REF"','"Term Accession Number"','"Parameter Value[Processed Data]"',
                 '"Term Source REF"','"Term Accession Number"']))
             for line in F:
                 linelist = line.strip('\n').split('\t')
-                basefilename = linelist[0].split('.')[0].replace('_','-').replace('(','-').replace(')','-').replace(' ','-').strip('-').strip('"')
+                basefilename = linelist[0].split('.')[0].replace('_','-').replace('(','-').replace(')','-').replace(' ','-').replace(GLDS,'').replace('microarray','').replace('--','-').strip('-').strip('"')
                 raw_filename = GLDS + '_' + basefilename + '_microarray_raw.'+extension
-                new_assay_file.append(line.replace('\r','').replace('\n','').replace('^M','')+'\t'+'\t'.join(['"GeneLab data processing protocol"', '""', '""',
-                    '"'+raw_filename+'"','"'+GLDS+'_microarray_normalized.txt"','""', '""',
-                    '"'+GLDS+'_microarray_normalized-annotated.txt"','""', '""']))
+                new_assay_file.append(line.replace('\r','').replace('\n','').replace('^M','')+'\t'+'\t'.join(['"GeneLab data processing protocol"',
+                    '"'+raw_filename+'"','""', '""',
+                    '"'+GLDS+'/microarray/processed_data/"','""', '""']))
         with open(assay_file,'w') as outfile:
             outfile.write('\r\n'.join(new_assay_file))
     except:
-        print "File Error: No assay file found in ISA metadata. Exiting..."
-        sys.exit(1)
+        print "Warning: No assay file found in ISA metadata. Proceeding without metadata modifications."
 
 #Creates a .txt file with all md5sum output
 def create_md5sum_out(rawdata_out,GLDS):

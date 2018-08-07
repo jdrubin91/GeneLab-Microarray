@@ -1,4 +1,7 @@
 __author__ = 'Jonathan Rubin'
+
+#THIS SCRIPT IS DEPRECATED (JDR: 8/5/18). It currently spits out an html file with an interactive MA and volcano plot but the newer galaxy_mode.py does the same
+#but with a much better html 'report' including a PCA plot and a heatmap
   
 import matplotlib
 matplotlib.use('Agg')

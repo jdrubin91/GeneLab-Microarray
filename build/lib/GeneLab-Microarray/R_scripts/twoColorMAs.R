@@ -15,12 +15,12 @@ option_list = list(
     type = "character", 
     help = "Path to directory containing input raw array files"
   ),
-  make_option(
-    c("-n", "--normalization"),
-    type = "character",
-    default = "normexp",
-    help = "Normalization method [rma (default, full rma), quantile (no background correction), background (no quant. normalization), log2 (no quant. norm. or background correction)"
-  ),
+  # make_option(
+  #   c("-n", "--normalization"),
+  #   type = "character",
+  #   default = "normexp",
+  #   help = "Normalization method [rma (default, full rma), quantile (no background correction), background (no quant. normalization), log2 (no quant. norm. or background correction)"
+  # ),
   make_option(
     c("-o", "--outFile"),
     type = "character",
@@ -42,6 +42,11 @@ option_list = list(
     c("-g", "--gpl"), 
     type = "character", 
     help = "Path to the file containing custom array annotation information"
+  ),
+  make_option(
+    "--GLDS", 
+    type = "character", 
+    help = "Full accession number for QC outputs (ie 'GLDS-21' for GLDS-21)"
   )
 )
 
@@ -64,7 +69,7 @@ addSlash = function(string) {
   return(string)
 }
 
-if (is.null(opt$input)){ # Include GLDS accession number in outputs if provided
+if (is.null(opt$input)){
   print_help(opt_parser)
   stop("No path to input directory provided. Please look over the available options", call. = F)
 }else{
@@ -74,13 +79,15 @@ if (is.null(opt$input)){ # Include GLDS accession number in outputs if provided
 
 if (is.null(opt$GLDS)) {
   # Include GLDS accession number in outputs if provided
-  glAn = ''
-  cat("Warning: No GLDS accession number provided")
+  cat("Warning: No GLDS accession number provided\n")
   if (grepl("GLDS-[0-9]+", inPath)) {
     glAn = regmatches(inPath, regexpr("GLDS-[0-9]+", inPath)) # Attempt to extract the GLDS accession number from the input path
+    cat("Try to guess GLDS accession number... ", glAn,"\n")
+  } else{
+    glAn = FALSE
   }
 } else{
-  glAn = paste('GLDS-', opt$GLDS, sep = '')
+  glAn = opt$GLDS
 }
 
 #relDir = getwd() # Save the path to the original directory (for relative path handling)
@@ -164,7 +171,7 @@ suppressWarnings(
 )
 
 # Normalization
-RGb = backgroundCorrect(RG, method = "normexp", offset = 50) # normexp method is based on the same normal plus exponential convolution model which has previously been used to background correct Affymetrix data as part of the popular RMA algorithm [Ritchie et al. Bioinformatics 2007]
+RGb = backgroundCorrect(RG, method = "normexp") # normexp method is based on the same normal plus exponential convolution model which has previously been used to background correct Affymetrix data as part of the popular RMA algorithm [Ritchie et al. Bioinformatics 2007]
 MA = normalizeWithinArrays(RG, method = "loess", weights=NULL) # Agilent specific global loess normalization method
 ## Loess normalization assumes that the bulk of the probes on the array are not differentially expressed
 MAq = normalizeBetweenArrays(MA, method = "Aquantile") # Normalize the average intensities ("A") between arrays

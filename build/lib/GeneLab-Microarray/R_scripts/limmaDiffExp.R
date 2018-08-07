@@ -35,6 +35,12 @@ option_list = list(
     help = "Name of (or path to) file to write results to (default: DGE.txt)"
   ),
   make_option(
+    c("-t", "--trend"),
+    type = "logical",
+    default = "TRUE",
+    help = "Logical option to use limma-trend, setting the trend argument for the eBayes function  (default: TRUE)"
+  ),
+  make_option(
     c("-r", "--rmOutliers"), 
     type = "character", 
     help = "Underscore-delimited list of samples to exclude as outliers from differential expression analysis, matching the sample names in the metadata [ex: GSM1234_GSM1235]"
@@ -86,10 +92,10 @@ tryCatch({
   stop("ISA sample file could not be read by parsing tab-delimited files", call. = F)
 })
 
-#From sample file, extract column containing 'Factor Value'
+# From sample file, extract column containing 'Factor Value'
 tryCatch({
-  factorValues = studyFactors[, grepl("Factor.Value", colnames(studyFactors))]
-  row.names(factorValues) = studyFactors[, grepl("Sample.Name", colnames(studyFactors))]
+  factorValues = as.data.frame(studyFactors[, grepl("Factor.Value", colnames(studyFactors))])
+  row.names(factorValues) = studyFactors[, grepl("^Sample.Name$", colnames(studyFactors))]
   {
     # Match sample names in file name
     ## [replace('_','-').replace('(','-').replace(')','-').replace(' ','-').strip('-')]
@@ -116,8 +122,8 @@ tryCatch({
 if(grepl(".txt$",x = inFH) == TRUE){
   eset = read.delim(inFH,header=T,sep = "\t",stringsAsFactors = F)
   colnames(eset) = gsub("\\.","-",colnames(eset)) # Keep the sample names standardized (if data read in as a text file, hyphens are swapped for periods)
-  # rownames(eset) = eset[,1]
-  # eset[,1] = NULL
+  rownames(eset) = eset[,1]
+  eset[,1] = NULL
 }else{
   load(inFH)
 }
@@ -130,14 +136,16 @@ if(nrow(factorValues) != ncol(eset)){
 esetSampNames <- colnames(eset)
 if ( all(esetSampNames %in% row.names(factorValues)) ){
   # Sample names match exactly between file names and metadata and can be used to order the factors
-  factorValues = factorValues[esetSampNames,]
+  factorValues = as.data.frame(factorValues[esetSampNames,])
+  row.names(factorValues) = esetSampNames # Reset the row names of the factorValues object in the case where there is only one factor and the row names are lost
 } else {
   # Match by non-case-sensitive pattern matching
   newOrder = rep(0,ncol(eset))
   for(i in 1:ncol(eset)){ # Reorder the factorValues dataframe to match the order of sample names in the expression set
     newOrder[i] = grep(pattern = esetSampNames[i], x = row.names(factorValues),ignore.case = T)
   }
-  factorValues = factorValues[newOrder,] 
+  factorValues = as.data.frame(factorValues[newOrder,])
+  row.names(factorValues) = esetSampNames # Reset the row names of the factorValues object in the case where there is only one factor and the row names are lost
 }
 
 if (!is.null(opt$rmOutliers)){
@@ -162,7 +170,7 @@ if(sum(group == 4) > 0){
   cat("The following samples were indicated to be outliers and were removed from further analysis:\n",rownames(factorValues)[group == 4],"\n")
 }
 if(sum(group == 3) > 0){
-  cat("The following samples belonged to both groups and were removed from further analysis:\n",rownames(factorValues)[group == 3],"\n")
+  cat("The following samples belonged to both groups and not considered in the diffrential expression analysis:\n",rownames(factorValues)[group == 3],"\n")
 }
 if(sum(group == 3) == nrow(factorValues)){
   stop("All of the samples belonged to both groups! Exiting.", call.=F)
@@ -177,8 +185,8 @@ if(sum(group == 1) == 0 | sum(group == 2) == 0){
   stop("One or both comparison groups were found to be empty. Exiting...", call.=F)
 }
 
-eset = eset[,!(group == 0 | group == 3 | group == 4)]
-group = group[!(group == 0 | group == 3 | group == 4)]
+eset = eset[,!(group == 4)] # Remove outliers before fitting the linear model
+group = group[!(group == 4)]
 
 # # Troubleshooting print statements
 # cat("\nGroup1:\n",colnames(eset)[group == 1],"\n")
@@ -186,13 +194,18 @@ group = group[!(group == 0 | group == 3 | group == 4)]
 
 #Create a design matrix based on the ordering of the columns within eset
 group = as.factor(group)
-design <- model.matrix(~0+group)
+design = model.matrix( ~ 0 + group)
 
 #This part of the script is straight from Limma documentation
 fit <- lmFit(eset, design)
 contrast.matrix <- makeContrasts(group1-group2,levels=design)
 fit2 <- contrasts.fit(fit, contrast.matrix)
-fit2 <- eBayes(fit2)
+if (opt$trend) {
+  fit2 <- eBayes(fit2, trend = TRUE)
+} else {
+  fit2 <- eBayes(fit2, trend = FALSE)
+}
+
 
 #Here we write the results to a tab delimited text file that is ordered by adjusted p-value
 #coef refers to which column is of interest (1 is log2FC), adjust refers to multiple hypothesis testing method ("BH" = Benjamini & Hochberg)

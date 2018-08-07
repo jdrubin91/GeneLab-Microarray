@@ -24,7 +24,7 @@ option_list = list(
   make_option(
     c("-a", "--arrayInfo"),
     type = "character",
-    default = "./QC_output/arrayInfo.txt",
+    default = "./QC_output/summary_report/arrayInfo.txt",
     help = "Name of (or path to) a file containing the array information [Line 1: Manufacturer, line 2: Array version]"
   ),
   make_option(
@@ -54,7 +54,7 @@ option_list = list(
   make_option(
     "--GLDS", 
     type = "character", 
-    help = "GLDS accession number for plot outputs (ie '21' for GLDS-21)"
+    help = "Full accession number for QC outputs (ie 'GLDS-21' for GLDS-21)"
   )
 )
 
@@ -76,15 +76,26 @@ if (is.null(opt$input)) {
   stop("At least one argument must be supplied (input file)", call. = FALSE)
 }else { inFH = opt$input }
 
+if (is.null(opt$arrayInfo)) {
+  print_help(opt_parser)
+  stop("Array info file not provided", call. = FALSE)
+}else { 
+  aiFH = opt$arrayInfo
+  # aiFH = "arrayInfo.txt"
+}
+
 if (is.null(opt$GLDS)) {
   # Include GLDS accession number in outputs if provided
   glAn = ''
   cat("Warning: No GLDS accession number provided\n")
-  if (grepl("GLDS-[0-9]+", inFH)) {
-    glAn = regmatches(inFH, regexpr("GLDS-[0-9]+", inFH)) # Attempt to extract the GLDS accession number from the input path
+  if (grepl("GLDS-[0-9]+", aiFH)) {
+    glAn = regmatches(aiFH, regexpr("GLDS-[0-9]+", aiFH)) # Attempt to extract the GLDS accession number from the input path
+    cat("Try to guess GLDS accession number... ", glAn,"\n")
+  } else{
+    glAn = FALSE
   }
 } else{
-  glAn = paste('GLDS-', opt$GLDS, sep = '')
+  glAn = opt$GLDS
 }
 
 # Create QC output directory
@@ -92,9 +103,6 @@ qcDir = addSlash(opt$QCDir)
 if (!file.exists(qcDir)){ # Create QC directory if it does not exist yet
   dir.create(qcDir)
 }
-
-# aiFH = "arrayInfo.txt"
-aiFH = opt$arrayInfo
 
 tryCatch({
   aInf = read.delim(aiFH, header = F, stringsAsFactors = F)
@@ -105,6 +113,10 @@ tryCatch({
        call. = F)
 })
 
+if (arrVer == "Pae_G1a") {
+  stop(paste("Array version", arrVer, "does not have an annotation package and is not able to be annotated with this script. Try using the annotateAgilent.R script and the appropriate GPL file"))
+}
+
 # Set-up array version:annotation database pseudo-dictionary
 arrayNames = c(
   "MoGene-1_0-st-v1",
@@ -114,7 +126,8 @@ arrayNames = c(
   "ATH1-121501",
   "HuGene-1_0-st-v1",
   "Yeast_2",
-  "Rat230_2"
+  "Rat230_2",
+  "hta-2_0"
 )
 
 arrPackages = c(
@@ -125,7 +138,8 @@ arrPackages = c(
   "ath1121501.db",
   "hugene10sttranscriptcluster.db",
   "yeast2.db",
-  "rat2302.db"
+  "rat2302.db",
+  "hta20transcriptcluster.db"
 )
 
 # Call the appropriate annotation package
@@ -158,7 +172,7 @@ tryCatch({
       })
     })
   } else{
-    if (grepl("-st-", arrVer, ignore.case = T)) {
+    if (grepl("-st(-)*", arrVer, ignore.case = T)) {
       affyST = TRUE
     } else{
       affyST = FALSE
@@ -166,7 +180,8 @@ tryCatch({
     annotPack = tolower(arrVer)
     annotPack = gsub("[[:punct:]]", "", annotPack)
     if (affyST == TRUE) {
-      annotPack = gsub("v[0-9]*$", "transcriptcluster.db", annotPack)
+      annotPack = gsub("v[0-9]*$", "", annotPack)
+      annotPack = paste(annotPack, "transcriptcluster.db", sep = "")
     } else{
       annotPack = paste(annotPack, ".db", sep = "")
     }
@@ -255,8 +270,8 @@ tryCatch({
       sep = "\t",
       stringsAsFactors = F
     )
-    # rownames(eset) = eset[,1]
-    # eset[,1] = NULL
+    rownames(eset) = eset[,1]
+    eset[,1] = NULL
   } else{
     load(inFH)
   }
@@ -288,15 +303,11 @@ if(opt$dupProbes == "topvar") {
   )
   nDups = filt[[2]]$numDupsRemoved # Number of probes removed that map to non-unique gene IDs
   filtID = featureNames(filt[[1]]) # Pulls out the probe IDs
-  cat("Mapping probes IDs to RefSeq IDs...\n")
+  cat("Mapping probes IDs to gene IDs...\n")
   filtRefSeq = lapply(filtID, FUN = mapFun, environ = eval(parse(text =
                                                                    annotEnv))) # Applying mapFun to all non-filtered probe IDs
+  noIDCnt = nrow(eset) - sum(!is.na(filtRefSeq)) - nDups
   
-  cat("\tUnampped probes removed:",
-      nrow(eset) - sum(!is.na(filtRefSeq)) - nDups,
-      "\n")
-  cat("\tDuplicated probes removed:", nDups, "\n\n")
-  cat("Annotated probes remaining:", sum(!is.na(filtRefSeq)), "\n")
   if (sum(!is.na(filtRefSeq)) > length(unique(filtRefSeq[!is.na(filtRefSeq)]))) {
     cat("\n\tWarning: non-unique probe to ID mappings remain \n")
   }
@@ -308,7 +319,7 @@ if(opt$dupProbes == "topvar") {
   
   
 } else if (any(opt$dupProbes %in% c("average", "max"))) {
-  cat("Mapping probes IDs to RefSeq IDs...\n")
+  cat("Mapping probes IDs to gene IDs...\n")
   RefSeq = lapply(rownames(eset), FUN = mapFun, environ = eval(parse(text =
                                                                        annotEnv))) # Applying mapFun to all probe IDs
   noIDCnt = sum(is.na(RefSeq)) # Count unmapped probes
@@ -333,9 +344,6 @@ if(opt$dupProbes == "topvar") {
     normVals = eset[!rmRowTag, ]
     row.names(normVals) = RefSeq[!rmRowTag]
     
-    cat("\tUnmapped probes removed:", noIDCnt, "\n")
-    cat("\tDuplicated probes removed:", nDups, "\n\n")
-    cat("Annotated probes remaining:", nrow(normVals), "\n\n")
     if (nrow(normVals) > length(unique(RefSeq[!rmRowTag]))) {
       cat("\n\tWarning: non-unique probe to ID mappings remain \n")
     }
@@ -363,9 +371,6 @@ if(opt$dupProbes == "topvar") {
     normVals = eset[!rmRowTag, ]
     row.names(normVals) = RefSeq[!rmRowTag]
     
-    cat("\tUnmapped probes removed:", noIDCnt, "\n")
-    cat("\tDuplicated probes removed:", nDups, "\n\n")
-    cat("Annotated probes remaining:", nrow(normVals), "\n\n")
     if (nrow(normVals) > length(unique(RefSeq[!rmRowTag]))) {
       cat("\n\tWarning: non-unique probe to ID mappings remain \n")
     }
@@ -380,19 +385,36 @@ summDir = paste(qcDir, "summary_report/", sep = "")
 if (!file.exists(summDir)){ # Create a summary report directory within qcDir if it does not exist yet
   dir.create(summDir)
 }
+
+cat("\tUnmapped probes removed:", noIDCnt, "\n")
+cat("\tDuplicated probes removed:", nDups, "\n\n")
+cat("Annotated probes remaining:", nrow(normVals), "\n\n")
+
 AR = c(
   AR1,
   paste("Unmapped probes removed:", noIDCnt),
   paste("Duplicated probes removed:", nDups),
   paste("Annotated probes remaining:", nrow(normVals))
 )
-write.table(
-  AR,
-  file = paste(summDir, glAn, "_annotReport.txt", sep = ""),
-  quote = F,
-  col.names = F,
-  row.names = F
-)
+if (glAn != FALSE) {
+  write.table(
+    AR,
+    file = paste(summDir, glAn, "_annotReport.txt", sep = ""),
+    quote = F,
+    col.names = F,
+    row.names = F
+  )
+  cat("Annotation report generated!",paste(summDir, glAn, "_annotReport.txt", sep = ""),"\n")
+} else {
+  write.table(
+    AR,
+    file = paste(summDir,"annotReport.txt", sep = ""),
+    quote = F,
+    col.names = F,
+    row.names = F
+  )
+  cat("Annotation report generated!",paste(summDir,"annotReport.txt", sep = ""),"\n")
+}
 
 # Save filtered expression values
 outFH = opt$output
@@ -401,7 +423,8 @@ colnames(eset) = gsub("\\.","-",colnames(eset)) # Keep the sample names standard
 if (opt$outType == "both") {
   save(eset, file = paste(outFH, ".rda", sep = ""))
   write.table(
-    eset,
+    data.frame("ID" = row.names(eset),eset), # provides the rownames as a labeled column in the saved output
+    row.names = F,
     file = paste(outFH, ".txt", sep = ""),
     sep = "\t",
     quote = F
@@ -412,7 +435,8 @@ if (opt$outType == "both") {
   cat("Success! Annotated data saved to", outFH, "as a .RData file \n")
 } else if (opt$outType == "txt") {
   write.table(
-    eset,
+    data.frame("ID" = row.names(eset),eset), # provides the rownames as a labeled column in the saved output
+    row.names = F,
     file = paste(outFH, ".txt", sep = ""),
     sep = "\t",
     quote = F
