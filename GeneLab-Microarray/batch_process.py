@@ -84,6 +84,7 @@ def run(batch_file):
                     copy, norm_qc = ['Multi' for j in range(2)]
                     print batch_list[i]
                     batch_list[i][1] = [GLDS, copy, array, norm_qc, annotate]
+                    print batch_list[i]
                 else:
                     print "microarray directory within " + GLDS + " not found, skipping..."
                     copy, array, norm_qc, annotate = ['Skipped' for j in range(4)]
