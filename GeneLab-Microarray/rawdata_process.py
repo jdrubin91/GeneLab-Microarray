@@ -117,7 +117,7 @@ def rename(GLDS_path):
             #If the filename is an annotation type, don't include 'raw' in filename
             if '.adf.' in filename:
                 new_filename = filename.replace('_','-').replace('(','-').replace(')','-').replace(' ','-').replace(GLDS,'').replace('microarray','').replace('--','-').replace('.adf','-adf').strip('-').split('.')[0]
-                move_command = ["mv", "'"+os.path.join(rawdata_out,filename)+"'", os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_annotation.'+extension)]
+                move_command = ["mv", "'"+os.path.join(rawdata_out,filename)+"'", os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_annotation.adf.'+extension)]
                 new_md5sum_file = os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_annotation.adf.'+extension)
             elif 'GPL' in filename:
                 new_filename = filename.replace('_','-').replace('(','-').replace(')','-').replace(' ','-').replace(GLDS,'').replace('microarray','').replace('--','-').replace('.adf','-adf').strip('-').split('.')[0]
@@ -202,13 +202,23 @@ def TwoColorNormQC(rawdata_out,GLDS):
 #Function for normalizing and performing QC on agilent arrays
 def sChAgilNormQC(rawdata_out,GLDS):
     R_script = os.path.join(config.R_dir,'sChAgilNormQC.R')
-    R_command = ["Rscript", R_script,
-                    "-i", os.path.join(rawdata_out,'raw_files'),
-                    "-o", os.path.join(rawdata_out,'processed_data',GLDS+"_microarray_normalized"),
-                    "-t", 'txt',
-                    "--QCDir="+os.path.join(rawdata_out,'QC_reporting'),
-                    "--QCpackage=R",
-                    "--GLDS="+GLDS]
+    if config.GPL:
+        R_command = ["Rscript", R_script,
+                        "-i", os.path.join(rawdata_out,'raw_files'),
+                        "-o", os.path.join(rawdata_out,'processed_data',GLDS+"_microarray_normalized"),
+                        "-t", 'txt',
+                        "--pullIDs=true",
+                        "--QCDir="+os.path.join(rawdata_out,'QC_reporting'),
+                        "--QCpackage=R",
+                        "--GLDS="+GLDS]
+    else:
+        R_command = ["Rscript", R_script,
+                        "-i", os.path.join(rawdata_out,'raw_files'),
+                        "-o", os.path.join(rawdata_out,'processed_data',GLDS+"_microarray_normalized"),
+                        "-t", 'txt',
+                        "--QCDir="+os.path.join(rawdata_out,'QC_reporting'),
+                        "--QCpackage=R",
+                        "--GLDS="+GLDS]
     subprocess.call(R_command)
 
 #This function simply runs the R script affyNormQC.R specifying the correct inputs
@@ -235,23 +245,13 @@ def annotateTwoColor(rawdata_out,GLDS):
 def annotateAgilent(rawdata_out,GLDS):
     R_script = os.path.join(config.R_dir,'annotateAgilent.R')
     normalized_expression = os.path.join(rawdata_out,'processed_data',GLDS+"_microarray_normalized.txt")
-    if config.GPL:
-        R_command = ["Rscript", R_script,
-                    "-i", normalized_expression,
-                    "--gplDir="+os.path.join(rawdata_out,'raw_files'),
-                    "-o", os.path.join(rawdata_out,'processed_data',GLDS+"_microarray_normalized-annotated"),
-                    "-t", 'txt',
-                    "--QCDir=" + os.path.join(rawdata_out,'QC_reporting'),
-                    "--GLDS="+GLDS]
-    else:
-        R_command = ["Rscript", R_script,
-                        "-i", normalized_expression,
-                        "--gplDir="+os.path.join(rawdata_out,'raw_files'),
-                        "-o", os.path.join(rawdata_out,'processed_data',GLDS+"_microarray_normalized-annotated"),
-                        "-t", 'txt',
-                        "--pullIDs=true",
-                        "--QCDir=" + os.path.join(rawdata_out,'QC_reporting'),
-                        "--GLDS="+GLDS]
+    R_command = ["Rscript", R_script,
+                "-i", normalized_expression,
+                "--gplDir="+os.path.join(rawdata_out,'raw_files'),
+                "-o", os.path.join(rawdata_out,'processed_data',GLDS+"_microarray_normalized-annotated"),
+                "-t", 'txt',
+                "--QCDir=" + os.path.join(rawdata_out,'QC_reporting'),
+                "--GLDS="+GLDS]
     subprocess.call(R_command)
 
 
