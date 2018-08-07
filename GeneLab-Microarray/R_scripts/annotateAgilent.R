@@ -196,10 +196,26 @@ geneIDs = annotFun(
 )
 
 if (any(grepl("///", geneIDs))) {
-  for (i in 1:length(geneIDs)) {
-    geneIDs[i] = strsplit(geneIDs[i], split = "///")[[1]][1]
-  }
-  geneIDs = gsub(" ", "", geneIDs)
+  tryCatch({
+    for (i in 1:length(geneIDs)) {
+      geneIDs[i] = strsplit(geneIDs[i], split = "///")[[1]][1]
+    }
+    geneIDs = gsub(" ", "", geneIDs)
+  }, error = function(e) {
+    warning("Error in stripping multiple annotations for the same probe. Gene IDs may need further reformatting\n")
+  })
+}
+
+if (any(grepl("(\\|)", geneIDs))) {
+  tryCatch({
+    for (i in 1:length(geneIDs)) {
+      tmp = strsplit(geneIDs[i], split = "\\|")[[1]]
+      geneIDs[i] = tmp[grep("^([[:upper:]]){2}_", tmp)][1]
+    }
+    geneIDs = gsub(" ", "", geneIDs)
+  }, error = function(e) {
+    warning("Error in stripping multiple annotations for the same probe. Gene IDs may need further reformatting\n")
+  })
 }
 
 cat("Removing unlabeled probe names...\n")

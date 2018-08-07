@@ -22,12 +22,6 @@ option_list = list(
   #   help = "Normalization method [rma (default, full rma), quantile (no background correction), background (no quant. normalization), log2 (no quant. norm. or background correction)"
   # ),
   make_option(
-    "--QCpackage",
-    type = "character",
-    default = "aqm",
-    help = "Package used to generate QC plots: aqm (generate html report with arrayQualityMetrics package,default), R (use standard R plotting options to generate QC plots as .png files. Figures may not maintain proper formatting for datasets with many samples)"
-  ),
-  make_option(
     c("-o", "--outFile"),
     type = "character",
     default = "expValues",
@@ -40,21 +34,33 @@ option_list = list(
     help = "Format of output data: R (Rdata object), txt (tab delimited file with identifiers and sample names), both (default)"
   ),
   make_option(
+    "--QCoutput",
+    type = "logical",
+    default = TRUE,
+    help = "Output QC_reporting directory of QC plots (default = TRUE)"
+  ),
+  make_option(
+    "--QCpackage",
+    type = "character",
+    default = "aqm",
+    help = "Package used to generate QC plots: aqm (generate html report with arrayQualityMetrics package,default), R (use standard R plotting options to generate QC plots as .png files. Figures may not maintain proper formatting for datasets with many samples)"
+  ),
+  make_option(
     "--QCDir",
     type = "character",
     default = "./QC_reporting/",
     help = "Path to directory for storing QC output, including a terminal forward slash. Will be created if it does not exist yet (default = './QC_reporting/')"
   ),
   make_option(
-    "--GLDS", 
-    type = "character", 
-    help = "Full accession number for QC outputs (ie 'GLDS-21' for GLDS-21)"
+    "--pullIDs", 
+    type = "logical", 
+    default = FALSE, 
+    help = "Logical option to try and extract RefSeq gene IDs from a raw text file. It will write a tab-delimited GPL file into the directory containing the raw files (default: false)"
   ),
   make_option(
-    "--QCoutput",
-    type = "logical",
-    default = TRUE,
-    help = "Output QC_reporting directory of QC plots (default = TRUE)"
+    "--GLDS", 
+    type = "character",
+    help = "Full accession number for QC outputs (ie 'GLDS-21' for GLDS-21)"
   )
 )
 
@@ -95,7 +101,7 @@ if (is.null(opt$input)){
   print_help(opt_parser)
   stop("No path to input directory provided. Please look over the available options", call. = F)
 }else{
-  inPath = opt$input
+  inPath = addSlash(opt$input)
   # inPath = "/Users/dmattox/Documents/genelab/rot1/GLDS-41/microarray/raw_data"
   # setwd(inPath)
 }
@@ -478,7 +484,37 @@ if(QCout == T) {
   }
 }
 
-
+if (opt$pullIDs == TRUE) {
+  cat("Attempting to extract RefSeq gene IDs from raw microarray file", inFiles[1],"\n")
+  tryCatch({
+    txt = read.delim(paste(inPath,inFiles[1],sep=""),header = T, stringsAsFactors = F)
+    skipCnt = max(grep("\\*",txt[,1]))
+    txt = read.delim(paste(inPath,inFiles[1],sep=""),header = T, stringsAsFactors = F, skip = (skipCnt + 2))    
+  }, error = function(e) {
+    stop("Problem reading and parsing raw text file. It may not fit standard Agilent formatting conventions\n")
+  })
+  tryCatch({
+    ID = txt[,2]
+    refInd = grep("^SystematicName$", colnames(txt))
+    GB_ACC = txt[,refInd]
+    GPL = cbind(ID,GB_ACC)
+  }, error = function(e) {
+    stop("Problem recognizing column names in the raw text file. Unable to extract annotation information\n")
+  })
+  if (glAn != F) {
+    gplFH = paste(inPath,glAn,"_GPL.txt",sep="")
+  } else {
+    gplFH = paste(inPath,"GPL.txt",sep="")
+  }
+  write.table(
+    GPL,
+    row.names = F,
+    file = gplFH,
+    quote = F,
+    sep = "\t"
+  )
+  cat("Success! Extracted annotation information saved to",gplFH,"\n")
+}
 
 
 
