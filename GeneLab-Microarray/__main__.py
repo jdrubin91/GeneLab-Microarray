@@ -58,6 +58,7 @@ def run():
         outfile.write('batch = "' + str(batch) + '"\n')
         outfile.write('visualize = "' + str(visualize) + '"\n')
         outfile.write('microarray_out="microarray"\n')
+        outfile.write('GPL=False\n')
         outfile.write("""def get_md5sum(filepath,key,action=False):
     import os, subprocess
     if not action:
@@ -94,7 +95,6 @@ def detect_2channel(infile):
             with open(os.path.join(tempdir,'temp_batch.txt'),'w') as outfile:
                 outfile.write("#Directory="+os.path.dirname(indir)+"\nGLDS#\tCopied\tArrayType\tNormalize/QC\tAnnotated\n"+GLDS+"\tFalse\tFalse\tFalse\tFalse")
             batch_process.run(os.path.join(tempdir,'temp_batch.txt'))
-            print "done."
     elif visualize != False:
         print "Visualization mode specified.\nInput GLDS directory: "+outdir
         visualize_list = visualize.split(',')

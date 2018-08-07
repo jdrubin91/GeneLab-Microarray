@@ -115,10 +115,15 @@ def rename(GLDS_path):
             extension = filename.split('.')[-1]
 
             #If the filename is an annotation type, don't include 'raw' in filename
-            if '.adf.' in filename or 'GPL' in filename:
+            if '.adf.' in filename:
+                new_filename = filename.replace('_','-').replace('(','-').replace(')','-').replace(' ','-').replace(GLDS,'').replace('microarray','').replace('--','-').replace('.adf','-adf').strip('-').split('.')[0]
+                move_command = ["mv", "'"+os.path.join(rawdata_out,filename)+"'", os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_annotation.'+extension)]
+                new_md5sum_file = os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_annotation.adf.'+extension)
+            elif 'GPL' in filename:
                 new_filename = filename.replace('_','-').replace('(','-').replace(')','-').replace(' ','-').replace(GLDS,'').replace('microarray','').replace('--','-').replace('.adf','-adf').strip('-').split('.')[0]
                 move_command = ["mv", "'"+os.path.join(rawdata_out,filename)+"'", os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_annotation.'+extension)]
                 new_md5sum_file = os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_annotation.'+extension)
+                config.GPL=True
             else:
                 for key in assay_dict:
                     #If the first column does correspond well, then assume the first column is the sample name and rename accordingly
@@ -138,7 +143,7 @@ def rename(GLDS_path):
                                 move_command = ["mv","'"+os.path.join(rawdata_out,filename)+"'", os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_raw.'+extension)]
                                 new_md5sum_file = os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_raw.'+extension)
 
-                #If the filename isn't in the metadata, just remove special characters and append appropriate information
+                #If the filename isn't in the metadata, just remove special characters and append appropriate information. Also, don't consider it a 'raw' file
                 if not sample_in_first_column and not sample_in_other_column:
                     new_filename = filename.replace('_','-').replace('(','-').replace(')','-').replace(' ','-').replace(GLDS,'').replace('microarray','').replace('--','-').strip('-').split('.')[0]
                     move_command = ["mv","'"+os.path.join(rawdata_out,filename)+"'", os.path.join(final_rawdata_out,GLDS+'_'+new_filename+'_microarray_other.'+extension)]
@@ -230,13 +235,23 @@ def annotateTwoColor(rawdata_out,GLDS):
 def annotateAgilent(rawdata_out,GLDS):
     R_script = os.path.join(config.R_dir,'annotateAgilent.R')
     normalized_expression = os.path.join(rawdata_out,'processed_data',GLDS+"_microarray_normalized.txt")
-    R_command = ["Rscript", R_script,
+    if config.GPL:
+        R_command = ["Rscript", R_script,
                     "-i", normalized_expression,
                     "--gplDir="+os.path.join(rawdata_out,'raw_files'),
                     "-o", os.path.join(rawdata_out,'processed_data',GLDS+"_microarray_normalized-annotated"),
                     "-t", 'txt',
                     "--QCDir=" + os.path.join(rawdata_out,'QC_reporting'),
                     "--GLDS="+GLDS]
+    else:
+        R_command = ["Rscript", R_script,
+                        "-i", normalized_expression,
+                        "--gplDir="+os.path.join(rawdata_out,'raw_files'),
+                        "-o", os.path.join(rawdata_out,'processed_data',GLDS+"_microarray_normalized-annotated"),
+                        "-t", 'txt',
+                        "--pullIDs=true",
+                        "--QCDir=" + os.path.join(rawdata_out,'QC_reporting'),
+                        "--GLDS="+GLDS]
     subprocess.call(R_command)
 
 

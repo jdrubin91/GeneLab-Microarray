@@ -41,6 +41,7 @@ def run(batch_file):
 
                 #Copy rawdata and metadata into output
                 rawdata_in = os.path.join(parent_dir,GLDS,'microarray')
+                config.GPL = False
                 if os.path.isdir(rawdata_in):
                     rawdata_process.copy(rawdata_in)
                     rawdata_process.rename(os.path.join(config.outdir,GLDS))
@@ -58,6 +59,7 @@ def run(batch_file):
                             config.microarray_out = folder
                             rawdata_in = os.path.join(parent_dir,GLDS,folder)
                             rawdata_out = os.path.join(config.outdir,GLDS,folder)
+                            config.GPL = False
                             rawdata_process.copy(rawdata_in)
                             rawdata_process.rename(os.path.join(config.outdir,GLDS))
                             metadata_process.create_md5sum_out(rawdata_out,GLDS)
@@ -124,7 +126,11 @@ def run(batch_file):
                     rawdata_process.TwoColorNormQC(rawdata_out,GLDS)
                 else:
                     rawdata_process.sChAgilNormQC(rawdata_out,GLDS)
-                batch_list[i][3] = 'True'
+                if os.path.exists(os.path.join(rawdata_out,'processed_data')):
+                    for file1 in os.listdir(os.path.join(rawdata_out,'processed_data')):
+                        if 'normalized.txt' in file1:
+                            norm_qc = 'True'
+                batch_list[i][3] = norm_qc
                 update_batch(parent_dir,header,batch_file,batch_list)
                 print "done"
             elif norm_qc != 'True' and norm_qc != 'Skipped' and norm_qc != 'Multi':
