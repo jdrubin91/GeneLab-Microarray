@@ -60,19 +60,6 @@ def run(batch_file):
                             rawdata_process.copy(rawdata_in)
                             rawdata_process.rename(os.path.join(config.outdir,GLDS))
                             metadata_process.create_md5sum_out(rawdata_out,GLDS)
-                            array = rawdata_process.detect_array(GLDS_path)
-                            if array == 'Pae_G1a':
-                                rawdata_process.qc_and_normalize(rawdata_out,GLDS)
-                                # rawdata_process.annotatePae_G1a(rawdata_out,GLDS)
-                            if array == 'Affymetrix':
-                                rawdata_process.qc_and_normalize(rawdata_out,GLDS)
-                                rawdata_process.annotate(rawdata_out,GLDS)
-                            elif array == 'TwoColor':
-                                rawdata_process.TwoColorNormQC(rawdata_out,GLDS)
-                                rawdata_process.annotateTwoColor(rawdata_out,GLDS)
-                            else:
-                                rawdata_process.sChAgilNormQC(rawdata_out,GLDS)
-                                rawdata_process.annotateAgilent(rawdata_out,GLDS)
                     copy, norm_qc, annotate = ['Multi' for j in range(3)]
                     batch_list[i][1] = [GLDS, copy, array, norm_qc, annotate]
                 else:
@@ -110,6 +97,8 @@ def run(batch_file):
             #Performs normalization and qc pre- and post-normalization
             if norm_qc == 'False':
                 print "Performing QC, normalization, and post-normalization QC on data for " + GLDS + "..."
+                if array == 'Pae_G1a':
+                    rawdata_process.qc_and_normalize(rawdata_out,GLDS)
                 if array == 'Affymetrix':
                     rawdata_process.qc_and_normalize(rawdata_out,GLDS)
                 elif array == 'TwoColor':
@@ -125,6 +114,8 @@ def run(batch_file):
             #Annotates probeIDs with gene names. Autodetection of array annotation package is attempted but if it fails then return 'Skipped'.
             if annotate == 'False':
                 print "Annotating probe IDs with gene names for " + GLDS + "..."
+                if array == 'Pae_G1a':
+                    rawdata_process.annotatePae_G1a(rawdata_out,GLDS)
                 if array == 'Affymetrix':
                     rawdata_process.annotate(rawdata_out,GLDS)
                 elif array == 'TwoColor':
