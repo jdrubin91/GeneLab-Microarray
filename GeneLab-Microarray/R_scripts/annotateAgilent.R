@@ -195,6 +195,13 @@ geneIDs = annotFun(
   newIDs = annot[,newIDName]
 )
 
+if (any(grepl("///", geneIDs))) {
+  for (i in 1:length(geneIDs)) {
+    geneIDs[i] = strsplit(geneIDs[i], split = "///")[[1]][1]
+  }
+  geneIDs = gsub(" ", "", geneIDs)
+}
+
 cat("Removing unlabeled probe names...\n")
 if (any(grepl("^([[:upper:]]){2}_",geneIDs))) { # If using RefSeq IDs in the newIDs column, only use rows following RefSeq formatting (ie "^NM_" )
   noIDTag = !grepl("^([[:upper:]]){2}_",geneIDs)
