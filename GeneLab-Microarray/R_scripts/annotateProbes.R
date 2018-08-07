@@ -113,6 +113,10 @@ tryCatch({
        call. = F)
 })
 
+if (arrVer == "Pae_G1a") {
+  stop(paste("Array version", arrVer, "does not have an annotation package and is not able to be annotated with this script. Try using the annotateAgilent.R script and the appropriate GPL file"))
+}
+
 # Set-up array version:annotation database pseudo-dictionary
 arrayNames = c(
   "MoGene-1_0-st-v1",

@@ -198,6 +198,8 @@ geneIDs = annotFun(
 cat("Removing unlabeled probe names...\n")
 if (any(grepl("^([[:upper:]]){2}_",geneIDs))) { # If using RefSeq IDs in the newIDs column, only use rows following RefSeq formatting (ie "^NM_" )
   noIDTag = !grepl("^([[:upper:]]){2}_",geneIDs)
+} else if (any(grepl("PA([[:digit:]]){4}",geneIDs))) {
+  noIDTag = !grepl("PA([[:digit:]]){4}",geneIDs)
 } else {
   noIDTag = geneIDs == ""
 }
@@ -231,7 +233,7 @@ if (any(opt$dupProbes %in% c("average", "max"))) {
     eset = eset[!rmRowTag, ]
     geneIDs = geneIDs[!rmRowTag]
     
-    cat("\tUnampped probes removed:", noIDCnt, "\n")
+    cat("\tUnmapped probes removed:", noIDCnt, "\n")
     cat("\tProbes with missing values removed:", naCnt, "\n")
     cat("\tDuplicated probes removed:", nDups, "\n\n")
     cat("Annotated probes remaining:", nrow(eset), "\n\n")
@@ -267,7 +269,7 @@ if (any(opt$dupProbes %in% c("average", "max"))) {
     eset = eset[!rmRowTag, ]
     geneIDs = geneIDs[!rmRowTag]
     
-    cat("\tUnampped probes removed:", noIDCnt, "\n")
+    cat("\tUnmapped probes removed:", noIDCnt, "\n")
     cat("\tProbes with missing values removed:", naCnt, "\n")
     cat("\tDuplicated probes removed:", nDups, "\n\n")
     cat("Annotated probes remaining:", nrow(eset), "\n\n")
