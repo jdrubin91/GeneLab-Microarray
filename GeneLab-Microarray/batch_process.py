@@ -41,6 +41,7 @@ def run(batch_file):
                 #Copy rawdata into output
                 print os.listdir(os.path.join(parent_dir,GLDS))
                 print ['microarray' in x for x in os.listdir(os.path.join(parent_dir,GLDS))]
+                print True in ['microarray' in x for x in os.listdir(os.path.join(parent_dir,GLDS))]
                 rawdata_in = os.path.join(parent_dir,GLDS,'microarray')
                 if os.path.isdir(rawdata_in):
                     rawdata_process.copy(rawdata_in)
