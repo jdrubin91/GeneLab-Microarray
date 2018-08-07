@@ -87,74 +87,12 @@ def detect_2channel(infile):
             import batch_process
             batch_process.run(indir)
         else:
-            import metadata_process, rawdata_process, batch_process
+            import batch_process
             print "Working Directory: ", wrkdir
-            print "Processing: " + indir + "\nWriting output to: " + outdir
-            GLDS = os.path.basename(indir)
-            GLDS_path = os.path.join(outdir,GLDS)
-            if 'GLDS' in GLDS:
-                with open(os.path.join(tempdir,'temp_batch.txt'),'w') as outfile:
-                    outfile.write("""#Directory="""+os.path.dirname(indir)+"""\nGLDS#\tCopied\tArrayType\tNormalize/QC\tAnnotated\n"""+GLDS+"""\tFalse\tFalse\tFalse\tFalse""")
-                batch_process.run(os.path.join(tempdir,'temp_batch.txt'))
-                # rawdata_out = os.path.join(outdir,GLDS,'microarray')
-                # metadata_out = os.path.join(outdir,GLDS,'metadata')
-                # metadata_in = os.path.join(indir,'metadata')
-                # rawdata_in = os.path.join(indir,'microarray')
-                # if os.path.isdir(metadata_in):
-                #     metadata_process.clean(metadata_in)
-                # else:
-                #     raise IOError('metadata directory within input not found. See README for expected directory structure.')
-
-                # #Copy rawdata into output
-                # if os.path.isdir(rawdata_in):
-                #     rawdata_process.copy(rawdata_in)
-                #     rawdata_process.rename(os.path.join(outdir,GLDS))
-                #     metadata_process.create_md5sum_out(rawdata_out,GLDS)
-                #     array = rawdata_process.detect_array(GLDS_path)
-                #     if array == 'Pae_G1a':
-                #         rawdata_process.qc_and_normalize(rawdata_out,GLDS)
-                #         rawdata_process.annotatePae_G1a(rawdata_out,GLDS)
-                #     elif array == 'Affymetrix':
-                #         print "Array type is Affymetrix"
-                #         rawdata_process.qc_and_normalize(rawdata_out,GLDS)
-                #         rawdata_process.annotate(rawdata_out,GLDS)
-                #     elif array == 'TwoColor':
-                #         print "Array type is two-channel"
-                #         rawdata_process.TwoColorNormQC(rawdata_out,GLDS)
-                #         rawdata_process.annotateTwoColor(rawdata_out,GLDS)
-                #     else:
-                #         print "Array cannot be properly detected, assuming Agilent format"
-                #         rawdata_process.sChAgilNormQC(rawdata_out,GLDS)
-                #         rawdata_process.annotateAgilent(rawdata_out,GLDS)
-                # else:
-                #     raise IOError('microarray directory within input not found. See README for expected directory structure.')
-            # elif 'GSE' in GLDS:
-            #     rawdata_out = os.path.join(outdir,GLDS,'microarray')
-            #     metadata_out = os.path.join(outdir,GLDS,'metadata')
-            #     metadata_in = os.path.join(indir,'metadata')
-            #     rawdata_in = os.path.join(indir,'microarray')
-            #     if not os.path.exists(metadata_out):
-            #         os.makedirs(metadata_out)
-            #     if os.path.isdir(rawdata_in):
-            #         rawdata_process.copy(rawdata_in)
-            #         rawdata_process.rename(os.path.join(outdir,GLDS))
-            #         metadata_process.create_md5sum_out(rawdata_out,GLDS)
-            #         array = rawdata_process.detect_array(GLDS_path)
-            #         if array == 'Pae_G1a':
-            #             rawdata_process.qc_and_normalize(rawdata_out,GLDS)
-            #             rawdata_process.annotatePae_G1a(rawdata_out,GLDS)
-            #         if array == 'Affymetrix':
-            #             rawdata_process.qc_and_normalize(rawdata_out,GLDS)
-            #             rawdata_process.annotate(rawdata_out,GLDS)
-            #         elif array == 'TwoColor':
-            #             rawdata_process.TwoColorNormQC(rawdata_out,GLDS)
-            #             rawdata_process.annotateTwoColor(rawdata_out,GLDS)
-            #         else:
-            #             rawdata_process.sChAgilNormQC(rawdata_out,GLDS)
-            #             rawdata_process.annotateAgilent(rawdata_out,GLDS)
-            #     else:
-            #         raise IOError('microarray directory within input not found. See README for expected directory structure.')
-
+            print "Single processing mode specified\nInput directory: " + indir + "\nWriting output to: " + outdir
+            with open(os.path.join(tempdir,'temp_batch.txt'),'w') as outfile:
+                outfile.write("""#Directory="""+os.path.dirname(indir)+"""\nGLDS#\tCopied\tArrayType\tNormalize/QC\tAnnotated\n"""+GLDS+"""\tFalse\tFalse\tFalse\tFalse""")
+            batch_process.run(os.path.join(tempdir,'temp_batch.txt'))
             print "done."
     elif visualize != False:
         print "Visualization mode specified.\nInput GLDS directory: "+outdir
@@ -179,8 +117,8 @@ def detect_2channel(infile):
                 print "No metadata files found within specified GLDS directory. Exiting..."
                 sys.exit(1)
         import galaxy_mode
-        html_main = os.path.join(outdir,'GeneLab-Visualize_'+condition1+'-'+condition2+'_pval<'+padj_cutoff,'results.html')
-        html_folder = os.path.join(outdir,'GeneLab-Visualize_'+condition1+'-'+condition2+'_pval<'+padj_cutoff)
+        html_main = os.path.join(outdir,'GeneLab-Visualize_'+condition1+'-'+condition2+'_pval-'+padj_cutoff,'results.html')
+        html_folder = os.path.join(outdir,'GeneLab-Visualize_'+condition1+'-'+condition2+'_pval-'+padj_cutoff)
         galaxy_mode.run(counts,metadata,diff,condition1,condition2,padj_cutoff,outliers,html_main,html_folder)
         print "done. Output in: " + outdir
     elif galaxy != False:
