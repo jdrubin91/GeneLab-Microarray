@@ -51,7 +51,7 @@ def copy(rawdata_directory):
             config.get_md5sum(cp_command[1],'original',action='copy')
 
             #Then execute the copy command to copy raw files to output directory
-            config.output = config.output + str(subprocess.check_output(cp_command).decode("utf-8"))
+            subprocess.call(cp_command)
 
             #md5sum command to check copied files
             config.get_md5sum(cp_command[2],'new')
@@ -72,7 +72,7 @@ def copy(rawdata_directory):
             config.get_md5sum(cp_command[1],'original',action='copy')
 
             #Then execute the copy command to copy raw files to output directory
-            config.output = config.output + str(subprocess.check_output(cp_command).decode("utf-8"))
+            subprocess.call(cp_command)
 
             #md5sum command to check copied files
             config.get_md5sum(cp_command[2],'new')
