@@ -257,7 +257,18 @@ def qc_and_normalize(rawdata_out,GLDS):
         print "Warning: Normalized expression file missing, some processing steps may have failed"
 
 def annotateTwoColor(rawdata_out,GLDS):
-    print "This is a placeholder. TwoColor not finished."
+    R_script = os.path.join(config.R_dir,'annotateAgilent.R')
+    normalized_expression = os.path.join(rawdata_out,'processed_data',GLDS+"_microarray_normalized.rda")
+    R_command = ["Rscript", R_script,
+                "-i", normalized_expression,
+                "--gplDir="+os.path.join(rawdata_out,'raw_files'),
+                "-o", os.path.join(rawdata_out,'processed_data',GLDS+"_microarray_normalized-annotated"),
+                "-g", 'BSU',
+                "-p", 'FeatureNum',
+                "-t", 'txt',
+                "--QCDir=" + os.path.join(rawdata_out,'QC_reporting'),
+                "--GLDS="+GLDS]
+    subprocess.call(R_command)
 
 def annotateAgilent(rawdata_out,GLDS):
     R_script = os.path.join(config.R_dir,'annotateAgilent.R')

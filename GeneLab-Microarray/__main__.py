@@ -73,7 +73,7 @@ def detect_2channel(infile):
     is2channel = False
     with open(infile,'r') as F:
         for line in F:
-            if 'rMedianSignal' in line or 'rBGMedianSignal' in line or 'F635' in line or 'Cy5' in line or 'CH2' in line:
+            if 'rMedianSignal' in line or 'rBGMedianSignal' in line or 'F635' in line or 'Cy5' in line or 'CH2_' in line:
                 is2channel = True
                 return is2channel
     return is2channel\n""")
