@@ -219,16 +219,20 @@ if (any(grepl("(\\|)", geneIDs))) {
 }
 
 cat("Removing unlabeled probe names...\n")
-if (any(grepl("^([[:upper:]]){2}_",geneIDs))) { # If using RefSeq IDs in the newIDs column, only use rows following RefSeq formatting (ie "^NM_" )
-  noIDTag = !grepl("^([[:upper:]]){2}_",geneIDs)
-} else if (any(grepl("PA([[:digit:]]){4}",geneIDs))) {
-  noIDTag = !grepl("PA([[:digit:]]){4}",geneIDs)
+if ( sum(grepl("^([[:upper:]]){2}_",geneIDs))/length(geneIDs) > 0.5 ) {
+  # If using primarily RefSeq IDs in the newIDs column, only use rows following RefSeq formatting (ie "^NM_" )
+  noIDTag = ( !grepl("^([[:upper:]]){2}_",geneIDs) | geneIDs == "")
+} else if ( sum(grepl("PA([[:digit:]]){4}",geneIDs))/length(geneIDs) > 0.5 ) {
+  # If using primarily p. aeruginosa IDs in the newIDs column, only use rows following p. aeruginosa IDs formatting (ie "^PAxxxx" )
+  noIDTag = ( !grepl("PA([[:digit:]]){4}",geneIDs) | geneIDs == "")
 } else {
-  noIDTag = geneIDs == ""
+  noIDTag = (geneIDs == "" | grepl("corner", geneIDs, ignore.case = T))
 }
 noIDCnt = sum(noIDTag) # Number of unmapped probes
 eset = eset[!noIDTag, ] # Remove umapped probes
 geneIDs = geneIDs[!noIDTag]
+
+
 
 # Filter out probes with missing values
 naTag = (apply(is.na(eset), 1, any))

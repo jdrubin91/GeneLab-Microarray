@@ -1,10 +1,13 @@
 #!/usr/bin/env Rscript
 
+### Single channel Agilent microarray normalization and quality control
+
 # install.packages("optparse")
 # source("http://bioconductor.org/biocLite.R")
 # biocLite("limma")
 ## install.packages("statmod")
 # biocLite("arrayQualityMetrics")
+# biocLite("oligo")
 
 suppressPackageStartupMessages(library("optparse"))
 
@@ -67,7 +70,7 @@ option_list = list(
 opt_parser = OptionParser(option_list = option_list)
 opt = parse_args(opt_parser)
 
-norm = opt$normalization
+#norm = opt$normalization
 outFH = opt$outFile
 QCout = opt$QCoutput
 QCpack = opt$QCpackage # QCpack = "R"
@@ -137,11 +140,11 @@ if (length(inFiles) > 0){
 }
 
 sampNames = gsub("microarray","",inFiles)
-sampNames = gsub(".txt","",sampNames)
+sampNames = gsub("\\..*","",sampNames)
 sampNames = gsub(".*/", "", sampNames)
 sampNames = gsub("GLDS-\\d*_", "", sampNames)
 sampNames = gsub("raw", "", sampNames)
-sampNames = gsub("_", "", sampNames) # Extract sample names from the list of .CEL files
+sampNames = gsub("_", "", sampNames) # Extract sample names from the list of filenames
 
 
 raw = read.maimages(

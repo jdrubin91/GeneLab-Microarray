@@ -53,7 +53,7 @@ option_list = list(
 opt_parser = OptionParser(option_list = option_list)
 opt = parse_args(opt_parser)
 
-norm = opt$normalization
+#norm = opt$normalization
 outFH = opt$outFile
 if (!is.null(opt$gpl)){
   annotFH = opt$gpl # annotFH = "GPL15420_features_probes.txt"

@@ -196,12 +196,31 @@ def detect_array(GLDS_path):
 
     return array
 
-def TwoColorNormQC(rawdata_out,GLDS):
-    print "This is a placeholder. TwoColor not finished."
-
 #Function for normalizing and performing QC on agilent arrays
 def sChAgilNormQC(rawdata_out,GLDS):
     R_script = os.path.join(config.R_dir,'sChAgilNormQC.R')
+    if config.GPL:
+        R_command = ["Rscript", R_script,
+                        "-i", os.path.join(rawdata_out,'raw_files'),
+                        "-o", os.path.join(rawdata_out,'processed_data',GLDS+"_microarray_normalized"),
+                        "-t", 'txt',
+                        "--QCDir="+os.path.join(rawdata_out,'QC_reporting'),
+                        "--QCpackage=R",
+                        "--GLDS="+GLDS]
+    else:
+        R_command = ["Rscript", R_script,
+                        "-i", os.path.join(rawdata_out,'raw_files'),
+                        "-o", os.path.join(rawdata_out,'processed_data',GLDS+"_microarray_normalized"),
+                        "-t", 'txt',
+                        "--pullIDs=true",
+                        "--QCDir="+os.path.join(rawdata_out,'QC_reporting'),
+                        "--QCpackage=R",
+                        "--GLDS="+GLDS]
+    subprocess.call(R_command)
+
+#Function for normalizing and performing QC on agilent arrays
+def dChAgilNormQC(rawdata_out,GLDS):
+    R_script = os.path.join(config.R_dir,'dChAgilNormQC.R')
     if config.GPL:
         R_command = ["Rscript", R_script,
                         "-i", os.path.join(rawdata_out,'raw_files'),

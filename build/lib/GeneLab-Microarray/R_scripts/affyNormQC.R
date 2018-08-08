@@ -1,5 +1,8 @@
 #!/usr/bin/env Rscript
 
+### Single channel Affymetrix microarray normalization and quality control
+
+
 # install.packages("optparse")
 # source("http://bioconductor.org/biocLite.R")
 # biocLite("affy")
