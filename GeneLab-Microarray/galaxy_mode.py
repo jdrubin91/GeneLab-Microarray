@@ -1076,7 +1076,7 @@ def heatmap(x, row_header, column_header, row_method,column_method, row_metric, 
                 new_row_header.append(row_header[i])
         for i in range(x.shape[1]):
             if column_method != None:
-                axm.text(i, -0.55, ' '+column_header[idx2[i]], rotation=315, verticalalignment="top") # rotation could also be degrees
+                axm.text(i-0.5, -0.55, ' '+column_header[idx2[i]], rotation=315, verticalalignment="top") # rotation could also be degrees
                 new_column_header.append(column_header[idx2[i]])
             else: ### When not clustering columns
                 axm.text(i, -0.55, ' '+column_header[i], rotation=315, verticalalignment="top")

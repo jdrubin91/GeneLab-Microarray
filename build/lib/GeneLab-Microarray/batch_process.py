@@ -3,7 +3,7 @@ __author__ = 'Jonathan Rubin'
 import os, config, metadata_process, rawdata_process
 
 def run(batch_file):
-    compatible_arrays = ['Affymetrix','Pae_G1a','Agilent','PrimeView']
+    compatible_arrays = ['Affymetrix','Pae_G1a','Agilent','PrimeView','TwoColor']
     batch_list = list()
     with open(batch_file) as F:
         parent_dir = F.readline().strip('\n').split('=')[1]
@@ -123,12 +123,12 @@ def run(batch_file):
                 if array == 'Pae_G1a' or array == 'PrimeView' or array == 'Affymetrix':
                     rawdata_process.qc_and_normalize(rawdata_out,GLDS)
                 elif array == 'TwoColor':
-                    rawdata_process.TwoColorNormQC(rawdata_out,GLDS)
+                    rawdata_process.dChAgilNormQC(rawdata_out,GLDS)
                 else:
                     rawdata_process.sChAgilNormQC(rawdata_out,GLDS)
                 if os.path.exists(os.path.join(rawdata_out,'processed_data')):
                     for file1 in os.listdir(os.path.join(rawdata_out,'processed_data')):
-                        if 'normalized.txt' in file1:
+                        if 'normalized' in file1:
                             norm_qc = 'True'
                 batch_list[i][3] = norm_qc
                 update_batch(parent_dir,header,batch_file,batch_list)
