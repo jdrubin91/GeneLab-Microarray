@@ -128,7 +128,7 @@ def run(batch_file):
                     rawdata_process.sChAgilNormQC(rawdata_out,GLDS)
                 if os.path.exists(os.path.join(rawdata_out,'processed_data')):
                     for file1 in os.listdir(os.path.join(rawdata_out,'processed_data')):
-                        if 'normalized.txt' in file1:
+                        if 'normalized' in file1:
                             norm_qc = 'True'
                 batch_list[i][3] = norm_qc
                 update_batch(parent_dir,header,batch_file,batch_list)

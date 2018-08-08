@@ -1031,7 +1031,7 @@ def heatmap(x, row_header, column_header, row_method,column_method, row_metric, 
             D1 = dist.squareform(d1)  # full matrix
             ax1 = fig.add_axes([ax1_x+0.005, ax1_y, ax1_w, ax1_h], frame_on=False) # frame_on may be False
             Y1 = sch.linkage(D1, method=row_method, metric=row_metric) ### gene-clustering metric - 'average', 'single', 'centroid', 'complete'
-            Z1 = sch.dendrogram(Y1, orientation='right')
+            Z1 = sch.dendrogram(Y1, orientation='left')
             ind1 = sch.fcluster(Y1,0.7*max(Y1[:,2]),'distance') ### This is the default behavior of dendrogram
             ax1.set_xticks([]) ### Hides ticks
             ax1.set_yticks([])
