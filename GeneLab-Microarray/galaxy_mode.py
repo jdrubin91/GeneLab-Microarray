@@ -193,13 +193,13 @@ def pca(x_full,column_header,condition1,condition2,html_folder):
     mpld3.plugins.connect(F,tooltip1,tooltip2)
 
     #Here we save both a png version of the plot (non-interactive) and the interactive html version of the plot
-    mpld3.save_html(F,os.path.join(html_folder,'pca.html'))
+    mpld3.save_html(F,os.path.join(html_folder,'PCA.html'))
 
     #Close the figure
     plt.close(F)
 
     #Here we add a 'back' button to the interactive html plots to go back to the original report.
-    with open(os.path.join(html_folder,'Pca.html'),'a') as F:
+    with open(os.path.join(html_folder,'PCA.html'),'a') as F:
         F.write('<b><a href="index.html">Back</a></b>')
 
 
@@ -1272,15 +1272,16 @@ if __name__ == "__main__":
 
 
     #=========TEST ALL=========
-    counts_table='/Users/jonathanrubin/Google_Drive/NASA/home/processed_GLDS/GLDS-4/microarray/GLDS-4_microarray_normalized-annotated.txt'
-    metadata='/Users/jonathanrubin/Google_Drive/NASA/home/processed_GLDS/GLDS-4/metadata/s_GLDS-4_microarray_metadata.txt'
+    counts_table='/Users/jonathanrubin/Google_Drive/NASA/home/priority_batch/GLDS-111/microarray/processed_data/GLDS-111_microarray_normalized-annotated.txt'
+    metadata='/Users/jonathanrubin/Google_Drive/NASA/home/priority_batch/GLDS-111/metadata/s_GLDS-111_microarray_metadata.txt'
     condition1='Spaceflight'
-    condition2='ground'
+    condition2='Ground Control'
     outliers='None'
     html_folder='/Users/jonathanrubin/Google_Drive/NASA/home/galaxy_test/'
     html_main='/Users/jonathanrubin/Google_Drive/NASA/home/galaxy_test/html_main.html'
-    padj_cutoff='0.1'
-    run(counts_table,metadata,condition1,condition2,padj_cutoff,outliers,html_main,html_folder)
+    padj_cutoff='0.01'
+    diff_analysis='limma'
+    run(counts_table,metadata,diff_analysis,condition1,condition2,padj_cutoff,outliers,html_main,html_folder)
 
 
 
