@@ -225,7 +225,6 @@ def dChAgilNormQC(rawdata_out,GLDS):
         R_command = ["Rscript", R_script,
                         "-i", os.path.join(rawdata_out,'raw_files'),
                         "-o", os.path.join(rawdata_out,'processed_data',GLDS+"_microarray_normalized"),
-                        "-t", 'txt',
                         "--QCDir="+os.path.join(rawdata_out,'QC_reporting'),
                         "--QCpackage=R",
                         "--GLDS="+GLDS]
@@ -233,7 +232,6 @@ def dChAgilNormQC(rawdata_out,GLDS):
         R_command = ["Rscript", R_script,
                         "-i", os.path.join(rawdata_out,'raw_files'),
                         "-o", os.path.join(rawdata_out,'processed_data',GLDS+"_microarray_normalized"),
-                        "-t", 'txt',
                         "--pullIDs=true",
                         "--QCDir="+os.path.join(rawdata_out,'QC_reporting'),
                         "--QCpackage=R",
