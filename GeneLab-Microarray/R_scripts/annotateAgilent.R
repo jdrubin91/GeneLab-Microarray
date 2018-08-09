@@ -203,7 +203,7 @@ annotFun = function(oldProbes, newProbes, newIDs){
 
 # Identify the column in the annotation file containing the most probe IDs
 if (opt$probeIDs == 'detect') {
-  cat("Looking for a column in the annotation file that matches the probe IDs found in the raw data")
+  cat("Looking for a column in the annotation file that matches the probe IDs found in the raw data\n")
   if (dCh == T) {
     probes = MA$genes[,1]
   } else {
@@ -215,9 +215,9 @@ if (opt$probeIDs == 'detect') {
   }
   topInd = which.max(sim)
   newProbeName = colnames(annot)[topInd]
-  cat("Probe ID column in annotation file identified as:",newProbeName,"\n")
+  cat("Probe ID column in annotation file identified as:",newProbeName,"\n\n")
   if ((sim[topInd] / length(probes)) < 0.5 ) {
-    warning(paste("Only ", round(sim[topInd] / length(probes)*100,digits=2), "% of the probe IDs from the raw data are contained in the selected column from the annotation file\n",sep=""))
+    warning(paste("Only ", round(sim[topInd] / length(probes)*100,digits=1), "% of the probe IDs from the raw data are contained in the selected column from the annotation file\n",sep=""))
   }
 } else {
   newProbeName = opt$probeIDs # newProbeName = "ID"
@@ -239,10 +239,10 @@ if (opt$geneIDs == 'detect') {
       }
       topInd = which.max(RefSeq) # In the case of a second tie, which.max just takes the lower index
     }
-    newIDnames = colnames(annot)[topInd]
+    newIDName = colnames(annot)[topInd]
     cat(
       "Identified",
-      newIDnames,
+      newIDName,
       "as a RefSeq containing column in the annotation file with",
       round(RefSeq[topInd] * 100, 2),
       "percent of the rows matching RefSeq formatting\n"
@@ -254,10 +254,10 @@ if (opt$geneIDs == 'detect') {
     }
     if (any(BSU > 0.4)) {
       topInd = which.max(BSU)
-      newIDnames = colnames(annot)[topInd]
+      newIDName = colnames(annot)[topInd]
       cat(
         "Identified",
-        newIDnames,
+        newIDName,
         "as a BSU ID containing column in the annotation file with",
         round(BSU[topInd] * 100, 2),
         "percent of the rows matching RefSeq formatting\n"
@@ -269,10 +269,10 @@ if (opt$geneIDs == 'detect') {
       }
       if (any(ATMG > 0.4)) {
         topInd = which.max(ATMG)
-        newIDnames = colnames(annot)[topInd]
+        newIDName = colnames(annot)[topInd]
         cat(
           "Identified",
-          newIDnames,
+          newIDName,
           "as an ATMG ID containing column in the annotation file with",
           round(ATMG[topInd] * 100, 2),
           "percent of the rows matching RefSeq formatting\n"
@@ -280,14 +280,14 @@ if (opt$geneIDs == 'detect') {
       } else {
         yeast = matrix(rep(0, ncol(annot))) # Looking for a column of yeast gene IDs
         for (i in 1:ncol(annot)) {
-          yeast[i] = sum(grepl("^Y[[:upper:]](\\d)+", annot[, i])) / nrow(annot)
+          yeast[i] = sum(grepl("^Y[[:upper:]]{2}(\\d)+", annot[, i])) / nrow(annot)
         }
         if (any(yeast > 0.4)) {
           topInd = which.max(yeast)
-          newIDnames = colnames(annot)[topInd]
+          newIDName = colnames(annot)[topInd]
           cat(
             "Identified",
-            newIDnames,
+            newIDName,
             "as an yeast ID containing column in the annotation file with",
             round(yeast[topInd] * 100, 2),
             "percent of the rows matching RefSeq formatting\n"
@@ -301,7 +301,6 @@ if (opt$geneIDs == 'detect') {
 } else {
   newIDName = opt$geneIDs # newIDName = "GB_ACC"
 }
-
 
 ## Two channel annotation
 if (dCh == TRUE) {

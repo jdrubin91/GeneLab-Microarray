@@ -324,8 +324,11 @@ row.names(eset) = normVals$genes[[1]]
 
 # Create output directory if it does not exist yet
 outDir = gsub("(/)[^/]*$", "\\1", outFH) # Strip the filename away from the directory path to the input file
-if (!file.exists(outDir)){ # Create the output directory if it does not exist yet
-  dir.create(outDir)
+if (grepl("/", outDir)) {
+  if (!file.exists(outDir)) {
+    # Create the output directory if it does not exist yet
+    dir.create(outDir)
+  }
 }
 
 outType = opt$outType
@@ -488,26 +491,42 @@ if(QCout == T) {
 }
 
 if (opt$pullIDs == TRUE) {
-  cat("Attempting to extract RefSeq gene IDs from raw microarray file", inFiles[1],"\n")
+  cat("Attempting to extract RefSeq gene IDs from raw microarray file",
+      inFiles[1],
+      "\n")
   tryCatch({
-    txt = read.delim(paste(inPath,inFiles[1],sep=""),header = T, stringsAsFactors = F)
-    skipCnt = max(grep("\\*",txt[,1]))
-    txt = read.delim(paste(inPath,inFiles[1],sep=""),header = T, stringsAsFactors = F, skip = (skipCnt + 2))    
+    txt = read.delim(
+      paste(inPath, inFiles[1], sep = ""),
+      header = F,
+      stringsAsFactors = F,
+      blank.lines.skip = F
+    )
+    skipCnt = max(grep("\\*", txt[, 1]))
+    txt = read.delim(
+      paste(inPath, inFiles[1], sep = ""),
+      header = T,
+      stringsAsFactors = F,
+      skip = (skipCnt + 1)
+    )
   }, error = function(e) {
-    stop("Problem reading and parsing raw text file. It may not fit standard Agilent formatting conventions\n")
+    stop(
+      "Problem reading and parsing raw text file. It may not fit standard Agilent formatting conventions\n"
+    )
   })
   tryCatch({
-    ID = txt[,2]
+    ID = txt[, 2]
     refInd = grep("^SystematicName$", colnames(txt))
-    GB_ACC = txt[,refInd]
-    GPL = cbind(ID,GB_ACC)
+    GB_ACC = txt[, refInd]
+    GPL = cbind(ID, GB_ACC)
   }, error = function(e) {
-    stop("Problem recognizing column names in the raw text file. Unable to extract annotation information\n")
+    stop(
+      "Problem recognizing column names in the raw text file. Unable to extract annotation information\n"
+    )
   })
   if (glAn != F) {
-    gplFH = paste(inPath,glAn,"_GPL.txt",sep="")
+    gplFH = paste(inPath, glAn, "_GPL.txt", sep = "")
   } else {
-    gplFH = paste(inPath,"GPL.txt",sep="")
+    gplFH = paste(inPath, "GPL.txt", sep = "")
   }
   write.table(
     GPL,
@@ -516,7 +535,9 @@ if (opt$pullIDs == TRUE) {
     quote = F,
     sep = "\t"
   )
-  cat("Success! Extracted annotation information saved to",gplFH,"\n")
+  cat("Success! Extracted annotation information saved to",
+      gplFH,
+      "\n")
 }
 
 

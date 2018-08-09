@@ -536,8 +536,11 @@ if (opt$outputData == TRUE) {
   }
   
   outDir = addSlash(opt$outDir)
-  if (!file.exists(outDir)){ # Create the output directory if it does not exist yet
-    dir.create(outDir)
+  if (grepl("/", outDir)) {
+    if (!file.exists(outDir)) {
+      # Create the output directory if it does not exist yet
+      dir.create(outDir)
+    }
   }
   eset = exprs(expset)
   if (opt$outType == "both") {

@@ -197,8 +197,11 @@ MA = normalizeBetweenArrays(MA, method = "Aquantile") # Normalize the average in
 # Saving the normalized data
 # Create output directory if it does not exist yet
 outDir = gsub("(/)[^/]*$", "\\1", outFH) # Strip the filename away from the directory path to the input file
-if (!file.exists(outDir)){ # Create the output directory if it does not exist yet
-  dir.create(outDir)
+if (grepl("/", outDir)) {
+  if (!file.exists(outDir)) {
+    # Create the output directory if it does not exist yet
+    dir.create(outDir)
+  }
 }
 # outFH = "normMA"
 save(MA, file = paste(outFH, ".rda", sep = ""))
