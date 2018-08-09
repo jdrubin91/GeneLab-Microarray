@@ -28,13 +28,13 @@ option_list = list(
     c("-p", "--probeIDs"), 
     type = "character", 
     default = "ID",
-    help = "Column name in the provided annotation file for the column containing the probe IDs as they are listed in the normalized data (default: 'ID')"
+    help = "Column name in the provided annotation file for the column containing the probe IDs as they are listed in the normalized data (default: 'ID'). If set to 'detect', the script will try to identify the column in the annotation file with the most similarity to the probe IDs in the input data"
   ),
   make_option(
     c("-g", "--geneIDs"), 
     type = "character", 
     default = "GB_ACC",
-    help = "Column name in the provided annotation file for the column containing the desired gene IDs to use to link to the probe IDs (default: 'GB_ACC'). Note, if there spaces in the column name, replace them with periods (ie RefSeq Transcript ID --> RefSeq.Transcript.ID"
+    help = "Column name in the provided annotation file for the column containing the desired gene IDs to use to link to the probe IDs (default: 'GB_ACC'). Note, if there spaces in the column name, replace them with periods (ie RefSeq Transcript ID --> RefSeq.Transcript.ID. If set to 'detect', the script will try to identify the columns with RefSeq gene IDs or potential alternative gene IDs"
   ),
   make_option(
     c("-o", "--output"),
@@ -160,14 +160,23 @@ tryCatch({
     )
     rownames(eset) = eset[,1]
     eset[,1] = NULL
+    cat(inFH,"read in successfully\n")
   } else if (grepl(".rda$", x = inFH) == TRUE) {
     load(inFH)
+    cat(inFH,"read in successfully\n")
   } else {
     stop("File extension not recognized\n", call. = F)
   }
 }, error = function(e) {
   stop("Input file was not recognized", call. = F)
 })
+
+if (exists("MA")) {
+  # Determine if working with single channel or two channel microarray data
+  dCh = TRUE
+} else {
+  dCh = FALSE
+}
 
 if (is.null(opt$GLDS)) {
   # Include GLDS accession number in outputs if provided
@@ -192,14 +201,107 @@ annotFun = function(oldProbes, newProbes, newIDs){
   return(out)
 }
 
-newProbeName = opt$probeID # newProbeName = "ID"
-newIDName = opt$geneIDs # newIDName = "GB_ACC"
-
-if (exists("MA")) {
-  dCh = TRUE
+# Identify the column in the annotation file containing the most probe IDs
+if (opt$probeIDs == 'detect') {
+  cat("Looking for a column in the annotation file that matches the probe IDs found in the raw data")
+  if (dCh == T) {
+    probes = MA$genes[,1]
+  } else {
+    probes = row.names(eset)
+  }
+  sim = matrix(rep(0,ncol(annot)))
+  for (i in 1:ncol(annot)) {
+    sim[i] = sum(probes %in% annot[,i])
+  }
+  topInd = which.max(sim)
+  newProbeName = colnames(annot)[topInd]
+  cat("Probe ID column in annotation file identified as:",newProbeName,"\n")
+  if ((sim[topInd] / length(probes)) < 0.5 ) {
+    warning(paste("Only ", round(sim[topInd] / length(probes)*100,digits=2), "% of the probe IDs from the raw data are contained in the selected column from the annotation file\n",sep=""))
+  }
 } else {
-  dCh = FALSE
+  newProbeName = opt$probeIDs # newProbeName = "ID"
 }
+
+# Identify the column in the annotation file with columns with RefSeq gene IDs or potential alternative gene IDs
+if (opt$geneIDs == 'detect') {
+  RefSeq = matrix(rep(0, ncol(annot))) # Looking for a column of RefSeq IDs
+  for (i in 1:ncol(annot)) {
+    RefSeq[i] = sum(grepl("^[XN][MRPG]_", annot[, i])) / nrow(annot)
+  }
+  if (any(RefSeq > 0.4)) {
+    topInd = which(RefSeq == max(RefSeq)) # Return all columns of annot containing the most RefSeq IDs
+    if (length(topInd) > 1) {
+      # Tie breaker
+      for (i in 1:length(topInd)) {
+        j = topInd[i]
+        RefSeq[j] = sum(grepl("^NM_", annot[, j])) / nrow(annot) # Recalculate percentages based on a more strict RefSeq regex match
+      }
+      topInd = which.max(RefSeq) # In the case of a second tie, which.max just takes the lower index
+    }
+    newIDnames = colnames(annot)[topInd]
+    cat(
+      "Identified",
+      newIDnames,
+      "as a RefSeq containing column in the annotation file with",
+      round(RefSeq[topInd] * 100, 2),
+      "percent of the rows matching RefSeq formatting\n"
+    )
+  } else {
+    BSU = matrix(rep(0, ncol(annot))) # Looking for a column of Bacillus subtilis gene IDs
+    for (i in 1:ncol(annot)) {
+      BSU[i] = sum(grepl("^BSU[[:digit:]]{5}", annot[, i])) / nrow(annot)
+    }
+    if (any(BSU > 0.4)) {
+      topInd = which.max(BSU)
+      newIDnames = colnames(annot)[topInd]
+      cat(
+        "Identified",
+        newIDnames,
+        "as a BSU ID containing column in the annotation file with",
+        round(BSU[topInd] * 100, 2),
+        "percent of the rows matching RefSeq formatting\n"
+      )
+    } else {
+      ATMG = matrix(rep(0, ncol(annot))) # Looking for a column of Arabidopsis thaliana gene IDs
+      for (i in 1:ncol(annot)) {
+        ATMG[i] = sum(grepl("^ATMG[[:digit:]]{5}", annot[, i])) / nrow(annot)
+      }
+      if (any(ATMG > 0.4)) {
+        topInd = which.max(ATMG)
+        newIDnames = colnames(annot)[topInd]
+        cat(
+          "Identified",
+          newIDnames,
+          "as an ATMG ID containing column in the annotation file with",
+          round(ATMG[topInd] * 100, 2),
+          "percent of the rows matching RefSeq formatting\n"
+        )
+      } else {
+        yeast = matrix(rep(0, ncol(annot))) # Looking for a column of yeast gene IDs
+        for (i in 1:ncol(annot)) {
+          yeast[i] = sum(grepl("^Y[[:upper:]](\\d)+", annot[, i])) / nrow(annot)
+        }
+        if (any(yeast > 0.4)) {
+          topInd = which.max(yeast)
+          newIDnames = colnames(annot)[topInd]
+          cat(
+            "Identified",
+            newIDnames,
+            "as an yeast ID containing column in the annotation file with",
+            round(yeast[topInd] * 100, 2),
+            "percent of the rows matching RefSeq formatting\n"
+          )
+        } else{
+          stop("No columns with sufficent numbers of recognized gene IDs detected")
+        }
+      }
+    }
+  }
+} else {
+  newIDName = opt$geneIDs # newIDName = "GB_ACC"
+}
+
 
 ## Two channel annotation
 if (dCh == TRUE) {

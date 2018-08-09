@@ -227,14 +227,16 @@ if (opt$pullIDs == TRUE) {
     txt = read.delim(
       paste(inPath, inFiles[1], sep = ""),
       header = T,
-      stringsAsFactors = F
+      stringsAsFactors = F,
+      blank.lines.skip = F
     )
     skipCnt = max(grep("\\*", txt[, 1]))
     txt = read.delim(
       paste(inPath, inFiles[1], sep = ""),
       header = T,
       stringsAsFactors = F,
-      skip = (skipCnt + 2)
+      skip = (skipCnt + 3),
+      blank.lines.skip = T
     )
   }, error = function(e) {
     stop(
