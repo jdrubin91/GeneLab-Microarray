@@ -515,8 +515,7 @@ if (opt$pullIDs == TRUE) {
   })
   tryCatch({
     ID = txt[, 2]
-    refInd = grep("^accessions$", colnames(txt))
-    cat("\n\n\n\n",refInd,"\n\n\n")
+    refInd = grep("^SystematicName$", colnames(txt))
     GB_ACC = txt[, refInd]
     GPL = cbind(ID, GB_ACC)
   }, error = function(e) {
