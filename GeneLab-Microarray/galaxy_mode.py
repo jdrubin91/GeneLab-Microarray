@@ -217,7 +217,7 @@ def get_matrix(sig_genes,counts_table,limma_output,condition1,condition2):
     sig_header = list()
     with open(counts_table,'r') as F:
         header = F.readline().strip('\n').split('\t')
-        indexes = [header.index(i) for i in column_header]
+        indexes = [header.index(i.replace('-','.')) for i in column_header]
         counter = 0
         for line in F:
             line = line.strip('\n').split('\t')

@@ -1,12 +1,12 @@
 indir = "False"
-outdir = "."
+outdir = "GLDS-61"
 srcdir = "/Users/jonathanrubin/Google_Drive/NASA/home/GeneLab-Microarray/GeneLab-Microarray"
-wrkdir = "/private/var/folders/rr/fbksjg6n2d7_3gh_8t_jgj_r0000gn/T/tmpg3DLPi/job_working_directory/000/3/working"
+wrkdir = "/Users/jonathanrubin/Google_Drive/NASA/home/priority_batch_v2"
 tempdir = "/Users/jonathanrubin/Google_Drive/NASA/home/GeneLab-Microarray/temp"
 R_dir = "/Users/jonathanrubin/Google_Drive/NASA/home/GeneLab-Microarray/GeneLab-Microarray/R_scripts"
 md5sum = {"original": [], "new": []}
 batch = "False"
-visualize = "False"
+visualize = "flight,ground,0.1"
 microarray_out="microarray"
 GPL=False
 def get_md5sum(filepath,key,action=False):
@@ -23,7 +23,7 @@ def detect_2channel(infile):
     is2channel = False
     with open(infile,'r') as F:
         for line in F:
-            if 'rMedianSignal' in line or 'rBGMedianSignal' in line or 'F635' in line or 'Cy5' in line:
+            if 'rMedianSignal' in line or 'rBGMedianSignal' in line or 'F635' in line or 'Cy5' in line or 'CH2_' in line:
                 is2channel = True
                 return is2channel
     return is2channel

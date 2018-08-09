@@ -277,8 +277,8 @@ def annotateAgilent(rawdata_out,GLDS):
                 "-i", normalized_expression,
                 "--gplDir="+os.path.join(rawdata_out,'raw_files'),
                 "-o", os.path.join(rawdata_out,'processed_data',GLDS+"_microarray_normalized-annotated"),
-                    "-g", 'detect',
-                    "-p", 'detect',
+                "-g", 'detect',
+                "-p", 'detect',
                 "-t", 'txt',
                 "--QCDir=" + os.path.join(rawdata_out,'QC_reporting'),
                 "--GLDS="+GLDS]

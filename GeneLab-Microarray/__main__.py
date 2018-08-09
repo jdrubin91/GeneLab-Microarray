@@ -118,8 +118,8 @@ def detect_2channel(infile):
                 print "No metadata files found within specified GLDS directory. Exiting..."
                 sys.exit(1)
         import galaxy_mode
-        html_main = os.path.join(outdir,'GeneLab-Visualize_'+condition1+'-'+condition2+'_pval-'+padj_cutoff,'results.html')
-        html_folder = os.path.join(outdir,'GeneLab-Visualize_'+condition1+'-'+condition2+'_pval-'+padj_cutoff)
+        html_main = os.path.join(outdir,GLDS+'_'+condition1.replace(' ','-')+'_'+condition2.replace(' ','-')+'_pval-'+padj_cutoff,'results.html')
+        html_folder = os.path.join(outdir,GLDS+'_'+condition1.replace(' ','-')+'_'+condition2.replace(' ','-')+'_pval-'+padj_cutoff)
         galaxy_mode.run(counts,metadata,diff,condition1,condition2,padj_cutoff,outliers,html_main,html_folder)
         print "done. Output in: " + outdir
     elif galaxy != False:
