@@ -38,49 +38,23 @@ def copy(rawdata_directory):
 
 
     #Now search the microarray folder for raw data files (this part could be done in a smarter way...)
-    raw_files = 0
     for file1 in os.listdir(rawdata_directory):
-        if not 'processed' in file1:
-            raw_files += 1
-            out_file_path = os.path.join(rawdata_out,file1)
+        out_file_path = os.path.join(rawdata_out,file1)
 
-            #Command for copying the raw files to desired output
-            cp_command = ["cp", os.path.join(rawdata_directory,file1),out_file_path]
+        #Command for copying the raw files to desired output
+        cp_command = ["cp", os.path.join(rawdata_directory,file1),out_file_path]
 
-            #md5sum command to check original files
-            config.get_md5sum(cp_command[1],'original',action='copy')
+        #md5sum command to check original files
+        config.get_md5sum(cp_command[1],'original',action='copy')
 
-            #Then execute the copy command to copy raw files to output directory
-            subprocess.call(cp_command)
+        #Then execute the copy command to copy raw files to output directory
+        subprocess.call(cp_command)
 
-            #md5sum command to check copied files
-            config.get_md5sum(cp_command[2],'new')
+        #md5sum command to check copied files
+        config.get_md5sum(cp_command[2],'new')
 
-            #Once copied, unzip/untar/gunzip compressed directories (if there are any)
-            unzip(out_file_path,rawdata_out)
-
-    print raw_files
-
-    #If there are no files without the word 'processed' in them, then grab all files and unzip them.
-    if raw_files == 0:
-        print "Only directories containing 'processed' found, copying all directories."
-        for file1 in os.listdir(rawdata_directory):
-            out_file_path = os.path.join(rawdata_out,file1)
-
-            #Command for copying the raw files to desired output
-            cp_command = ["cp", os.path.join(rawdata_directory,file1),out_file_path]
-
-            #md5sum command to check original files
-            config.get_md5sum(cp_command[1],'original',action='copy')
-
-            #Then execute the copy command to copy raw files to output directory
-            subprocess.call(cp_command)
-
-            #md5sum command to check copied files
-            config.get_md5sum(cp_command[2],'new')
-
-            #Once copied, unzip/untar/gunzip compressed directories (if there are any)
-            unzip(out_file_path,rawdata_out)
+        #Once copied, unzip/untar/gunzip compressed directories (if there are any)
+        unzip(out_file_path,rawdata_out)
 
 
     #Sometimes compressed files spit out more compressed files so loop through the files once again to catch those and uncompress them
