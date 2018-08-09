@@ -59,9 +59,11 @@ def copy(rawdata_directory):
             #Once copied, unzip/untar/gunzip compressed directories (if there are any)
             unzip(out_file_path,rawdata_out)
 
+    print raw_files
 
     #If there are no files without the word 'processed' in them, then grab all files and unzip them.
     if raw_files == 0:
+        print "Only directories containing 'processed' found, copying all directories."
         for file1 in os.listdir(rawdata_directory):
             out_file_path = os.path.join(rawdata_out,file1)
 
