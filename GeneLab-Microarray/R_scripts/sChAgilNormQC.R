@@ -9,7 +9,7 @@
 # biocLite("arrayQualityMetrics")
 # biocLite("oligo")
 
-suppressPackageStartupMessages(library("optparse"))
+suppressPackageStartupMessages(library("optparse")) # Load optparse package to read in arguments
 
 # Read options
 option_list = list(
@@ -68,7 +68,7 @@ option_list = list(
 )
 
 opt_parser = OptionParser(option_list = option_list)
-opt = parse_args(opt_parser)
+opt = parse_args(opt_parser) # Parse the arguments into a list
 
 #norm = opt$normalization
 outFH = opt$outFile
@@ -87,6 +87,7 @@ addSlash = function(string) {
 }
 
 detach_package = function(pkg, character.only = FALSE) {
+  # More robust function to detach loaded packages
   if (!character.only)
   {
     pkg <- deparse(substitute(pkg))
@@ -105,18 +106,16 @@ if (is.null(opt$input)){
   stop("No path to input directory provided. Please look over the available options", call. = F)
 }else{
   inPath = addSlash(opt$input)
-  # inPath = "/Users/dmattox/Documents/genelab/rot1/GLDS-41/microarray/raw_data"
-  # setwd(inPath)
 }
 
 if (is.null(opt$GLDS)) {
   # Include GLDS accession number in outputs if provided
   cat("Warning: No GLDS accession number provided\n")
-  if (grepl("GLDS-[0-9]+", inPath)) {
+  if (grepl("GLDS-[0-9]+", inPath)) { # Check if the GLDS number is in the input directory
     glAn = regmatches(inPath, regexpr("GLDS-[0-9]+", inPath)) # Attempt to extract the GLDS accession number from the input path
     cat("Try to guess GLDS accession number... ", glAn,"\n")
   } else{
-    glAn = FALSE
+    glAn = FALSE # Set to false if not provided and not in the input directory
   }
 } else{
   glAn = opt$GLDS
@@ -539,19 +538,3 @@ if (opt$pullIDs == TRUE) {
       gplFH,
       "\n")
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

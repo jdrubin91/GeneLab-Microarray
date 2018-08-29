@@ -12,9 +12,17 @@
    - <A href=#GalaxyMode>Galaxy Mode</A>
 3. <A href=#Directory>Directory Structure</A>
 4. <A href=#BatchFile>Batch File Format</A>
-5. <A href=#affyNormQC>Affy QC and Normalization</A>
-6. <A href=#annotateProbe>Probe annotation</A>
-7. <A href=#limmaDiffExp>Limma Differential Expression</A>
+5. <A href=#RScripts>R Scripts</A>
+   - <A href=#NormalizationQC>Normalization and QC</A>
+        + <A href=#AffyNormQC>Affymetrix</A>
+        + <A href=#sCh>Single Channel Agilent</A>
+        + <A href=#dCh>Dual Channel Agilent</A>
+   - <A href=#Annotation>AnnotationC</A>
+        + <A href=#AffyNormQC>Affymetrix</A>
+        + <A href=#Agil>Agilent/Non-Affy</A>
+   - <A href=#DiffExp>Differential Expression</A>
+        + <A href=#limmaDiffExp>Microarrays</A>
+        + <A href=#limmaVoom>RNA-Seq</A>
 
 
 <H2 id="Installation">Installation</H2>
@@ -189,6 +197,47 @@ GLDS-4    False     False        False           False
 ```
 
 GeneLab-Microarray will overwrite the specified batch.txt file changing booleans to True or Skipped when the specific step is finished. An example of a batch.txt file can be found within the `batch/` folder
+
+<H2 id="RScripts">R Scripts</H2>
+The R scripts used to read in and process the data are also available to be run manually outside of the GeneLab-Microarray package. In general, the set default options for the individual R scripts are the options used within the wrapped package. To call the R scripts from the command line, the recommended usage is with the --no-save --no-restore flags as seen below (as called from the parent directory of the package):
+```
+Rscript --no-save --no-restore GeneLab-Microarray/R_scripts/RScriptHere.R 
+```
+
+<H3 id="NormalizationQC">Normalization and QC</H3>
+The R scripts `affyNormQC.R`, `sChAgilNorm.R`, and `dChAgilNorm.R` can be used to read in raw microarray data, provide raw QC reports, process and normalize the data, and provide post-normalization QC reports for Affymetrix, single-channel Agilent, and two-channel Agilent microarray experiments respectively. Generally, these scripts will read in all of the raw files in the indicated input directory and return a normalized, unannotated table of log2 intensities with probes IDs in the first column and subsequent columns for each sample. Two-channel microarray experiments will not fit this format but that is discussed further below. Additionally, these scripts will generate a QC reporting directory (`./QC_reporting/` by default) with `raw_report` and `normalized_report` sub-directories. If the QC reports are generated with the base R plotting options, each sub-directory will contain a collection of QC figures saved as .png files. If the QC reports are generated with the arrayQualityMetrics tool (aqm), the respective sub-directories will contain the individual figures saved as a combination of .pdf, .svg, and .png files, with the interactive summary report accessible through the `index.html` file. At present, it is recommended to open the `index.html` file with either Chrome or Firefox as some bugs have been observed with some versions of Safari.
+Each of these scripts apply as similar of normalization techniques as possible, using the "normexp" (normal plus exponential convolution) background correction method, quantile normalization, and log2 transformation.
+
+<H4 id="AffyNormQC">Affymetrix</H4>
+The most recent list of current options and set defaults can be viewed by running the following line from the parent directory:
+```
+Rscript --no-save --no-restore GeneLab-Microarray/R_scripts/affyNormQC.R --help
+```
+The only required option is the `-i/--input` to indicate a path to the directory containing the raw .CEL files. Any .CEL file in that directory will be read in and processed. The script is set such that it will use the "affy" package for older Affymetrix arrays and the "oligo" package for the newer Affymetrix arrays (primarily the ST arrays).
+After the .CEL files are read in, an array info text file is created along with a `summary_report` directory within the QC report directory. The text file contains the array manufacturer on the first line and the array version on the second line.
+The normalized output intensity table is saved to the specified file and file type, either a text file, binary RData file, or both.
+
+<H4 id="sCh">Single Channel Agilent</H4>
+The most recent list of current options and set defaults can be viewed by running the following line from the parent directory:
+```
+Rscript --no-save --no-restore GeneLab-Microarray/R_scripts/sChAgil.R --help
+```
+Again, the only required option is the `-i/input` option to point to a directory containing the raw microarray data files as text files. The script will try to read in any file in that directory with the "raw" semantic tag ("_raw.txt"). This script uses the "limma" package to read in and normalize the data. It assumes the data is in the typical Agilent data formatting, containing the columns "gMedianSignal", "gBGMedianSignal", and "FeatureNum". This could be adapted by altering the source type and column names to be able to read in other array types with other naming schema.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 <H2 id="affyNormQC">Affy QC and Normalization</H2>
 The affyNormQC.R script can be run from any directory, but requires to be pointed to the appropriate directory containing Affymetrix .CEL file microarray data with the `-i/--input` option. It can determine the version of the array and load the appropriate packages (ie "affy" for earlier microarrays and "oligo" for the newer arrays). No inputs are required to run it, but to view the available options, simply run the line below:

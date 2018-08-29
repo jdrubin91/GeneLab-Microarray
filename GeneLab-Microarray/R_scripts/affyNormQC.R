@@ -8,7 +8,7 @@
 # biocLite("affy")
 # biocLite("affyPLM")
 # biocLite("oligo")
-# biocLite("arrayQualityMetrics")
+# biocLite("arrayQualityMetrics") # Known dependencies for arrayQualityMetrics listed below
 #   biocLite("hexbin")
 #   biocLite("jsonlite")
 #   biocLite("openssl")
@@ -16,17 +16,9 @@
 #   biocLite("reshape2")
 #   biocLite("Cairo")
 
-#   biocLite("")
-#   biocLite("")
-#   biocLite("")
-#   biocLite("")
-#   biocLite("")
-#   biocLite("")
+suppressPackageStartupMessages(library("optparse")) # Load optparse package to read in arguments
 
-
-suppressPackageStartupMessages(library("optparse"))
-
-relDir = getwd()
+relDir = getwd() # Store the directory from which this script was called for relative paths
 
 # Read options
 option_list = list(
@@ -78,10 +70,11 @@ option_list = list(
     help = "Package used to generate QC plots: aqm (generate html report with arrayQualityMetrics package,default), R (use standard R plotting options to generate QC plots as .png files. Figures may not maintain proper formatting for datasets with many samples)"
   ),
   make_option(
+    # Note: this option will not work on the DP server when reading in the arrays with the "oligo" package (ie ST type arrays) due to the BLAS multi-threading issue
     "--NUSEplot",
     type = "logical",
     default = FALSE,
-    help = "Include a NUSE plot in the QC output, adds significantly to runtime (default = FALSE). Note: this argument is only considered with 'R' selected for --QCPackage"
+    help = "Include a NUSE and RLE plot in the QC output, adds significantly to runtime (default = FALSE). Note: this argument is only considered with 'R' selected for --QCPackage"
   ),
   make_option(
     "--QCoutput",
@@ -93,17 +86,17 @@ option_list = list(
     "--QCDir",
     type = "character",
     default = "./QC_reporting/",
-    help = "Path to directory for storing QC output, including a terminal forward slash. Will be created if it does not exist yet (default = './QC_reporting/')"
+    help = "Path to directory for storing QC output. Will be created if it does not exist yet (default = './QC_reporting/')"
   ),
   make_option(
     "--GLDS", 
     type = "character", 
-    help = "Full accession number for QC outputs (ie 'GLDS-21' for GLDS-21)"
+    help = "Full accession number for QC outputs (ie 'GLDS-21' for GLDS-21). If it's not provided, the script will try to detect it from the path provided to the '-i/--input' option"
   )
 )
 
 opt_parser = OptionParser(option_list = option_list)
-opt = parse_args(opt_parser)
+opt = parse_args(opt_parser) # Parse the arguments into a list
 
 addSlash = function(string) {
   # Adds a trailing forward slash to the end of a string (ex path to a driectory) if it is not present
@@ -116,6 +109,7 @@ addSlash = function(string) {
 }
 
 detach_package = function(pkg, character.only = FALSE) {
+  # More robust function to detach loaded packages
   if (!character.only)
   {
     pkg <- deparse(substitute(pkg))
@@ -129,7 +123,8 @@ detach_package = function(pkg, character.only = FALSE) {
   }
 }
 
-norm = opt$normalization
+# Saving options from the list as global variables
+norm = opt$normalization 
 QCout = opt$QCoutput
 QCpack = opt$QCpackage
 NUSEplot = opt$NUSEplot
@@ -147,30 +142,23 @@ if (is.null(opt$input)) {
 if (is.null(opt$GLDS)) {
   # Include GLDS accession number in outputs if provided
   cat("Warning: No GLDS accession number provided\n")
-  if (grepl("GLDS-[0-9]+", inPath)) {
+  if (grepl("GLDS-[0-9]+", inPath)) { # Check if a GLDS is in the input directory 
     glAn = regmatches(inPath, regexpr("GLDS-[0-9]+", inPath)) # Attempt to extract the GLDS accession number from the input path
-    cat("Try to guess GLDS accession number... ", glAn,"\n")
+    cat("Trying to guess GLDS accession number... ", glAn,"\n")
   } else{
-    glAn = FALSE
+    glAn = FALSE # Set to false if not provided and not in the input directory
   }
 } else{
   glAn = opt$GLDS
 }
 
 # Load affy package to read in .CEL files
-suppressPackageStartupMessages(require(affy))
+suppressPackageStartupMessages(require(affy)) # Load affy-specific package for reading in arrays
 
-# setwd("~/Documents/genelab/rot1/GLDS-4/microarray/")
-
-celFiles = list.celfiles(full.names = TRUE)
-sampNames = gsub("_microarray", "", celFiles)
-sampNames = gsub(".CEL", "", sampNames)
-sampNames = gsub(".*/", "", sampNames)
-sampNames = gsub("GLDS-\\d*_", "", sampNames)
-sampNames = gsub("raw", "", sampNames)
-sampNames = gsub("_", "", sampNames) # Extract sample names from the list of .CEL files
+celFiles = list.celfiles(full.names = TRUE) # Pull all .CEL files from the input directory into a list
 
 if (length(celFiles) > 0){
+  # If the list of CEL files is populated, list the contents
   cat("Detected .CEL files:\n")
   for (i in 1:length(celFiles)) {
     cat("\t",celFiles[i],"\n")
@@ -178,31 +166,42 @@ if (length(celFiles) > 0){
   cat("\n")
 } else {
   stop("No .CEL files detected in the current directory",
-    call. = F)
+       call. = F)
 }
 
-useOligo = tryCatch({
+# Strip the sample names from the file names
+sampNames = gsub("_microarray", "", celFiles)
+sampNames = gsub(".CEL", "", sampNames)
+sampNames = gsub(".*/", "", sampNames)
+sampNames = gsub("GLDS-\\d*_", "", sampNames)
+sampNames = gsub("raw", "", sampNames)
+sampNames = gsub("_", "", sampNames)
+
+useOligo = tryCatch({ 
+  # Tries to read in the .CEL files using the affy package, but if it fails (in the case of some of the newer human microarrays), it switches over to the oligo package. If the .CEL files load with the affy package but are better handled with the oligo package, it will also detatch the affy package and load the oligo package
   suppressWarnings(expr = {
-    raw = ReadAffy(filenames = celFiles,
+    raw = ReadAffy(filenames = celFiles, # Read the raw files with the affy package
                    sampleNames = sampNames)
   })
-  arrInfo = c(
-    "Affymetrix",
-    as.character(raw@cdfName))
-    if (grepl("-st-", raw@cdfName, ignore.case = T)) {
-      detach_package(affy)
-      rm(raw)
-      suppressPackageStartupMessages(require(oligo))
-      raw = read.celfiles(filenames = celFiles,
-                          sampleNames = sampNames)
-      st = T
-
-    } else {
-      suppressPackageStartupMessages(require(affyPLM))
-      st = F
-    }
-    cat("") # Critical but function unknown. Do not delete this line
+  arrInfo = c("Affymetrix",
+              as.character(raw@cdfName)) # Store array infromation
+  if (grepl("-st-", raw@cdfName, ignore.case = T)) {
+    # If the array is an ST type (best handled with the oligo package), remove the affy package and load the oligo package
+    detach_package(affy)
+    rm(raw)
+    suppressPackageStartupMessages(require(oligo))
+    raw = read.celfiles(filenames = celFiles, # Read in the raw files with the oligo package
+                        sampleNames = sampNames)
+    st = T # Set a marker variable to indicate use of oligo package
+    
+  } else {
+    # If the affy package is sufficent, load the probe-level modeling package and set marker variable for using affy
+    suppressPackageStartupMessages(require(affyPLM))
+    st = F
+  }
+  cat("") # 
 }, error = function(e) {
+  # If reading in the raw files with the affy package fails (occurs for newer human arrays), returning TRUE sets useOligo to TRUE
   cat(
     "Could not read in provided .CEL files with affy package. Attempting to read them with oligo package...\n"
   )
@@ -211,22 +210,23 @@ useOligo = tryCatch({
 
 if (!is.null(useOligo)){
   if (useOligo == TRUE) {
+    # If the useOligo variable exists and is TRUE, detach the affy package and load the oligo package
     tryCatch({
       detach_package(affy)
       suppressPackageStartupMessages(require(oligo))
-      raw = read.celfiles(filenames = celFiles,
+      raw = read.celfiles(filenames = celFiles, # Read in the raw files with the oligo package
                           sampleNames = sampNames)
-      st = T
-      ver = raw@annotation
+      st = T # Set the oligo marker varible to TRUE
+      ver = raw@annotation # Pull package information from the oligo object
       if (grepl("^pd.", ver)) {
         # Convert from the pd.* annotation package to the standard array version name
         ver = gsub("^pd.", "", ver)
         ver = gsub("\\.", "-", ver)
-        ver = gsub("(\\d)(-)(\\d)", "\\1_\\3", ver)
+        ver = gsub("(\\d)(-)(\\d)", "\\1_\\3", ver) # Replace hyphens with underscores
       }
-      arrInfo = c("Affymetrix", as.character(ver))
+      arrInfo = c("Affymetrix", as.character(ver)) # Store the array information
     }, error = function(e) {
-      stop("Unable to read in .CEL files with oligo package", call. = F)
+      stop("Unable to read in .CEL files with oligo package or affy package", call. = F)
     })
   }
 }
@@ -246,6 +246,7 @@ if (!file.exists(summDir)){ # Create a summary report directory within qcDir if 
 }
 
 if (glAn != FALSE) {
+  # Save the array information formatted with the GLDS
   write.table(
     arrInfo,
     file = paste(summDir, glAn, "_arrayInfo.txt", sep = ""),
@@ -254,6 +255,7 @@ if (glAn != FALSE) {
     row.names = F
   )
 } else {
+  # Save the array information formatted without the GLDS
   write.table(
     arrInfo,
     file = paste(summDir, "arrayInfo.txt", sep = ""),
@@ -278,18 +280,18 @@ if(QCout == T) {
   cat("Performing intial QC\n")
   
   if (QCpack == "aqm"){
-    # Load in QC package
+    # Load in the arrayQualityMetrics QC package
     suppressPackageStartupMessages(require(arrayQualityMetrics))
     
     suppressWarnings(
-      arrayQualityMetrics(
+      arrayQualityMetrics( # Generate the raw QC report in the generated "raw_report" directory within the QC directory
         expressionset = raw,
         outdir = paste(qcDir, "raw_report", sep = ""),
         force = T,
-        do.logtransform = T
+        do.logtransform = T # Log-transform because the values haven't been normalized yet
       )
     )
-  } else if ( QCpack == "R") {
+  } else if ( QCpack == "R") { # Generate QC plots using base R plotting options
     # Create a directory to hold figures from the raw QC step
     rawDir = paste(qcDir, "raw_report/", sep = "")
     if (!file.exists(rawDir)){ # Create a raw report directory within qcDir if it does not exist yet
@@ -298,10 +300,10 @@ if(QCout == T) {
     
     # Prepare plotting options
     toMatch = c(8,183,31,45,51,100,101,118,128,139,147,183,254,421,467,477,
-                483,493,498,503,508,535,552,575,635,655)
-    color = grDevices::colors()[rep(toMatch,10)] # Create a library of colors for plotting
+                483,493,498,503,508,535,552,575,635,655) # A list of 26 indices for contrasting colors to use for plots
+    color = grDevices::colors()[rep(toMatch,10)] # Create a library of colors for plotting, repeating 10 times because who knows how many sample there will be
     
-    #Images
+    # Generate pseudo-images
     cat("\tGenerating raw images")
     if (st == T) {
       for (i in 1:length(celFiles)) {
@@ -378,7 +380,7 @@ if(QCout == T) {
     garbage <- dev.off()
     cat("\n")
     
-    # Boxplots
+    # Generate intesity boxplots
     png(paste(rawDir, glAn, '_rawBoxplot.png', sep = ''),
         width = 800,
         height = 400)
@@ -418,7 +420,7 @@ if(QCout == T) {
     )
     garbage <- dev.off()
     
-    # PCA
+    # Generate PCA plot
     cat("\tPerforming PCA of raw data...\n")
     rawPCA = prcomp(mypms)
     png(paste(rawDir, glAn, '_rawPCA.png', sep = ''),
@@ -452,11 +454,12 @@ if(QCout == T) {
     )
     garbage <- dev.off()
     
-    #NUSE plot
+    # If not on the DP sever (or the BLAS issue is resolved), use this option for more thorough QC analysis
     if (NUSEplot == T) {
       cat("\tFitting probe-level model and generating RLE/NUSE plots...\n")
       if (st == T) {
-        Pset = fitProbeLevelModel(raw)
+        # oligo package specific code for RLE and NUSE plots
+        Pset = fitProbeLevelModel(raw) # Fit a probe-level model to the raw data
         # RLE plot
         png(paste(rawDir, glAn, '_RLE.png', sep = ''),
             width = 800,
@@ -481,8 +484,10 @@ if(QCout == T) {
                              ""))
         abline(h = 1.1, lty = 1, col = "red")
         garbage <- dev.off()
+        
       } else{
-        Pset = fitPLM(raw)
+        # affy package specific code for RLE and NUSE plots
+        Pset = fitPLM(raw) # Fit a probe-level model to the raw data
         # RLE plot
         png(paste(rawDir, glAn, '_RLE.png', sep = ''),
             width = 800,
@@ -503,8 +508,7 @@ if(QCout == T) {
             height = 600)
         par(mar = c(7, 5, 1, 1))
         NUSE(Pset, col = color[1:length(sampNames)], las = 2)
-        title(main = paste(glAn, " NUSE plot of microarray experiments", sep =
-                             ""))
+        title(main = paste(glAn, " NUSE plot of microarray experiments", sep =""))
         abline(h = 1.1, lty = 1, col = "red")
         garbage <- dev.off()
       }
@@ -521,7 +525,7 @@ if (opt$outputData == TRUE) {
   ## Normalize
   cat("\nNormalizing with selected normalization technique...\n")
   if (norm == 'rma') {
-    expset = rma(raw)
+    expset = rma(raw) # Perform standard RMA normalization
   } else if (norm == 'quantile') {
     expset = rma(raw, background = F, normalize = T)
   } else if (norm == 'background') {
@@ -542,11 +546,11 @@ if (opt$outputData == TRUE) {
       dir.create(outDir)
     }
   }
-  eset = exprs(expset)
+  eset = exprs(expset) # Extract the intensity values from the normalized ExpressionSet object
   if (opt$outType == "both") {
-    save(eset, file = paste(outDir, outFH, ".rda", sep = ""))
+    save(eset, file = paste(outDir, outFH, ".rda", sep = "")) # Save as a binary RData file that loads as a variable named eset
     write.table(
-      data.frame("ID" = row.names(eset),eset), # provides the rownames as a labeled column in the saved output
+      data.frame("ID" = row.names(eset),eset), # Creates a temporary dataframe, providing the row names as a labeled column in the saved output
       row.names = F,
       file = paste(outDir, outFH, ".txt", sep = ""),
       sep = "\t",
@@ -574,20 +578,20 @@ if (opt$outputData == TRUE) {
     cat("Post normalization QC steps...\n")
     if (QCpack == "aqm") {
       suppressWarnings(
-        arrayQualityMetrics(
+        arrayQualityMetrics( # Generates an HTML report with interactive quality control graphs and figures within the QCdir in the "normalized_report" directory
           expressionset = expset,
           outdir = paste(qcDir, "normalized_report", sep = ""),
           force = T
         )
       )
     } else if (QCpack == "R") {
-      # Create a directory to hold figures from the normalized QC step
+      # Generate QC figures with base R plotting options following normalization
       normDir = paste(qcDir, "normalized_report/", sep = "")
-      if (!file.exists(normDir)){ # Create a raw report directory within qcDir if it does not exist yet
+      if (!file.exists(normDir)){ # Create a directory to hold figures from the normalized QC step
         dir.create(normDir)
       }
       
-      # Density distributions
+      # Generating overlaying density distributions
       png(
         paste(normDir, glAn, '_normDensityDistributions.png', sep = ''),
         width = 800,
@@ -635,7 +639,7 @@ if (opt$outputData == TRUE) {
       )
       garbage <- dev.off()
       
-      # Boxplots
+      # Generating boxplots
       png(
         paste(normDir, glAn, '_normBoxplot.png', sep = ''),
         width = 800,
@@ -676,7 +680,7 @@ if (opt$outputData == TRUE) {
       }
       garbage <- dev.off()
       
-      #MA plot
+      # Generating pseudo-MA plots to a median reference array
       cat("\tGenerating MA plots from the normalized data...\n")
       nblines = length(celFiles) %/% 3 + as.numeric((length(celFiles) %% 3) !=
                                                       0)
@@ -689,7 +693,7 @@ if (opt$outputData == TRUE) {
       MAplot(expset)
       garbage <- dev.off()
       
-      # PCA
+      # Generating a PCA plot
       cat("\tPerforming PCA of normalized data...\n")
       normPCA = prcomp(normVals)
       png(paste(normDir, glAn, '_normPCA.png', sep = ''),
